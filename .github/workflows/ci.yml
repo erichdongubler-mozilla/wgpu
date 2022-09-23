@@ -84,6 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # TODO: check `cargo clippy --all-targets`
         include:
           # Windows
           - name: Windows x86_64
