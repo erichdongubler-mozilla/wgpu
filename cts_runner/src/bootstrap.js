@@ -1,4 +1,7 @@
-// Adapted from https://github.com/denoland/deno/blob/6abf126c2a7a451cded8c6b5e6ddf1b69c84055d/runtime/js/99_main.js
+// TODO: We depend on all Deno crate versions at this commit: 6abf126c2a7a451cded8c6b5e6ddf1b69c84055d
+// TODO: actually explain this better! This synthesizes _several_ snippets from `deno_runtime`'s JS bootstrapping. Basically, there's a set of fundamental platform that Deno depends on in `Deno.ops`. We're seemingly avoiding a lot of `deno_runtime`'s overhead and sprawl of APIs by bootstrapping our own subset here.
+//
+// This seems like a silly solution, IMO, but I want to do some discussing with folks to confirm more solidly why we're doing things this way.
 
 // Removes the `__proto__` for security reasons.  This intentionally makes
 // Deno non compliant with ECMA-262 Annex B.2.2.1
