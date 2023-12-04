@@ -104,7 +104,6 @@ where
         unsafe { &*(self.0.cast()) }
     }
 
-
     /// Casts the `T` to `U` using `QueryInterface` (AKA [`Interface`]).
     ///
     /// # Safety
