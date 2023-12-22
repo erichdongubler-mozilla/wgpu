@@ -10,15 +10,11 @@ _Explain how this change is tested._
 <!-- 
 Thanks for filing! The codeowners file will automatically request reviews from the appropriate teams.
 
-After you get a review and have addressed any comments, please explicitly re-request a review from the
-person(s) who reviewed your changes. This will make sure it gets re-added to their review queue - you're no bothering us!
+After you get a review and have addressed CI and comments from reviewers, please explicitly re-request a review from the
+person(s) who reviewed your changes. This will make sure it gets re-added to their review queue - you're not bothering us!
 -->
 
 **Checklist**
 
-- [ ] Run `cargo fmt`.
-- [ ] Run `cargo clippy`. If applicable, add:
-  - [ ] `--target wasm32-unknown-unknown`
-  - [ ] `--target wasm32-unknown-emscripten`
-- [ ] Run `cargo xtask test` to run tests.
-- [ ] Add change to `CHANGELOG.md`. See simple instructions inside file.
+- [ ] Add change to CHANGELOG.md. See simple instructions inside file.
+
