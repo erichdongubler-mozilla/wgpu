@@ -890,6 +890,34 @@ pub enum Literal {
     AbstractFloat(f64),
 }
 
+impl TryFrom<f32> for Literal {
+    type Error = valid::LiteralError;
+
+    fn try_from(value: f32) -> Result<Self, Self::Error> {
+        let value = Self::F32(value);
+        valid::check_literal_value(value)?;
+        Ok(value)
+    }
+}
+
+impl From<u32> for Literal {
+    fn from(value: u32) -> Self {
+        Self::U32(value)
+    }
+}
+
+impl From<i32> for Literal {
+    fn from(value: i32) -> Self {
+        Self::I32(value)
+    }
+}
+
+impl From<bool> for Literal {
+    fn from(value: bool) -> Self {
+        Self::Bool(value)
+    }
+}
+
 /// Pipeline-overridable constant.
 #[derive(Debug, PartialEq, Clone)]
 #[cfg_attr(feature = "serialize", derive(Serialize))]
@@ -1646,6 +1674,32 @@ pub enum Expression {
     /// [`SubgroupCollectiveOperation`]: Statement::SubgroupCollectiveOperation
     /// [`SubgroupGather`]: Statement::SubgroupGather
     SubgroupOperationResult { ty: Handle<Type> },
+}
+
+impl TryFrom<f32> for Expression {
+    type Error = valid::LiteralError;
+
+    fn try_from(value: f32) -> Result<Self, Self::Error> {
+        value.try_into().map(Self::Literal)
+    }
+}
+
+impl From<u32> for Expression {
+    fn from(value: u32) -> Self {
+        Self::Literal(value.into())
+    }
+}
+
+impl From<i32> for Expression {
+    fn from(value: i32) -> Self {
+        Self::Literal(value.into())
+    }
+}
+
+impl From<bool> for Expression {
+    fn from(value: bool) -> Self {
+        Self::Literal(value.into())
+    }
 }
 
 pub use block::Block;
