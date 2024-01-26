@@ -142,10 +142,7 @@ impl super::Device {
 
         let mut rtv_pool = descriptor::CpuPool::new(raw.clone(), d3d12::DescriptorHeapType::Rtv);
         let null_rtv_handle = rtv_pool.alloc_handle()?;
-        // A null pResource is used to initialize a null descriptor,
-        // which guarantees D3D11-like null binding behavior (reading 0s, writes are discarded)
-        raw.create_render_target_view(
-            ComPtr::null(),
+        raw.create_render_target_view_from_desc(
             &d3d12::RenderTargetViewDesc::texture_2d(dxgiformat::DXGI_FORMAT_R8G8B8A8_UNORM, 0, 0),
             null_rtv_handle.raw,
         );
