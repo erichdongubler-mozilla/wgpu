@@ -1885,6 +1885,7 @@ dependencies = [
  "codespan-reporting",
  "diff",
  "env_logger",
+ "half",
  "hexf-parse",
  "hlsl-snapshots",
  "indexmap",

@@ -1230,6 +1230,21 @@ impl<'a> ConstantEvaluator<'a> {
                 })
             }
 
+            // geometry
+            // crate::MathFunction::Reflect => {
+            //     let dot = |scalar: Scalar| match scalar {
+            //         Scalar::AbstractFloat([e1, e2]) => todo!(),
+            //         Scalar::F32([e1, e2]) => todo!(),
+            //         Scalar::AbstractInt([e1, e2]) => todo!(),
+            //         Scalar::U32([e1, e2]) => todo!(),
+            //         Scalar::I32([e1, e2]) => todo!(),
+            //     };
+            //     component_wise_float(self, span, [arg, arg1.unwrap()], |scalars| {
+            //         let dot = dot(scalars);
+            //         Ok([e1 - 2 * dot(e2, e1) * e2])
+            //     })
+            // }
+
             // computational
             crate::MathFunction::Sign => {
                 component_wise_signed!(self, span, [arg], |e| { Ok([e.signum()]) })
