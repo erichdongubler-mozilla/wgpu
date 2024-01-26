@@ -1024,6 +1024,12 @@ impl<'a> ConstantEvaluator<'a> {
             ));
         }
 
+        let unimplemented = || {
+            Err(ConstantEvaluatorError::NotImplemented(format!(
+                "{fun:?} built-in function"
+            )))
+        };
+
         // NOTE: We try to match the declaration order of `MathFunction` here.
         match fun {
             // comparison
@@ -1094,6 +1100,7 @@ impl<'a> ConstantEvaluator<'a> {
             crate::MathFunction::Atan => {
                 component_wise_float!(self, span, [arg], |e| { Ok([e.atan()]) })
             }
+            crate::MathFunction::Atan2 => unimplemented(),
             crate::MathFunction::Asinh => {
                 component_wise_float!(self, span, [arg], |e| { Ok([e.asinh()]) })
             }
@@ -1153,6 +1160,9 @@ impl<'a> ConstantEvaluator<'a> {
             crate::MathFunction::Trunc => {
                 component_wise_float!(self, span, [arg], |e| { Ok([e.trunc()]) })
             }
+            crate::MathFunction::Modf => unimplemented(),
+            crate::MathFunction::Frexp => unimplemented(),
+            crate::MathFunction::Ldexp => unimplemented(),
 
             // exponent
             crate::MathFunction::Exp => {
@@ -1173,6 +1183,17 @@ impl<'a> ConstantEvaluator<'a> {
                 })
             }
 
+            // geometry
+            crate::MathFunction::Dot => unimplemented(),
+            crate::MathFunction::Outer => unimplemented(),
+            crate::MathFunction::Cross => unimplemented(),
+            crate::MathFunction::Distance => unimplemented(),
+            crate::MathFunction::Length => unimplemented(),
+            crate::MathFunction::Normalize => unimplemented(),
+            crate::MathFunction::FaceForward => unimplemented(),
+            crate::MathFunction::Reflect => unimplemented(),
+            crate::MathFunction::Refract => unimplemented(),
+
             // computational
             crate::MathFunction::Sign => {
                 component_wise_signed!(self, span, [arg], |e| { Ok([e.signum()]) })
@@ -1185,17 +1206,22 @@ impl<'a> ConstantEvaluator<'a> {
                     |e1, e2, e3| { Ok([e1.mul_add(e2, e3)]) }
                 )
             }
+            crate::MathFunction::Mix => unimplemented(),
             crate::MathFunction::Step => {
                 component_wise_float!(self, span, [arg, arg1.unwrap()], |edge, x| {
                     Ok([if edge <= x { 1.0 } else { 0.0 }])
                 })
             }
+            crate::MathFunction::SmoothStep => unimplemented(),
             crate::MathFunction::Sqrt => {
                 component_wise_float!(self, span, [arg], |e| { Ok([e.sqrt()]) })
             }
             crate::MathFunction::InverseSqrt => {
                 component_wise_float!(self, span, [arg], |e| { Ok([1. / e.sqrt()]) })
             }
+            crate::MathFunction::Inverse => unimplemented(),
+            crate::MathFunction::Transpose => unimplemented(),
+            crate::MathFunction::Determinant => unimplemented(),
 
             // bits
             crate::MathFunction::CountTrailingZeros => {
@@ -1228,10 +1254,24 @@ impl<'a> ConstantEvaluator<'a> {
             crate::MathFunction::ReverseBits => {
                 component_wise_concrete_int!(self, span, [arg], |e| { Ok([e.reverse_bits()]) })
             }
+            crate::MathFunction::ExtractBits => unimplemented(),
+            crate::MathFunction::InsertBits => unimplemented(),
+            crate::MathFunction::FindLsb => unimplemented(),
+            crate::MathFunction::FindMsb => unimplemented(),
 
-            fun => Err(ConstantEvaluatorError::NotImplemented(format!(
-                "{fun:?} built-in function"
-            ))),
+            // data packing
+            crate::MathFunction::Pack4x8snorm => unimplemented(),
+            crate::MathFunction::Pack4x8unorm => unimplemented(),
+            crate::MathFunction::Pack2x16snorm => unimplemented(),
+            crate::MathFunction::Pack2x16unorm => unimplemented(),
+            crate::MathFunction::Pack2x16float => unimplemented(),
+
+            // data unpacking
+            crate::MathFunction::Unpack4x8snorm => unimplemented(),
+            crate::MathFunction::Unpack4x8unorm => unimplemented(),
+            crate::MathFunction::Unpack2x16snorm => unimplemented(),
+            crate::MathFunction::Unpack2x16unorm => unimplemented(),
+            crate::MathFunction::Unpack2x16float => unimplemented(),
         }
     }
 
