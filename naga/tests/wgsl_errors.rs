@@ -2166,11 +2166,8 @@ fn limit_braced_statement_nesting() {
 
 "###;
 
-    // In debug builds, we might actually overflow the stack before exercising this error case,
-    // depending on the platform and the `RUST_MIN_STACK` env. var. Use a thread with a custom
-    // stack size that works on all platforms.
     std::thread::Builder::new()
-        .stack_size(1024 * 1024 * 2 /* MB */)
+        .stack_size(naga::front::wgsl::RECOMMENDED_MIN_STACK_SPACE_FOR_PARSE)
         .spawn(|| check(too_many_braces, expected_diagnostic))
         .unwrap()
         .join()

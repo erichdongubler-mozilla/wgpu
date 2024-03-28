@@ -52,9 +52,12 @@ impl Frontend {
 /// exist; if shader compilation runs into them, it will return an error gracefully. However, on
 /// some build profiles and platforms, the default stack size for a thread may be exceeded before
 /// this limit is reached during parsing. Callers should ensure that there is enough stack space
-/// for this, particularly if calls to this method are exposed to user input.
+/// for this, particularly if calls to this method are exposed to user input, using
+/// [`RECOMMENDED_MIN_STACK_SPACE_FOR_PARSE`] with [`std::thread::Builder::stack_size`].
 ///
 /// </div>
 pub fn parse_str(source: &str) -> Result<crate::Module, ParseError> {
     Frontend::new().parse(source)
 }
+
+pub const RECOMMENDED_MIN_STACK_SPACE_FOR_PARSE: usize = 1024 * 1024 * 2 /* MB */;
