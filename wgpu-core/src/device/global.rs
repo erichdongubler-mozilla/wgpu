@@ -1174,7 +1174,7 @@ impl Global {
 
     /// See [`Self::device_create_shader_module`] for more details.
     pub const RECOMMENDED_MIN_STACK_SPACE_FOR_NATIVE_WGSL_COMPILATION: usize =
-        naga::front::wgsl::RECOMMENDED_MIN_STACK_SPACE_FOR_PARSE;
+        wgt::RECOMMENDED_MIN_STACK_SPACE_FOR_NATIVE_WGSL_COMPILATION;
 
     /// Create a shader module with the given `source`.
     ///

@@ -7243,3 +7243,7 @@ pub enum DeviceLostReason {
     /// will call the callback immediately, with this reason.
     DeviceInvalid = 4,
 }
+
+/// See [`Self::device_create_shader_module`] for more details.
+// NOTE: Keep value in sync with [`naga::front::wgsl::RECOMMENDED_MIN_STACK_SPACE_FOR_PARSE`].
+pub const RECOMMENDED_MIN_STACK_SPACE_FOR_NATIVE_WGSL_COMPILATION: usize = 1024 * 1024;

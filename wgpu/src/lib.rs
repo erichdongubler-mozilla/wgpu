@@ -2653,6 +2653,10 @@ impl Device {
         DynContext::device_limits(&*self.context, &self.id, self.data.as_ref())
     }
 
+    /// See [`Self::create_shader_module`] for more details.
+    pub const RECOMMENDED_MIN_STACK_SPACE_FOR_NATIVE_WGSL_COMPILATION: usize =
+        wgt::RECOMMENDED_MIN_STACK_SPACE_FOR_NATIVE_WGSL_COMPILATION;
+
     /// Creates a shader module from either SPIR-V or WGSL source code.
     ///
     /// <div class="warning">
@@ -2664,7 +2668,8 @@ impl Device {
     /// However, on some build profiles and platforms, the default stack size for a thread may be
     /// exceeded before this limit is reached during parsing. Callers should ensure that there is
     /// enough stack space for this, particularly if calls to this method are exposed to user
-    /// input.
+    /// input, using [`Self::RECOMMENDED_MIN_STACK_SPACE_FOR_PARSE`] with
+    /// [`std::thread::Builder::stack_size`].
     ///
     /// </div>
     pub fn create_shader_module(&self, desc: ShaderModuleDescriptor<'_>) -> ShaderModule {
