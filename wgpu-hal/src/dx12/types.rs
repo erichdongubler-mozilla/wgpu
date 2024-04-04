@@ -63,3 +63,15 @@ winapi::STRUCT! {
         HighestShaderModel: D3D_SHADER_MODEL,
     }
 }
+
+winapi::STRUCT! {
+    #[derive(Debug, Default)]
+    struct D3D12_FEATURE_DATA_D3D12_OPTIONS13 {
+        UnrestrictedBufferTextureCopyPitchSupported: winapi::shared::minwindef::BOOL,
+        UnrestrictedVertexElementAlignmentSupported: winapi::shared::minwindef::BOOL,
+        InvertedViewportHeightFlipsYSupported: winapi::shared::minwindef::BOOL,
+        InvertedViewportDepthFlipsZSupported: winapi::shared::minwindef::BOOL,
+        TextureCopyBetweenDimensionsSupported: winapi::shared::minwindef::BOOL,
+        AlphaBlendFactorSupported: winapi::shared::minwindef::BOOL,
+    }
+}

@@ -216,6 +216,18 @@ impl super::Adapter {
             }
         };
 
+        let unrestricted_buffer_texture_copy_pitch_supported = {
+            let mut features13 = crate::dx12::types::D3D12_FEATURE_DATA_D3D12_OPTIONS13::default();
+            let hr = unsafe {
+                device.CheckFeatureSupport(
+                    41, // D3D12_FEATURE_D3D12_OPTIONS13
+                    &mut features13 as *mut _ as *mut _,
+                    mem::size_of::<crate::dx12::types::D3D12_FEATURE_DATA_D3D12_OPTIONS13>() as _,
+                )
+            };
+            hr == 0 && features13.UnrestrictedBufferTextureCopyPitchSupported != 0
+        };
+
         let private_caps = super::PrivateCapabilities {
             instance_flags,
             heterogeneous_resource_heaps: options.ResourceHeapTier
