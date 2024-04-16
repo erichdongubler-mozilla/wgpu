@@ -1,4 +1,4 @@
-use crate::com::ComPtr;
+use crate::{com::ComPtr, ComPtrBuilder};
 #[cfg(any(feature = "libloading", feature = "implicit-link"))]
 use winapi::Interface as _;
 use winapi::{
@@ -21,7 +21,7 @@ impl crate::D3D12Lib {
             let func: libloading::Symbol<Fun> = self.lib.get(b"D3D12GetDebugInterface")?;
             func(&d3d12sdklayers::ID3D12Debug::uuidof(), &mut debug)
         };
-        let debug = unsafe { ComPtr::from_reffed(debug.cast()) };
+        let debug = unsafe { ComPtrBuilder::from_reffed(debug.cast()) }.build();
 
         Ok((debug, hr))
     }
@@ -37,7 +37,7 @@ impl Debug {
                 &mut debug,
             )
         };
-        let debug = unsafe { ComPtr::from_reffed(debug.cast()) };
+        let debug = unsafe { ComPtrBuilder::from_reffed(debug.cast()) }.build();
 
         (debug, hr)
     }
@@ -47,9 +47,9 @@ impl Debug {
     }
 
     pub fn enable_gpu_based_validation(&self) -> bool {
-        let (ptr, hr) = unsafe { self.cast::<d3d12sdklayers::ID3D12Debug1>() };
+        let (ptr, hr) = self.cast::<d3d12sdklayers::ID3D12Debug1>();
         if hr == S_OK {
-            unsafe { ptr.SetEnableGPUBasedValidation(TRUE) };
+            unsafe { ptr.unwrap().SetEnableGPUBasedValidation(TRUE) };
             true
         } else {
             false

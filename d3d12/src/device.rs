@@ -5,11 +5,11 @@ use crate::{
     command_list::{CmdListType, CommandSignature, IndirectArgument},
     descriptor::{CpuDescriptor, DescriptorHeapFlags, DescriptorHeapType, RenderTargetViewDesc},
     heap::{Heap, HeapFlags, HeapProperties},
-    pso, query, queue, Blob, CachedPSO, CommandAllocator, CommandQueue, D3DResult, DescriptorHeap,
-    Fence, GraphicsCommandList, NodeMask, PipelineState, QueryHeap, RootSignature, Shader,
-    TextureAddressMode,
+    pso, query, queue, Blob, CachedPSO, ComPtrBuilder, CommandAllocator, CommandQueue, D3DResult,
+    DescriptorHeap, Fence, GraphicsCommandList, NodeMask, PipelineState, QueryHeap, RootSignature,
+    Shader, TextureAddressMode,
 };
-use std::ops::Range;
+use std::{ops::Range, ptr};
 use winapi::{um::d3d12, Interface};
 
 pub type Device = ComPtr<d3d12::ID3D12Device>;
@@ -32,13 +32,13 @@ impl crate::D3D12Lib {
         let hr = unsafe {
             let func: libloading::Symbol<Fun> = self.lib.get(b"D3D12CreateDevice")?;
             func(
-                adapter.as_unknown() as *const _ as *mut _,
+                ptr::from_ref(adapter.as_unknown()).cast_mut(),
                 feature_level as _,
                 &d3d12::ID3D12Device::uuidof(),
                 &mut device,
             )
         };
-        let device = unsafe { ComPtr::from_reffed(device.cast()) };
+        let device = unsafe { ComPtrBuilder::from_reffed(device.cast()) }.build();
 
         Ok((device, hr))
     }
@@ -59,7 +59,7 @@ impl Device {
                 &mut device,
             )
         };
-        let device = unsafe { ComPtr::from_reffed(device.cast()) };
+        let device = unsafe { ComPtrBuilder::from_reffed(device.cast()) }.build();
 
         (device, hr)
     }
@@ -81,7 +81,7 @@ impl Device {
         };
 
         let hr = unsafe { self.CreateHeap(&desc, &d3d12::ID3D12Heap::uuidof(), &mut heap) };
-        let heap = unsafe { ComPtr::from_reffed(heap.cast()) };
+        let heap = unsafe { ComPtrBuilder::from_reffed(heap.cast()) }.build();
 
         (heap, hr)
     }
@@ -95,7 +95,7 @@ impl Device {
                 &mut allocator,
             )
         };
-        let allocator = unsafe { ComPtr::from_reffed(allocator.cast()) };
+        let allocator = unsafe { ComPtrBuilder::from_reffed(allocator.cast()) }.build();
 
         (allocator, hr)
     }
@@ -118,7 +118,7 @@ impl Device {
         let hr = unsafe {
             self.CreateCommandQueue(&desc, &d3d12::ID3D12CommandQueue::uuidof(), &mut queue)
         };
-        let queue = unsafe { ComPtr::from_reffed(queue.cast()) };
+        let queue = unsafe { ComPtrBuilder::from_reffed(queue.cast()) }.build();
 
         (queue, hr)
     }
@@ -141,7 +141,7 @@ impl Device {
         let hr = unsafe {
             self.CreateDescriptorHeap(&desc, &d3d12::ID3D12DescriptorHeap::uuidof(), &mut heap)
         };
-        let heap = unsafe { ComPtr::from_reffed(heap.cast()) };
+        let heap = unsafe { ComPtrBuilder::from_reffed(heap.cast()) }.build();
 
         (heap, hr)
     }
@@ -169,7 +169,7 @@ impl Device {
                 &mut command_list,
             )
         };
-        let command_list = unsafe { ComPtr::from_reffed(command_list.cast()) };
+        let command_list = unsafe { ComPtrBuilder::from_reffed(command_list.cast()) }.build();
 
         (command_list, hr)
     }
@@ -190,7 +190,7 @@ impl Device {
         let hr = unsafe {
             self.CreateQueryHeap(&desc, &d3d12::ID3D12QueryHeap::uuidof(), &mut query_heap)
         };
-        let query_heap = unsafe { ComPtr::from_reffed(query_heap.cast()) };
+        let query_heap = unsafe { ComPtrBuilder::from_reffed(query_heap.cast()) }.build();
 
         (query_heap, hr)
     }
@@ -235,7 +235,7 @@ impl Device {
                 &mut pipeline,
             )
         };
-        let pipeline = unsafe { ComPtr::from_reffed(pipeline.cast()) };
+        let pipeline = unsafe { ComPtrBuilder::from_reffed(pipeline.cast()) }.build();
 
         (pipeline, hr)
     }
@@ -284,7 +284,7 @@ impl Device {
                 &mut signature,
             )
         };
-        let signature = unsafe { ComPtr::from_reffed(signature.cast()) };
+        let signature = unsafe { ComPtrBuilder::from_reffed(signature.cast()) }.build();
 
         (signature, hr)
     }
@@ -311,7 +311,7 @@ impl Device {
                 &mut signature,
             )
         };
-        let signature = unsafe { ComPtr::from_reffed(signature.cast()) };
+        let signature = unsafe { ComPtrBuilder::from_reffed(signature.cast()) }.build();
 
         (signature, hr)
     }
@@ -339,7 +339,7 @@ impl Device {
                 &mut fence,
             )
         };
-        let fence = unsafe { ComPtr::from_reffed(fence.cast()) };
+        let fence = unsafe { ComPtrBuilder::from_reffed(fence.cast()) }.build();
 
         (fence, hr)
     }

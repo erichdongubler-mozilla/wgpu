@@ -1,4 +1,4 @@
-use crate::{com::ComPtr, D3DResult, Resource, SampleDesc, HRESULT};
+use crate::{com::ComPtr, ComPtrBuilder, D3DResult, Resource, SampleDesc, HRESULT};
 use std::ptr;
 use winapi::{
     shared::{
@@ -124,7 +124,7 @@ impl DxgiLib {
                 &mut factory,
             )
         };
-        let factory = unsafe { ComPtr::from_reffed(factory.cast()) };
+        let factory = unsafe { ComPtrBuilder::from_reffed(factory.cast()) }.build();
 
         Ok((factory, hr))
     }
@@ -140,7 +140,7 @@ impl DxgiLib {
             let func: libloading::Symbol<Fun> = self.lib.get(b"CreateDXGIFactory1")?;
             func(&dxgi::IDXGIFactory1::uuidof(), &mut factory)
         };
-        let factory = unsafe { ComPtr::from_reffed(factory.cast()) };
+        let factory = unsafe { ComPtrBuilder::from_reffed(factory.cast()) }.build();
 
         Ok((factory, hr))
     }
@@ -157,7 +157,7 @@ impl DxgiLib {
             let func: libloading::Symbol<Fun> = self.lib.get(b"CreateDXGIFactory1")?;
             func(&dxgi1_3::IDXGIFactoryMedia::uuidof(), &mut factory)
         };
-        let factory = unsafe { ComPtr::from_reffed(factory.cast()) };
+        let factory = unsafe { ComPtrBuilder::from_reffed(factory.cast()) }.build();
 
         Ok((factory, hr))
     }
@@ -174,7 +174,7 @@ impl DxgiLib {
             let func: libloading::Symbol<Fun> = self.lib.get(b"DXGIGetDebugInterface1")?;
             func(0, &dxgidebug::IDXGIInfoQueue::uuidof(), &mut queue)
         };
-        let queue = unsafe { ComPtr::from_reffed(queue.cast()) };
+        let queue = unsafe { ComPtrBuilder::from_reffed(queue.cast()) }.build();
         Ok((queue, hr))
     }
 }
@@ -247,7 +247,7 @@ impl Factory1 {
 
         let mut swapchain = std::ptr::null_mut();
         let hr = unsafe { self.CreateSwapChain(queue, &mut desc, &mut swapchain) };
-        let swapchain = unsafe { ComPtr::from_reffed(swapchain) };
+        let swapchain = unsafe { ComPtrBuilder::from_reffed(swapchain) }.build();
 
         (swapchain, hr)
     }
@@ -272,7 +272,7 @@ impl Factory2 {
                 &mut swap_chain,
             )
         };
-        let swap_chain = unsafe { ComPtr::from_reffed(swap_chain) };
+        let swap_chain = unsafe { ComPtrBuilder::from_reffed(swap_chain) }.build();
 
         (swap_chain, hr)
     }
@@ -291,7 +291,7 @@ impl Factory2 {
                 &mut swap_chain,
             )
         };
-        let swap_chain = unsafe { ComPtr::from_reffed(swap_chain) };
+        let swap_chain = unsafe { ComPtrBuilder::from_reffed(swap_chain) }.build();
 
         (swap_chain, hr)
     }
@@ -308,7 +308,7 @@ impl Factory4 {
                 &mut factory,
             )
         };
-        let factory = unsafe { ComPtr::from_reffed(factory.cast()) };
+        let factory = unsafe { ComPtrBuilder::from_reffed(factory.cast()) }.build();
 
         (factory, hr)
     }
@@ -316,7 +316,7 @@ impl Factory4 {
     pub fn enumerate_adapters(&self, id: u32) -> D3DResult<Adapter1> {
         let mut adapter = std::ptr::null_mut();
         let hr = unsafe { self.EnumAdapters1(id, &mut adapter) };
-        let adapter = unsafe { ComPtr::from_reffed(adapter) };
+        let adapter = unsafe { ComPtrBuilder::from_reffed(adapter) }.build();
 
         (adapter, hr)
     }
@@ -339,7 +339,7 @@ impl FactoryMedia {
                 &mut swap_chain,
             )
         };
-        let swap_chain = unsafe { ComPtr::from_reffed(swap_chain) };
+        let swap_chain = unsafe { ComPtrBuilder::from_reffed(swap_chain) }.build();
 
         (swap_chain, hr)
     }
@@ -364,7 +364,7 @@ impl SwapChain {
     pub fn get_buffer(&self, id: u32) -> D3DResult<Resource> {
         let mut resource = std::ptr::null_mut();
         let hr = unsafe { self.GetBuffer(id, &d3d12::ID3D12Resource::uuidof(), &mut resource) };
-        let resource = unsafe { ComPtr::from_reffed(resource.cast()) };
+        let resource = unsafe { ComPtrBuilder::from_reffed(resource.cast()) }.build();
 
         (resource, hr)
     }

@@ -3,7 +3,7 @@ use crate::{
     dx12::shader_compilation,
     DeviceError,
 };
-use d3d12::ComPtr;
+use d3d12::ComPtrBuilder;
 
 use super::{conv, descriptor, null_comptr_check, view};
 use parking_lot::Mutex;
@@ -16,7 +16,10 @@ use std::{
 };
 use winapi::{
     shared::{dxgiformat, dxgitype, minwindef::BOOL, winerror},
-    um::{d3d12 as d3d12_ty, synchapi, winbase},
+    um::{
+        d3d12::{self as d3d12_ty, ID3D12PipelineState},
+        synchapi, winbase,
+    },
     Interface,
 };
 
@@ -38,20 +41,18 @@ impl super::Device {
             None
         };
 
-        let mut idle_fence = std::ptr::null_mut();
+        let mut idle_fence = d3d12::ComPtrBuilder::null();
         let hr = unsafe {
             profiling::scope!("ID3D12Device::CreateFence");
             raw.CreateFence(
                 0,
                 d3d12_ty::D3D12_FENCE_FLAG_NONE,
                 &d3d12_ty::ID3D12Fence::uuidof(),
-                &mut idle_fence,
+                idle_fence.mut_void(),
             )
         };
-        let idle_fence = unsafe { d3d12::ComPtr::from_reffed(idle_fence.cast()) };
         hr.into_device_result("Idle fence creation")?;
-
-        null_comptr_check(&idle_fence)?;
+        let idle_fence = idle_fence.build();
 
         let zero_buffer = unsafe {
             let raw_desc = d3d12_ty::D3D12_RESOURCE_DESC {
@@ -82,20 +83,21 @@ impl super::Device {
             };
 
             profiling::scope!("Zero Buffer Allocation");
-            let mut zero_buffer = std::ptr::null_mut();
-            raw.CreateCommittedResource(
-                &heap_properties,
-                d3d12_ty::D3D12_HEAP_FLAG_NONE,
-                &raw_desc,
-                d3d12_ty::D3D12_RESOURCE_STATE_COMMON,
-                ptr::null(),
-                &d3d12_ty::ID3D12Resource::uuidof(),
-                &mut zero_buffer,
-            )
-            .into_device_result("Zero buffer creation")?;
-            d3d12::Resource::from_reffed(zero_buffer.cast())
+            let mut zero_buffer = ComPtrBuilder::null();
+            unsafe {
+                raw.CreateCommittedResource(
+                    &heap_properties,
+                    d3d12_ty::D3D12_HEAP_FLAG_NONE,
+                    &raw_desc,
+                    d3d12_ty::D3D12_RESOURCE_STATE_COMMON,
+                    ptr::null(),
+                    &d3d12_ty::ID3D12Resource::uuidof(),
+                    zero_buffer.mut_void(),
+                )
+                .into_device_result("Zero buffer creation")?;
+            }
 
-            null_comptr_check(&zero_buffer)?;
+            zero_buffer.build()
 
             // Note: without `D3D12_HEAP_FLAG_CREATE_NOT_ZEROED`
             // this resource is zeroed by default.
@@ -1433,18 +1435,18 @@ impl crate::Device for super::Device {
             Flags: d3d12_ty::D3D12_PIPELINE_STATE_FLAG_NONE,
         };
 
-        let mut raw = std::ptr::null_mut();
+        let raw = d3d12::ComPtrBuilder::<ID3D12PipelineState>::null();
         let hr = {
             profiling::scope!("ID3D12Device::CreateGraphicsPipelineState");
             unsafe {
                 self.raw.CreateGraphicsPipelineState(
                     &raw_desc,
                     &d3d12_ty::ID3D12PipelineState::uuidof(),
-                    &mut raw,
+                    raw.mut_void(),
                 )
             }
         };
-        let raw = unsafe { d3d12::PipelineState::from_reffed(raw.cast()) };
+        let raw = raw.build();
 
         unsafe { blob_vs.destroy() };
         if let Some(blob_fs) = blob_fs {
@@ -1543,18 +1545,17 @@ impl crate::Device for super::Device {
     unsafe fn destroy_query_set(&self, _set: super::QuerySet) {}
 
     unsafe fn create_fence(&self) -> Result<super::Fence, DeviceError> {
-        let mut raw = std::ptr::null_mut();
+        let mut raw = d3d12::ComPtrBuilder::null();
         let hr = unsafe {
             self.raw.CreateFence(
                 0,
                 d3d12_ty::D3D12_FENCE_FLAG_SHARED,
                 &d3d12_ty::ID3D12Fence::uuidof(),
-                &mut raw,
+                raw.mut_void(),
             )
         };
-        let raw = unsafe { d3d12::ComPtr::from_reffed(raw.cast()) };
         hr.into_device_result("Fence creation")?;
-        null_comptr_check(&raw)?;
+        let raw = raw.build();
 
         Ok(super::Fence { raw })
     }

@@ -1,6 +1,6 @@
 //! Pipeline state
 
-use crate::{com::ComPtr, Blob, D3DResult, Error};
+use crate::{com::ComPtr, Blob, ComPtrBuilder, D3DResult, Error};
 use std::{
     ffi::{self, c_void},
     marker::PhantomData,
@@ -90,8 +90,8 @@ impl<'a> Shader<'a> {
                 &mut error,
             )
         };
-        let shader = unsafe { ComPtr::from_reffed(shader) };
-        let error = unsafe { ComPtr::from_reffed(error) };
+        let shader = unsafe { ComPtrBuilder::from_reffed(shader) }.build();
+        let error = unsafe { ComPtrBuilder::from_reffed(error) }.build();
 
         ((shader, error), hr)
     }

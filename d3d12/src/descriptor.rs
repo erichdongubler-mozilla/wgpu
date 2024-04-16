@@ -1,4 +1,4 @@
-use crate::{com::ComPtr, Blob, D3DResult, Error, TextureAddressMode};
+use crate::{com::ComPtr, Blob, ComPtrBuilder, D3DResult, Error, TextureAddressMode};
 use std::{fmt, mem, ops::Range};
 use winapi::{shared::dxgiformat, um::d3d12};
 
@@ -299,8 +299,9 @@ impl crate::D3D12Lib {
             let func: libloading::Symbol<Fun> = self.lib.get(b"D3D12SerializeRootSignature")?;
             func(&desc, version as _, &mut blob, &mut error)
         };
-        let blob = unsafe { ComPtr::from_reffed(blob) };
-        let error = (!error.is_null()).then(|| unsafe { ComPtr::from_reffed(error) });
+        let blob = unsafe { ComPtrBuilder::from_reffed(blob) }.build();
+        let error =
+            (!error.is_null()).then(|| unsafe { ComPtrBuilder::from_reffed(error) }.build());
 
         Ok(((blob, error), hr))
     }
@@ -328,8 +329,8 @@ impl RootSignature {
         let hr = unsafe {
             d3d12::D3D12SerializeRootSignature(&desc, version as _, &mut blob, &mut error)
         };
-        let blob = unsafe { ComPtr::from_reffed(blob) };
-        let error = unsafe { ComPtr::from_reffed(error) };
+        let blob = unsafe { ComPtrBuilder::from_reffed(blob) }.build();
+        let error = unsafe { ComPtrBuilder::from_reffed(error) }.build();
 
         ((blob, error), hr)
     }

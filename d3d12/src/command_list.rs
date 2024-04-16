@@ -146,7 +146,8 @@ pub type GraphicsCommandList = ComPtr<d3d12::ID3D12GraphicsCommandList>;
 
 impl GraphicsCommandList {
     pub fn as_list(&self) -> CommandList {
-        unsafe { CommandList::from_raw(self.as_mut_ptr() as *mut _) }
+        let (list, _hr) = self.cast();
+        list.unwrap()
     }
 
     pub fn close(&self) -> HRESULT {

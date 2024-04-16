@@ -310,12 +310,12 @@ impl crate::CommandEncoder for super::CommandEncoder {
 
         log::trace!(
             "List {:p} buffer transitions",
-            self.list.as_ref().unwrap().as_ptr()
+            self.list.as_ref().unwrap().as_mut_ptr()
         );
         for barrier in barriers {
             log::trace!(
                 "\t{:p}: usage {:?}..{:?}",
-                barrier.buffer.resource.as_ptr(),
+                barrier.buffer.resource.as_mut_ptr(),
                 barrier.usage.start,
                 barrier.usage.end
             );
