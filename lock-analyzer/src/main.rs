@@ -13,6 +13,9 @@
 //! See `wgpu_core/src/lock/observing.rs` for a general explanation of
 //! this analysis.
 
+#[path = "../../wgpu-core/src/lock/observing/action.rs"]
+mod action;
+
 use std::sync::Arc;
 use std::{
     collections::{btree_map::Entry, BTreeMap, BTreeSet, HashMap},
@@ -20,6 +23,7 @@ use std::{
     path::PathBuf,
 };
 
+use action::Action;
 use anyhow::{Context, Result};
 
 fn main() -> Result<()> {
@@ -56,7 +60,7 @@ fn main() -> Result<()> {
             if line.is_empty() {
                 continue;
             }
-            let action = ron::de::from_bytes::<Action>(line)
+            let action = ron::de::from_bytes::<Action<LocationAddress>>(line)
                 .with_context(|| format!("Error parsing action from {}", name.display()))?;
             match action {
                 Action::Location {
@@ -67,7 +71,7 @@ fn main() -> Result<()> {
                 } => {
                     let file = match file.split_once("src/") {
                         Some((_, after)) => after.to_string(),
-                        None => file,
+                        None => file.into_owned(),
                     };
                     assert!(locations
                         .insert(address, Arc::new(Location { file, line, column }))
@@ -85,8 +89,8 @@ fn main() -> Result<()> {
                     }
                     Entry::Vacant(vacant) => {
                         vacant.insert(Rank {
-                            member_name,
-                            const_name,
+                            member_name: member_name.into_owned(),
+                            const_name: const_name.into_owned(),
                             acquisitions: BTreeMap::default(),
                         });
                     }
@@ -179,42 +183,6 @@ fn main() -> Result<()> {
     }
 
     Ok(())
-}
-
-#[derive(Debug, serde::Deserialize)]
-#[serde(deny_unknown_fields)]
-enum Action {
-    /// A location that we will refer to in later actions.
-    Location {
-        address: LocationAddress,
-        file: String,
-        line: u32,
-        column: u32,
-    },
-
-    /// A lock rank that we will refer to in later actions.
-    Rank {
-        bit: u32,
-        member_name: String,
-        const_name: String,
-    },
-
-    /// An attempt to acquire a lock while holding another lock.
-    Acquisition {
-        /// The number of the already acquired lock's rank.
-        older_rank: u32,
-
-        /// The source position at which we acquired it. Specifically,
-        /// its `Location`'s address, as an integer.
-        older_location: LocationAddress,
-
-        /// The number of the rank of the lock we are acquiring.
-        newer_rank: u32,
-
-        /// The source position at which we are acquiring it.
-        /// Specifically, its `Location`'s address, as an integer.
-        newer_location: LocationAddress,
-    },
 }
 
 /// The memory address at which the `Location` was stored in the
