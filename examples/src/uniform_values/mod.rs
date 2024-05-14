@@ -343,15 +343,15 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
 
 pub fn main() {
     let event_loop = EventLoop::new().unwrap();
-    #[allow(unused_mut)]
-    let mut builder = winit::window::WindowBuilder::new()
+    #[cfg_attr(not(target_arch = "wasm32"), allow(unused_mut))]
+    let mut window_attributes = winit::window::Window::default_attributes()
         .with_title("Remember: Use U/D to change sample count!")
         .with_inner_size(winit::dpi::LogicalSize::new(900, 900));
 
     #[cfg(target_arch = "wasm32")]
     {
         use wasm_bindgen::JsCast;
-        use winit::platform::web::WindowBuilderExtWebSys;
+        use winit::platform::web::WindowAttributesExtWebSys;
         let canvas = web_sys::window()
             .unwrap()
             .document()
@@ -360,9 +360,9 @@ pub fn main() {
             .unwrap()
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .unwrap();
-        builder = builder.with_canvas(Some(canvas));
+        window_attributes = window_attributes.with_canvas(Some(canvas));
     }
-    let window = builder.build(&event_loop).unwrap();
+    let window = event_loop.create_window(window_attributes).unwrap();
 
     let window = Arc::new(window);
     #[cfg(not(target_arch = "wasm32"))]

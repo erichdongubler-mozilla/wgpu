@@ -87,7 +87,7 @@ async fn run(event_loop: EventLoop<()>, viewports: Vec<(Arc<Window>, wgpu::Color
         .collect();
 
     event_loop
-        .run(move |event, target| {
+        .run(move |event, event_loop| {
             // Have the closure take ownership of the resources.
             // `event_loop.run` never returns, therefore we must do this to ensure
             // the resources are properly cleaned up.
@@ -142,7 +142,7 @@ async fn run(event_loop: EventLoop<()>, viewports: Vec<(Arc<Window>, wgpu::Color
                     WindowEvent::CloseRequested => {
                         viewports.remove(&window_id);
                         if viewports.is_empty() {
-                            target.exit();
+                            event_loop.exit();
                         }
                     }
                     _ => {}
@@ -166,11 +166,10 @@ pub fn main() {
         let mut viewports = Vec::with_capacity((ROWS * COLUMNS) as usize);
         for row in 0..ROWS {
             for column in 0..COLUMNS {
-                let window = winit::window::WindowBuilder::new()
+                let window_attributes = winit::window::Window::default_attributes()
                     .with_title(format!("x{column}y{row}"))
-                    .with_inner_size(winit::dpi::PhysicalSize::new(WINDOW_SIZE, WINDOW_SIZE))
-                    .build(&event_loop)
-                    .unwrap();
+                    .with_inner_size(winit::dpi::PhysicalSize::new(WINDOW_SIZE, WINDOW_SIZE));
+                let window = event_loop.create_window(window_attributes).unwrap();
                 let window = Arc::new(window);
                 window.set_outer_position(winit::dpi::PhysicalPosition::new(
                     WINDOW_PADDING + column * WINDOW_OFFSET,

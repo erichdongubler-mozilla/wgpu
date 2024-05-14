@@ -4,7 +4,7 @@ use wgpu::{Instance, Surface};
 use winit::{
     dpi::PhysicalSize,
     event::{Event, KeyEvent, StartCause, WindowEvent},
-    event_loop::{EventLoop, EventLoopWindowTarget},
+    event_loop::{ActiveEventLoop, EventLoop},
     keyboard::{Key, NamedKey},
     window::Window,
 };
@@ -97,7 +97,7 @@ struct EventLoopWrapper {
 impl EventLoopWrapper {
     pub fn new(title: &str) -> Self {
         let event_loop = EventLoop::new().unwrap();
-        let mut builder = winit::window::WindowBuilder::new();
+        let mut window_attributes = winit::window::Window::default_attributes();
         #[cfg(target_arch = "wasm32")]
         {
             use wasm_bindgen::JsCast;
@@ -112,8 +112,8 @@ impl EventLoopWrapper {
                 .unwrap();
             builder = builder.with_canvas(Some(canvas));
         }
-        builder = builder.with_title(title);
-        let window = Arc::new(builder.build(&event_loop).unwrap());
+        window_attributes = window_attributes.with_title(title);
+        let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
 
         Self { event_loop, window }
     }
@@ -389,7 +389,7 @@ async fn start<E: Example>(title: &str) {
     #[allow(clippy::let_unit_value)]
     let _ = (event_loop_function)(
         window_loop.event_loop,
-        move |event: Event<()>, target: &EventLoopWindowTarget<()>| {
+        move |event: Event<()>, event_loop: &ActiveEventLoop| {
             match event {
                 ref e if SurfaceWrapper::start_condition(e) => {
                     surface.resume(&context, window_loop.window.clone(), E::SRGB);
@@ -427,7 +427,7 @@ async fn start<E: Example>(title: &str) {
                         ..
                     }
                     | WindowEvent::CloseRequested => {
-                        target.exit();
+                        event_loop.exit();
                     }
                     #[cfg(not(target_arch = "wasm32"))]
                     WindowEvent::KeyboardInput {

@@ -798,10 +798,8 @@ fn main() {
     env_logger::init();
 
     let event_loop = winit::event_loop::EventLoop::new().unwrap();
-    let window = winit::window::WindowBuilder::new()
-        .with_title("hal-bunnymark")
-        .build(&event_loop)
-        .unwrap();
+    let window_attributes = winit::window::Window::default_attributes().with_title("hal-bunnymark");
+    let window = event_loop.create_window(window_attributes).unwrap();
 
     let example_result = Example::<Api>::init(&window);
     let mut example = Some(example_result.expect("Selected backend is not supported"));

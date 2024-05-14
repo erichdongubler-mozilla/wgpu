@@ -40,7 +40,7 @@ fn main() {
     println!("Showing the window");
     gl_context.swap_buffers().unwrap();
 
-    event_loop.run(move |event, _, control_flow| {
+    event_loop.run_app(move |event, _, control_flow| {
         use glutin::{
             event::{Event, KeyboardInput, VirtualKeyCode, WindowEvent},
             event_loop::ControlFlow,

@@ -1063,16 +1063,15 @@ fn main() {
     env_logger::init();
 
     let event_loop = winit::event_loop::EventLoop::new().unwrap();
-    let window = winit::window::WindowBuilder::new()
+    let window_attributes = winit::window::Window::default_attributes()
         .with_title("hal-ray-traced-triangle")
         .with_inner_size(winit::dpi::PhysicalSize {
             width: 512,
             height: 512,
         })
         .with_resizable(false)
-        .with_enabled_buttons(WindowButtons::CLOSE)
-        .build(&event_loop)
-        .unwrap();
+        .with_enabled_buttons(WindowButtons::CLOSE);
+    let window = event_loop.create_window(window_attributes).unwrap();
 
     let example_result = Example::<Api>::init(&window);
     let mut example = Some(example_result.expect("Selected backend is not supported"));

@@ -81,7 +81,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
 
     let window = &window;
     event_loop
-        .run(move |event, target| {
+        .run(move |event, event_loop| {
             // Have the closure take ownership of the resources.
             // `event_loop.run` never returns, therefore we must do this to ensure
             // the resources are properly cleaned up.
@@ -135,7 +135,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                         queue.submit(Some(encoder.finish()));
                         frame.present();
                     }
-                    WindowEvent::CloseRequested => target.exit(),
+                    WindowEvent::CloseRequested => event_loop.exit(),
                     _ => {}
                 };
             }
@@ -146,11 +146,11 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
 pub fn main() {
     let event_loop = EventLoop::new().unwrap();
     #[allow(unused_mut)]
-    let mut builder = winit::window::WindowBuilder::new();
+    let mut window_attributes = winit::window::Window::default_attributes();
     #[cfg(target_arch = "wasm32")]
     {
         use wasm_bindgen::JsCast;
-        use winit::platform::web::WindowBuilderExtWebSys;
+        use winit::platform::web::WindowAttributesExtWebSys;
         let canvas = web_sys::window()
             .unwrap()
             .document()
@@ -159,9 +159,9 @@ pub fn main() {
             .unwrap()
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .unwrap();
-        builder = builder.with_canvas(Some(canvas));
+        window_attributes = window_attributes.with_canvas(Some(canvas));
     }
-    let window = builder.build(&event_loop).unwrap();
+    let window = event_loop.create_window(window_attributes).unwrap();
 
     #[cfg(not(target_arch = "wasm32"))]
     {
