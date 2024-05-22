@@ -1,4 +1,4 @@
-use std::sync::atomic::AtomicBool;
+use std::{mem::size_of, num::NonZeroU64, sync::atomic::AtomicBool};
 
 use thiserror::Error;
 
@@ -63,7 +63,7 @@ impl IndirectValidation {
         let src = format!(
             "
             @group(0) @binding(0)
-            var<storage, read_write> dst: array<u32, 3>;
+            var<storage, read_write> dst: array<u32, 6>;
             @group(1) @binding(0)
             var<storage, read> src: array<u32>;
             struct OffsetPc {{
@@ -78,9 +78,23 @@ impl IndirectValidation {
                 dst[0] = res.x;
                 dst[1] = res.y;
                 dst[2] = res.z;
+                dst[3] = res.x;
+                dst[4] = res.y;
+                dst[5] = res.z;
             }}
         "
         );
+
+        // SAFETY: The value we are passing to `new_unchecked` is not zero, so this is safe.
+        const SRC_BUFFER_SIZE: NonZeroU64 =
+            unsafe { NonZeroU64::new_unchecked(size_of::<u32>() as u64 * 3) };
+
+        // SAFETY: The value we are passing to `new_unchecked` is not zero, so this is safe.
+        const DST_BUFFER_SIZE: NonZeroU64 = unsafe {
+            NonZeroU64::new_unchecked(
+                SRC_BUFFER_SIZE.get() * 2, // From above: `dst: array<u32, 6>`
+            )
+        };
 
         let module = naga::front::wgsl::parse_str(&src).map_err(|inner| {
             CreateShaderModuleError::Parsing(naga::error::ShaderError {
@@ -133,7 +147,7 @@ impl IndirectValidation {
                 ty: wgt::BindingType::Buffer {
                     ty: wgt::BufferBindingType::Storage { read_only: false },
                     has_dynamic_offset: false,
-                    min_binding_size: Some(std::num::NonZeroU64::new(4 * 3).unwrap()),
+                    min_binding_size: Some(DST_BUFFER_SIZE),
                 },
                 count: None,
             }],
@@ -153,7 +167,7 @@ impl IndirectValidation {
                 ty: wgt::BindingType::Buffer {
                     ty: wgt::BufferBindingType::Storage { read_only: true },
                     has_dynamic_offset: true,
-                    min_binding_size: Some(std::num::NonZeroU64::new(4 * 3).unwrap()),
+                    min_binding_size: Some(SRC_BUFFER_SIZE),
                 },
                 count: None,
             }],
@@ -211,7 +225,7 @@ impl IndirectValidation {
 
         let dst_buffer_desc = hal::BufferDescriptor {
             label: None,
-            size: 4 * 3,
+            size: DST_BUFFER_SIZE.get(),
             usage: hal::BufferUses::INDIRECT | hal::BufferUses::STORAGE_READ_WRITE,
             memory_flags: hal::MemoryFlags::empty(),
         };
@@ -231,7 +245,7 @@ impl IndirectValidation {
             buffers: &[hal::BufferBinding {
                 buffer: dst_buffer_0.as_ref(),
                 offset: 0,
-                size: Some(std::num::NonZeroU64::new(4 * 3).unwrap()),
+                size: Some(DST_BUFFER_SIZE),
             }],
             samplers: &[],
             textures: &[],
@@ -254,7 +268,7 @@ impl IndirectValidation {
             buffers: &[hal::BufferBinding {
                 buffer: dst_buffer_1.as_ref(),
                 offset: 0,
-                size: Some(std::num::NonZeroU64::new(4 * 3).unwrap()),
+                size: Some(DST_BUFFER_SIZE),
             }],
             samplers: &[],
             textures: &[],
@@ -299,7 +313,7 @@ impl IndirectValidation {
             buffers: &[hal::BufferBinding {
                 buffer,
                 offset: 0,
-                size: Some(std::num::NonZeroU64::new(binding_size).unwrap()),
+                size: Some(NonZeroU64::new(binding_size).unwrap()),
             }],
             samplers: &[],
             textures: &[],
