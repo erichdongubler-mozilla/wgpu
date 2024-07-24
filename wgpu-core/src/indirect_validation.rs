@@ -1,3 +1,5 @@
+use std::sync::atomic::AtomicBool;
+
 use thiserror::Error;
 
 use crate::{
@@ -34,14 +36,18 @@ pub struct IndirectValidation {
     src_bind_group_layout: Box<dyn hal::DynBindGroupLayout>,
     pipeline_layout: Box<dyn hal::DynPipelineLayout>,
     pipeline: Box<dyn hal::DynComputePipeline>,
-    dst_buffer: Box<dyn hal::DynBuffer>,
-    dst_bind_group: Box<dyn hal::DynBindGroup>,
+    dst_buffer_0: Box<dyn hal::DynBuffer>,
+    dst_buffer_1: Box<dyn hal::DynBuffer>,
+    dst_bind_group_0: Box<dyn hal::DynBindGroup>,
+    dst_bind_group_1: Box<dyn hal::DynBindGroup>,
+    is_next_dst_0: AtomicBool,
 }
 
 pub struct Params<'a> {
     pub pipeline_layout: &'a dyn hal::DynPipelineLayout,
     pub pipeline: &'a dyn hal::DynComputePipeline,
     pub dst_buffer: &'a dyn hal::DynBuffer,
+    pub other_dst_buffer: &'a dyn hal::DynBuffer,
     pub dst_bind_group: &'a dyn hal::DynBindGroup,
     pub aligned_offset: u64,
     pub offset_remainder: u64,
@@ -54,7 +60,8 @@ impl IndirectValidation {
     ) -> Result<Self, CreateDispatchIndirectValidationPipelineError> {
         let max_compute_workgroups_per_dimension = limits.max_compute_workgroups_per_dimension;
 
-        let src = format!("
+        let src = format!(
+            "
             @group(0) @binding(0)
             var<storage, read_write> dst: array<u32, 3>;
             @group(1) @binding(0)
@@ -72,7 +79,8 @@ impl IndirectValidation {
                 dst[1] = res.y;
                 dst[2] = res.z;
             }}
-        ");
+        "
+        );
 
         let module = naga::front::wgsl::parse_str(&src).map_err(|inner| {
             CreateShaderModuleError::Parsing(naga::error::ShaderError {
@@ -207,10 +215,12 @@ impl IndirectValidation {
             usage: hal::BufferUses::INDIRECT | hal::BufferUses::STORAGE_READ_WRITE,
             memory_flags: hal::MemoryFlags::empty(),
         };
-        let dst_buffer =
+        let dst_buffer_0 =
+            unsafe { device.create_buffer(&dst_buffer_desc) }.map_err(DeviceError::from_hal)?;
+        let dst_buffer_1 =
             unsafe { device.create_buffer(&dst_buffer_desc) }.map_err(DeviceError::from_hal)?;
 
-        let dst_bind_group_desc = hal::BindGroupDescriptor {
+        let dst_bind_group_desc_0 = hal::BindGroupDescriptor {
             label: None,
             layout: dst_bind_group_layout.as_ref(),
             entries: &[hal::BindGroupEntry {
@@ -219,7 +229,7 @@ impl IndirectValidation {
                 count: 1,
             }],
             buffers: &[hal::BufferBinding {
-                buffer: dst_buffer.as_ref(),
+                buffer: dst_buffer_0.as_ref(),
                 offset: 0,
                 size: Some(std::num::NonZeroU64::new(4 * 3).unwrap()),
             }],
@@ -227,9 +237,32 @@ impl IndirectValidation {
             textures: &[],
             acceleration_structures: &[],
         };
-        let dst_bind_group = unsafe {
+        let dst_bind_group_0 = unsafe {
             device
-                .create_bind_group(&dst_bind_group_desc)
+                .create_bind_group(&dst_bind_group_desc_0)
+                .map_err(DeviceError::from_hal)
+        }?;
+
+        let dst_bind_group_desc_1 = hal::BindGroupDescriptor {
+            label: None,
+            layout: dst_bind_group_layout.as_ref(),
+            entries: &[hal::BindGroupEntry {
+                binding: 0,
+                resource_index: 0,
+                count: 1,
+            }],
+            buffers: &[hal::BufferBinding {
+                buffer: dst_buffer_1.as_ref(),
+                offset: 0,
+                size: Some(std::num::NonZeroU64::new(4 * 3).unwrap()),
+            }],
+            samplers: &[],
+            textures: &[],
+            acceleration_structures: &[],
+        };
+        let dst_bind_group_1 = unsafe {
+            device
+                .create_bind_group(&dst_bind_group_desc_1)
                 .map_err(DeviceError::from_hal)
         }?;
 
@@ -239,8 +272,11 @@ impl IndirectValidation {
             src_bind_group_layout,
             pipeline_layout,
             pipeline,
-            dst_buffer,
-            dst_bind_group,
+            dst_buffer_0,
+            dst_buffer_1,
+            dst_bind_group_0,
+            dst_bind_group_1,
+            is_next_dst_0: AtomicBool::new(false),
         })
     }
 
@@ -299,11 +335,29 @@ impl IndirectValidation {
         let aligned_offset = aligned_offset.min(max_aligned_offset);
         let offset_remainder = offset - aligned_offset;
 
+        let (dst_buffer, other_dst_buffer, dst_bind_group) = if self
+            .is_next_dst_0
+            .fetch_xor(true, core::sync::atomic::Ordering::AcqRel)
+        {
+            (
+                self.dst_buffer_0.as_ref(),
+                self.dst_buffer_1.as_ref(),
+                self.dst_bind_group_0.as_ref(),
+            )
+        } else {
+            (
+                self.dst_buffer_1.as_ref(),
+                self.dst_buffer_0.as_ref(),
+                self.dst_bind_group_1.as_ref(),
+            )
+        };
+
         Params {
             pipeline_layout: self.pipeline_layout.as_ref(),
             pipeline: self.pipeline.as_ref(),
-            dst_buffer: self.dst_buffer.as_ref(),
-            dst_bind_group: self.dst_bind_group.as_ref(),
+            dst_buffer,
+            other_dst_buffer,
+            dst_bind_group,
             aligned_offset,
             offset_remainder,
         }
@@ -316,13 +370,18 @@ impl IndirectValidation {
             src_bind_group_layout,
             pipeline_layout,
             pipeline,
-            dst_buffer,
-            dst_bind_group,
+            dst_buffer_0,
+            dst_buffer_1,
+            dst_bind_group_0,
+            dst_bind_group_1,
+            is_next_dst_0: _,
         } = self;
 
         unsafe {
-            device.destroy_bind_group(dst_bind_group);
-            device.destroy_buffer(dst_buffer);
+            device.destroy_bind_group(dst_bind_group_0);
+            device.destroy_bind_group(dst_bind_group_1);
+            device.destroy_buffer(dst_buffer_0);
+            device.destroy_buffer(dst_buffer_1);
             device.destroy_compute_pipeline(pipeline);
             device.destroy_pipeline_layout(pipeline_layout);
             device.destroy_bind_group_layout(src_bind_group_layout);

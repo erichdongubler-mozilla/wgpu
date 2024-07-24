@@ -943,13 +943,6 @@ fn dispatch_indirect(
         }
 
         unsafe {
-            state.raw_encoder.transition_buffers(&[hal::BufferBarrier {
-                buffer: params.dst_buffer,
-                usage: hal::BufferUses::INDIRECT..hal::BufferUses::STORAGE_READ_WRITE,
-            }]);
-        }
-
-        unsafe {
             state.raw_encoder.dispatch([1, 1, 1]);
         }
 
@@ -987,10 +980,16 @@ fn dispatch_indirect(
         }
 
         unsafe {
-            state.raw_encoder.transition_buffers(&[hal::BufferBarrier {
-                buffer: params.dst_buffer,
-                usage: hal::BufferUses::STORAGE_READ_WRITE..hal::BufferUses::INDIRECT,
-            }]);
+            state.raw_encoder.transition_buffers(&[
+                hal::BufferBarrier {
+                    buffer: params.dst_buffer,
+                    usage: hal::BufferUses::STORAGE_READ_WRITE..hal::BufferUses::INDIRECT,
+                },
+                hal::BufferBarrier {
+                    buffer: params.other_dst_buffer,
+                    usage: hal::BufferUses::INDIRECT..hal::BufferUses::STORAGE_READ_WRITE,
+                },
+            ]);
         }
 
         state.flush_states(None)?;

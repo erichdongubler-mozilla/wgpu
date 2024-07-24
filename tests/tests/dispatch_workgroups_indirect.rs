@@ -209,6 +209,9 @@ async fn run_test(
             if !forget_to_set_bind_group {
                 compute_pass.set_bind_group(0, Some(&bind_group), &[]);
             }
+            // Issue multiple dispatches to test the internal destination buffer switching
+            compute_pass.dispatch_workgroups_indirect(&indirect_buffer, indirect_offset);
+            compute_pass.dispatch_workgroups_indirect(&indirect_buffer, indirect_offset);
             compute_pass.dispatch_workgroups_indirect(&indirect_buffer, indirect_offset);
         }
 
