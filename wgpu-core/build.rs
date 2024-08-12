@@ -24,4 +24,5 @@ fn main() {
 
         supports_64bit_atomics: { target_has_atomic = "64" }
     }
+    println!("cargo::rustc-check-cfg=cfg(wgpu_validate_locks)");
 }
