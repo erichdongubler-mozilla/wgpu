@@ -54,6 +54,10 @@
 // this doesn't make a difference.
 // Therefore, this is only really a concern for users targeting WebGL
 // (the only reason to use wgpu-core on the web in the first place) that have atomics enabled.
+//
+// NOTE: Keep this in sync with `wgpu`.
+// NOTE: Keep this in sync with `wgpu-examples`.
+// NOTE: Keep this in sync with `wgpu-test`.
 #![cfg_attr(not(send_sync), allow(clippy::arc_with_non_send_sync))]
 
 pub mod binding_model;

@@ -17,6 +17,17 @@
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/gfx-rs/wgpu/trunk/logo.png")]
 #![warn(missing_docs, rust_2018_idioms, unsafe_op_in_unsafe_fn)]
+// We use `Arc` in wgpu-core, but on wasm (unless opted out via `fragile-send-sync-non-atomic-wasm`)
+// wgpu-hal resources are not Send/Sync, causing a clippy warning for unnecessary `Arc`s.
+// We could use `Rc`s in this case as recommended, but unless atomics are enabled
+// this doesn't make a difference.
+// Therefore, this is only really a concern for users targeting WebGL
+// (the only reason to use wgpu-core on the web in the first place) that have atomics enabled.
+//
+// NOTE: Keep this in sync with `wgpu-core`.
+// NOTE: Keep this in sync with `wgpu-examples`.
+// NOTE: Keep this in sync with `wgpu-test`.
+#![cfg_attr(not(send_sync), allow(clippy::arc_with_non_send_sync))]
 
 //
 //
