@@ -2126,8 +2126,7 @@ fn map_binding_to_attribute(binding: &crate::Binding) -> Vec<Attribute> {
         }
         crate::Binding::Location {
             location,
-            interpolation,
-            sampling,
+            interpolation_and_sampling: (interpolation, sampling),
             second_blend_source: false,
         } => vec![
             Attribute::Location(location),
@@ -2135,8 +2134,7 @@ fn map_binding_to_attribute(binding: &crate::Binding) -> Vec<Attribute> {
         ],
         crate::Binding::Location {
             location,
-            interpolation,
-            sampling,
+            interpolation_and_sampling: (interpolation, sampling),
             second_blend_source: true,
         } => vec![
             Attribute::Location(location),

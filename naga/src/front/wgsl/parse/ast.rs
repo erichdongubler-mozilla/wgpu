@@ -127,8 +127,7 @@ pub enum Binding<'a> {
     Location {
         location: Handle<Expression<'a>>,
         second_blend_source: bool,
-        interpolation: Option<crate::Interpolation>,
-        sampling: Option<crate::Sampling>,
+        interpolation_and_sampling: Option<(crate::Interpolation, crate::Sampling)>,
     },
 }
 

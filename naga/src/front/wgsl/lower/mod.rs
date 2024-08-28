@@ -3115,14 +3115,12 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
             Some(ast::Binding::Location {
                 location,
                 second_blend_source,
-                interpolation,
-                sampling,
+                interpolation_and_sampling,
             }) => {
                 let mut binding = crate::Binding::Location {
                     location: self.const_u32(location, &mut ctx.as_const())?.0,
                     second_blend_source,
-                    interpolation,
-                    sampling,
+                    interpolation_and_sampling,
                 };
                 binding.apply_default_interpolation(&ctx.module.types[ty].inner);
                 Some(binding)

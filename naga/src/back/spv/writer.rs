@@ -1444,8 +1444,7 @@ impl Writer {
         match *binding {
             crate::Binding::Location {
                 location,
-                interpolation,
-                sampling,
+                interpolation_and_sampling,
                 second_blend_source,
             } => {
                 self.decorate(id, Decoration::Location, &[location]);
@@ -1459,6 +1458,8 @@ impl Writer {
                     // > The Flat, NoPerspective, Sample, and Centroid decorations
                     // > must not be used on variables with the Output storage class in a fragment shader
                     (class == spirv::StorageClass::Output && stage == crate::ShaderStage::Fragment);
+
+                let (interpolation, sampling) = interpolation_and_sampling.unzip();
 
                 if !no_decorations {
                     match interpolation {

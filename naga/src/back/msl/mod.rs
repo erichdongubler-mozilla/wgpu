@@ -402,8 +402,7 @@ impl Options {
             }
             crate::Binding::Location {
                 location,
-                interpolation,
-                sampling,
+                interpolation_and_sampling,
                 second_blend_source,
             } => match mode {
                 LocationMode::VertexInput => Ok(ResolvedBinding::Attribute(location)),
@@ -428,10 +427,8 @@ impl Options {
                         index: location,
                         interpolation: {
                             // unwrap: The verifier ensures that vertex shader outputs and fragment
-                            // shader inputs always have fully specified interpolation, and that
-                            // sampling is `None` only for Flat interpolation.
-                            let interpolation = interpolation.unwrap();
-                            let sampling = sampling.unwrap_or(crate::Sampling::Center);
+                            // shader inputs always have fully specified interpolation.
+                            let (interpolation, sampling) = interpolation_and_sampling.unwrap();
                             Some(ResolvedInterpolation::from_binding(interpolation, sampling))
                         },
                     })
