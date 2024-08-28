@@ -174,8 +174,7 @@ impl<T> ParsedAttribute<T> {
 struct BindingParser<'a> {
     location: ParsedAttribute<Handle<ast::Expression<'a>>>,
     built_in: ParsedAttribute<crate::BuiltIn>,
-    interpolation: ParsedAttribute<crate::Interpolation>,
-    sampling: ParsedAttribute<crate::Sampling>,
+    interpolation_and_sampling: ParsedAttribute<(crate::Interpolation, crate::Sampling)>,
     invariant: ParsedAttribute<bool>,
     blend_src: ParsedAttribute<Handle<ast::Expression<'a>>>,
 }
@@ -208,13 +207,20 @@ impl<'a> BindingParser<'a> {
             "interpolate" => {
                 lexer.expect(Token::Paren('('))?;
                 let (raw, span) = lexer.next_ident_with_span()?;
-                self.interpolation
-                    .set(conv::map_interpolation(raw, span)?, name_span)?;
-                if lexer.skip(Token::Separator(',')) {
+                let interpolation = conv::map_interpolation(raw, span)?;
+                let sampling = if lexer.skip(Token::Separator(',')) {
                     let (raw, span) = lexer.next_ident_with_span()?;
-                    self.sampling
-                        .set(conv::map_sampling(raw, span)?, name_span)?;
-                }
+                    conv::map_sampling(raw, span)?
+                } else {
+                    match interpolation {
+                        crate::Interpolation::Perspective | crate::Interpolation::Linear => {
+                            crate::Sampling::Center
+                        }
+                        crate::Interpolation::Flat => crate::Sampling::First,
+                    }
+                };
+                self.interpolation_and_sampling
+                    .set((interpolation, sampling), name_span)?;
                 lexer.expect(Token::Paren(')'))?;
             }
 
@@ -246,33 +252,29 @@ impl<'a> BindingParser<'a> {
         match (
             self.location.value,
             self.built_in.value,
-            self.interpolation.value,
-            self.sampling.value,
+            self.interpolation_and_sampling.value,
             self.invariant.value.unwrap_or_default(),
             self.blend_src.value,
         ) {
-            (None, None, None, None, false, None) => Ok(None),
-            (Some(location), None, interpolation, sampling, false, blend_src) => {
+            (None, None, None, false, None) => Ok(None),
+            (Some(location), None, interpolation_and_sampling, false, blend_src) => {
                 // Before handing over the completed `Module`, we call
                 // `apply_default_interpolation` to ensure that the interpolation and
                 // sampling have been explicitly specified on all vertex shader output and fragment
                 // shader input user bindings, so leaving them potentially `None` here is fine.
                 Ok(Some(ast::Binding::Location {
                     location,
-                    interpolation,
-                    sampling,
+                    interpolation_and_sampling,
                     blend_src,
                 }))
             }
-            (None, Some(crate::BuiltIn::Position { .. }), None, None, invariant, None) => {
+            (None, Some(crate::BuiltIn::Position { .. }), None, invariant, None) => {
                 Ok(Some(ast::Binding::BuiltIn(crate::BuiltIn::Position {
                     invariant,
                 })))
             }
-            (None, Some(built_in), None, None, false, None) => {
-                Ok(Some(ast::Binding::BuiltIn(built_in)))
-            }
-            (_, _, _, _, _, _) => Err(Box::new(Error::InconsistentBinding(span))),
+            (None, Some(built_in), None, false, None) => Ok(Some(ast::Binding::BuiltIn(built_in))),
+            (_, _, _, _, _) => Err(Box::new(Error::InconsistentBinding(span))),
         }
     }
 }

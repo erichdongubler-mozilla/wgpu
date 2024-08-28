@@ -4053,8 +4053,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
             Some(ast::Binding::BuiltIn(b)) => Some(ir::Binding::BuiltIn(b)),
             Some(ast::Binding::Location {
                 location,
-                interpolation,
-                sampling,
+                interpolation_and_sampling,
                 blend_src,
             }) => {
                 let blend_src = if let Some(blend_src) = blend_src {
@@ -4065,8 +4064,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
 
                 let mut binding = ir::Binding::Location {
                     location: self.const_u32(location, &mut ctx.as_const())?.0,
-                    interpolation,
-                    sampling,
+                    interpolation_and_sampling,
                     blend_src,
                 };
                 binding.apply_default_interpolation(&ctx.module.types[ty].inner);

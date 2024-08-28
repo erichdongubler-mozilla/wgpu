@@ -1608,13 +1608,12 @@ impl<'a, W: Write> Writer<'a, W> {
             Some(binding) => binding,
         };
 
-        let (location, interpolation, sampling, blend_src) = match *binding {
+        let (location, interpolation_and_sampling, blend_src) = match *binding {
             crate::Binding::Location {
                 location,
-                interpolation,
-                sampling,
+                interpolation_and_sampling,
                 blend_src,
-            } => (location, interpolation, sampling, blend_src),
+            } => (location, interpolation_and_sampling, blend_src),
             crate::Binding::BuiltIn(built_in) => {
                 match built_in {
                     crate::BuiltIn::Position { invariant: true } => {
@@ -1698,19 +1697,14 @@ impl<'a, W: Write> Writer<'a, W> {
         };
 
         // Write the interpolation qualifier.
-        if let Some(interp) = interpolation {
+        if let Some((interp, sampling)) = interpolation_and_sampling {
             if emit_interpolation_and_auxiliary {
                 write!(self.out, "{} ", glsl_interpolation(interp))?;
-            }
-        }
-
-        // Write the sampling auxiliary qualifier.
-        //
-        // Before GLSL 4.2, the `centroid` and `sample` qualifiers were required to appear
-        // immediately before the `in` / `out` qualifier, so we'll just follow that rule
-        // here, regardless of the version.
-        if let Some(sampling) = sampling {
-            if emit_interpolation_and_auxiliary {
+                // Write the sampling auxiliary qualifier.
+                //
+                // Before GLSL 4.2, the `centroid` and `sample` qualifiers were required to appear
+                // immediately before the `in` / `out` qualifier, so we'll just follow that rule
+                // here, regardless of the version.
                 if let Some(qualifier) = glsl_sampling(sampling)? {
                     write!(self.out, "{qualifier} ")?;
                 }
@@ -1729,8 +1723,7 @@ impl<'a, W: Write> Writer<'a, W> {
         let vname = VaryingName {
             binding: &crate::Binding::Location {
                 location,
-                interpolation: None,
-                sampling: None,
+                interpolation_and_sampling: None,
                 blend_src,
             },
             stage: self.entry_point.stage,

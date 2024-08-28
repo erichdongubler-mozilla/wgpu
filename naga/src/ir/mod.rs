@@ -961,8 +961,7 @@ pub enum Binding {
     /// [`Fragment`]: crate::ShaderStage::Fragment
     Location {
         location: u32,
-        interpolation: Option<Interpolation>,
-        sampling: Option<Sampling>,
+        interpolation_and_sampling: Option<(Interpolation, Sampling)>,
         /// Optional `blend_src` index used for dual source blending.
         /// See <https://www.w3.org/TR/WGSL/#attribute-blend_src>
         blend_src: Option<u32>,

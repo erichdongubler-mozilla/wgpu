@@ -315,8 +315,7 @@ impl VaryingContext<'_> {
             }
             crate::Binding::Location {
                 location,
-                interpolation,
-                sampling,
+                interpolation_and_sampling,
                 blend_src,
             } => {
                 // Only IO-shareable types may be stored in locations.
@@ -365,8 +364,8 @@ impl VaryingContext<'_> {
                     return Err(VaryingError::BindingCollision { location });
                 }
 
-                if let Some(interpolation) = interpolation {
-                    let invalid_sampling = match (interpolation, sampling) {
+                if let Some(interpolation_and_sampling) = interpolation_and_sampling {
+                    let invalid_sampling = match interpolation_and_sampling {
                         (_, None)
                         | (
                             crate::Interpolation::Perspective | crate::Interpolation::Linear,
@@ -397,10 +396,7 @@ impl VaryingContext<'_> {
                     crate::ShaderStage::Task | crate::ShaderStage::Mesh => unreachable!(),
                 };
 
-                // It doesn't make sense to specify a sampling when `interpolation` is `Flat`, but
-                // SPIR-V and GLSL both explicitly tolerate such combinations of decorators /
-                // qualifiers, so we won't complain about that here.
-                let _ = sampling;
+                let (interpolation, sampling) = interpolation_and_sampling.unzip();
 
                 let required = match sampling {
                     Some(crate::Sampling::Sample) => Capabilities::MULTISAMPLED_SHADING,

@@ -149,8 +149,7 @@ pub enum Binding<'a> {
     BuiltIn(crate::BuiltIn),
     Location {
         location: Handle<Expression<'a>>,
-        interpolation: Option<crate::Interpolation>,
-        sampling: Option<crate::Sampling>,
+        interpolation_and_sampling: Option<(crate::Interpolation, crate::Sampling)>,
         blend_src: Option<Handle<Expression<'a>>>,
     },
 }
