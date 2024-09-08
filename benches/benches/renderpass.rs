@@ -85,18 +85,14 @@ impl RenderpassState {
 
         let mut texture_views = Vec::with_capacity(texture_count);
         for i in 0..texture_count {
-            let texture = device_state
-                .device
-                .create_texture(&wgpu::TextureDescriptor {
-                    label: Some(&format!("Texture {i}")),
-                    size: Default::default(),
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                    usage: wgpu::TextureUsages::TEXTURE_BINDING,
-                    view_formats: &[],
-                });
+            let texture = device_state.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label(&*format!("Texture {i}"))
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::TEXTURE_BINDING)
+                    .build(),
+            );
             texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {
                 label: Some(&format!("Texture View {i}")),
                 ..Default::default()
@@ -218,16 +214,14 @@ impl RenderpassState {
 
         let render_target = device_state
             .device
-            .create_texture(&wgpu::TextureDescriptor {
-                label: Some("Render Target"),
-                size: Default::default(),
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-                view_formats: &[],
-            })
+            .create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label("Render Target")
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                    .build(),
+            )
             .create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut bindless_bind_group = None;

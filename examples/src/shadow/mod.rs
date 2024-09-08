@@ -182,20 +182,17 @@ impl Example {
         config: &wgpu::SurfaceConfiguration,
         device: &wgpu::Device,
     ) -> wgpu::TextureView {
-        let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: Self::DEPTH_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        });
+        let depth_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(Self::DEPTH_FORMAT)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
 
         depth_texture.create_view(&wgpu::TextureViewDescriptor::default())
     }
@@ -375,16 +372,15 @@ impl crate::framework::Example for Example {
             ..Default::default()
         });
 
-        let shadow_texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: Self::SHADOW_SIZE,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: Self::SHADOW_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-            label: None,
-            view_formats: &[],
-        });
+        let shadow_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(Self::SHADOW_SIZE)
+                .format(Self::SHADOW_FORMAT)
+                .usage(
+                    wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+                )
+                .build(),
+        );
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut shadow_target_views = (0..2)

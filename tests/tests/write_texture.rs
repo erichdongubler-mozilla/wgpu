@@ -7,22 +7,26 @@ static WRITE_TEXTURE_SUBSET_2D: GpuTestConfiguration =
     GpuTestConfiguration::new().run_async(|ctx| async move {
         let size = 256;
 
-        let tex = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            dimension: wgpu::TextureDimension::D2,
-            size: wgpu::Extent3d {
-                width: size,
-                height: size,
-                depth_or_array_layers: 1,
-            },
-            format: wgpu::TextureFormat::R8Uint,
-            usage: wgpu::TextureUsages::COPY_DST
-                | wgpu::TextureUsages::COPY_SRC
-                | wgpu::TextureUsages::TEXTURE_BINDING,
-            mip_level_count: 1,
-            sample_count: 1,
-            view_formats: &[],
-        });
+        let tex = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .dimension(wgpu::TextureDimension::D2)
+                .size(wgpu::Extent3d {
+                    width: size,
+                    height: size,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::R8Uint)
+                .usage(
+                    wgpu::TextureUsages::COPY_DST
+                        | wgpu::TextureUsages::COPY_SRC
+                        | wgpu::TextureUsages::TEXTURE_BINDING,
+                )
+                .mip_level_count(1)
+                .sample_count(1)
+                .view_formats(&[])
+                .build(),
+        );
         let data = vec![1u8; size as usize * 2];
         // Write the first two rows
         ctx.queue.write_texture(
@@ -102,22 +106,26 @@ static WRITE_TEXTURE_SUBSET_3D: GpuTestConfiguration =
     GpuTestConfiguration::new().run_async(|ctx| async move {
         let size = 256;
         let depth = 4;
-        let tex = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            dimension: wgpu::TextureDimension::D3,
-            size: wgpu::Extent3d {
-                width: size,
-                height: size,
-                depth_or_array_layers: depth,
-            },
-            format: wgpu::TextureFormat::R8Uint,
-            usage: wgpu::TextureUsages::COPY_DST
-                | wgpu::TextureUsages::COPY_SRC
-                | wgpu::TextureUsages::TEXTURE_BINDING,
-            mip_level_count: 1,
-            sample_count: 1,
-            view_formats: &[],
-        });
+        let tex = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .dimension(wgpu::TextureDimension::D3)
+                .size(wgpu::Extent3d {
+                    width: size,
+                    height: size,
+                    depth_or_array_layers: depth,
+                })
+                .format(wgpu::TextureFormat::R8Uint)
+                .usage(
+                    wgpu::TextureUsages::COPY_DST
+                        | wgpu::TextureUsages::COPY_SRC
+                        | wgpu::TextureUsages::TEXTURE_BINDING,
+                )
+                .mip_level_count(1)
+                .sample_count(1)
+                .view_formats(&[])
+                .build(),
+        );
         let data = vec![1u8; (size * size) as usize * 2];
         // Write the first two slices
         ctx.queue.write_texture(
@@ -197,20 +205,22 @@ static WRITE_TEXTURE_NO_OOB: GpuTestConfiguration =
     GpuTestConfiguration::new().run_async(|ctx| async move {
         let size = 256;
 
-        let tex = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            dimension: wgpu::TextureDimension::D2,
-            size: wgpu::Extent3d {
-                width: size,
-                height: size,
-                depth_or_array_layers: 1,
-            },
-            format: wgpu::TextureFormat::R8Uint,
-            usage: wgpu::TextureUsages::COPY_DST,
-            mip_level_count: 1,
-            sample_count: 1,
-            view_formats: &[],
-        });
+        let tex = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .dimension(wgpu::TextureDimension::D2)
+                .size(wgpu::Extent3d {
+                    width: size,
+                    height: size,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::R8Uint)
+                .usage(wgpu::TextureUsages::COPY_DST)
+                .mip_level_count(1)
+                .sample_count(1)
+                .view_formats(&[])
+                .build(),
+        );
         let data = vec![1u8; size as usize * 2 + 100]; // check that we don't attempt to copy OOB internally by adding 100 bytes here
         ctx.queue.write_texture(
             wgpu::ImageCopyTexture {

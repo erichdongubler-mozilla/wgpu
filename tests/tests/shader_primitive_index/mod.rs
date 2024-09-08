@@ -157,16 +157,18 @@ async fn pulling_common(
         height,
         depth_or_array_layers: 1,
     };
-    let color_texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size: texture_size,
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[],
-    });
+    let color_texture = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label(None)
+            .size(texture_size)
+            .mip_level_count(1)
+            .sample_count(1)
+            .dimension(wgpu::TextureDimension::D2)
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC)
+            .view_formats(&[])
+            .build(),
+    );
     let color_view = color_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
     let readback_buffer = wgpu_test::image::ReadbackBuffers::new(&ctx.device, &color_texture);

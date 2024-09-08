@@ -106,16 +106,16 @@ impl Example {
             height: config.height,
             depth_or_array_layers: 1,
         };
-        let multisampled_frame_descriptor = &wgpu::TextureDescriptor {
-            size: multisampled_texture_extent,
-            mip_level_count: 1,
-            sample_count,
-            dimension: wgpu::TextureDimension::D2,
-            format: config.view_formats[0],
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        };
+        let multisampled_frame_descriptor = &wgpu::TextureDescriptor::builder()
+            .size(multisampled_texture_extent)
+            .mip_level_count(1)
+            .sample_count(sample_count)
+            .dimension(wgpu::TextureDimension::D2)
+            .format(config.view_formats[0])
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .label(None)
+            .view_formats(&[])
+            .build();
 
         device
             .create_texture(multisampled_frame_descriptor)

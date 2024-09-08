@@ -141,20 +141,18 @@ impl crate::framework::Example for Example {
             cache: None,
         });
 
-        let stencil_buffer = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Stencil buffer"),
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Stencil8,
-            view_formats: &[],
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        });
+        let stencil_buffer = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Stencil buffer")
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::Stencil8)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
 
         // Done
         Example {
@@ -176,20 +174,22 @@ impl crate::framework::Example for Example {
         device: &wgpu::Device,
         _queue: &wgpu::Queue,
     ) {
-        self.stencil_buffer = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Stencil buffer"),
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Stencil8,
-            view_formats: &[],
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        });
+        self.stencil_buffer = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Stencil buffer")
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .mip_level_count(1)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Stencil8)
+                .view_formats(&[])
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
     }
 
     fn render(&mut self, view: &wgpu::TextureView, device: &wgpu::Device, queue: &wgpu::Queue) {

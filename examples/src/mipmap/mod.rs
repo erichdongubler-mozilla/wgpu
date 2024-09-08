@@ -225,18 +225,22 @@ impl crate::framework::Example for Example {
             height: size,
             depth_or_array_layers: 1,
         };
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: texture_extent,
-            mip_level_count: MIP_LEVEL_COUNT,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: TEXTURE_FORMAT,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::RENDER_ATTACHMENT
-                | wgpu::TextureUsages::COPY_DST,
-            label: None,
-            view_formats: &[],
-        });
+        let texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(texture_extent)
+                .mip_level_count(MIP_LEVEL_COUNT)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(TEXTURE_FORMAT)
+                .usage(
+                    wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::RENDER_ATTACHMENT
+                        | wgpu::TextureUsages::COPY_DST,
+                )
+                .label(None)
+                .view_formats(&[])
+                .build(),
+        );
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         //Note: we could use queue.write_texture instead, and this is what other
         // examples do, but here we want to show another way to do this.

@@ -70,20 +70,17 @@ impl Example {
         config: &wgpu::SurfaceConfiguration,
         device: &wgpu::Device,
     ) -> wgpu::TextureView {
-        let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: Self::DEPTH_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        });
+        let depth_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(Self::DEPTH_FORMAT)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
 
         depth_texture.create_view(&wgpu::TextureViewDescriptor::default())
     }
@@ -326,16 +323,12 @@ impl crate::framework::Example for Example {
 
         let texture = device.create_texture_with_data(
             queue,
-            &wgpu::TextureDescriptor {
-                size,
-                mip_level_count: header.level_count,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: skybox_format,
-                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-                label: None,
-                view_formats: &[],
-            },
+            &wgpu::TextureDescriptor::builder()
+                .size(size)
+                .mip_level_count(header.level_count)
+                .format(skybox_format)
+                .usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+                .build(),
             // KTX2 stores mip levels in mip major order.
             wgpu::util::TextureDataOrder::MipMajor,
             &image,

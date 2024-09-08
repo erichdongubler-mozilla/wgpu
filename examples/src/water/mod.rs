@@ -184,31 +184,35 @@ impl Example {
             depth_or_array_layers: 1,
         };
 
-        let reflection_texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Reflection Render Texture"),
-            size: texture_extent,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: config.view_formats[0],
-            usage: wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::COPY_DST
-                | wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
+        let reflection_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Reflection Render Texture")
+                .size(texture_extent)
+                .format(config.view_formats[0])
+                .usage(
+                    wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::COPY_DST
+                        | wgpu::TextureUsages::RENDER_ATTACHMENT,
+                )
+                .build(),
+        );
 
-        let draw_depth_buffer = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Depth Buffer"),
-            size: texture_extent,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Depth32Float,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::COPY_DST
-                | wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
+        let draw_depth_buffer = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Depth Buffer")
+                .size(texture_extent)
+                .mip_level_count(1)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Depth32Float)
+                .usage(
+                    wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::COPY_DST
+                        | wgpu::TextureUsages::RENDER_ATTACHMENT,
+                )
+                .view_formats(&[])
+                .build(),
+        );
 
         let color_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             label: Some("Color Sampler"),

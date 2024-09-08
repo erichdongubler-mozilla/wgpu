@@ -126,18 +126,14 @@ impl ComputepassState {
 
         let mut texture_views = Vec::with_capacity(texture_count);
         for i in 0..texture_count {
-            let texture = device_state
-                .device
-                .create_texture(&wgpu::TextureDescriptor {
-                    label: Some(&format!("Texture {i}")),
-                    size: Default::default(),
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                    usage: wgpu::TextureUsages::TEXTURE_BINDING,
-                    view_formats: &[],
-                });
+            let texture = device_state.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label(&*format!("Texture {i}"))
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::TEXTURE_BINDING)
+                    .build(),
+            );
             texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {
                 label: Some(&format!("Texture View {i}")),
                 ..Default::default()
@@ -148,18 +144,18 @@ impl ComputepassState {
 
         let mut storage_texture_views = Vec::with_capacity(storage_texture_count);
         for i in 0..storage_texture_count {
-            let texture = device_state
-                .device
-                .create_texture(&wgpu::TextureDescriptor {
-                    label: Some(&format!("StorageTexture {i}")),
-                    size: Default::default(),
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::R32Float,
-                    usage: wgpu::TextureUsages::STORAGE_BINDING,
-                    view_formats: &[],
-                });
+            let texture = device_state.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label(&*format!("StorageTexture {i}"))
+                    .size(Default::default())
+                    .mip_level_count(1)
+                    .sample_count(1)
+                    .dimension(wgpu::TextureDimension::D2)
+                    .format(wgpu::TextureFormat::R32Float)
+                    .usage(wgpu::TextureUsages::STORAGE_BINDING)
+                    .view_formats(&[])
+                    .build(),
+            );
             storage_texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {
                 label: Some(&format!("StorageTexture View {i}")),
                 ..Default::default()

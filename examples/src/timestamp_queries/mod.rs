@@ -369,20 +369,19 @@ fn render_pass(
         multiview: None,
         cache: None,
     });
-    let render_target = device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("rendertarget"),
-        size: wgpu::Extent3d {
-            width: 512,
-            height: 512,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[format],
-    });
+    let render_target = device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label("rendertarget")
+            .size(wgpu::Extent3d {
+                width: 512,
+                height: 512,
+                depth_or_array_layers: 1,
+            })
+            .format(format)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .view_formats(&[format])
+            .build(),
+    );
     let render_target_view = render_target.create_view(&wgpu::TextureViewDescriptor::default());
 
     let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {

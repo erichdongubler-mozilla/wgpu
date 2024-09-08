@@ -156,16 +156,16 @@ impl crate::framework::Example for Example {
         let blue_texture_data = create_texture_data(Color::Blue);
         let white_texture_data = create_texture_data(Color::White);
 
-        let texture_descriptor = wgpu::TextureDescriptor {
-            size: Default::default(),
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-            label: None,
-            view_formats: &[],
-        };
+        let texture_descriptor = wgpu::TextureDescriptor::builder()
+            .size(Default::default())
+            .mip_level_count(1)
+            .sample_count(1)
+            .dimension(wgpu::TextureDimension::D2)
+            .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+            .usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+            .label(None)
+            .view_formats(&[])
+            .build();
         let red_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("red"),
             ..texture_descriptor
