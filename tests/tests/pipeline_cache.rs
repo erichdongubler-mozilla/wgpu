@@ -89,13 +89,13 @@ async fn pipeline_cache_test(ctx: TestingContext) {
         }],
     });
 
-    let pipeline_layout = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pipeline_layout"),
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+    let pipeline_layout = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label("pipeline_layout")
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(&[])
+            .build(),
+    );
 
     let first_cache_data;
     {

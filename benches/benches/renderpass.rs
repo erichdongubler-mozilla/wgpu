@@ -130,14 +130,13 @@ impl RenderpassState {
             .device
             .create_shader_module(wgpu::include_wgsl!("renderpass.wgsl"));
 
-        let pipeline_layout =
-            device_state
-                .device
-                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                    label: None,
-                    bind_group_layouts: &[&bind_group_layout],
-                    push_constant_ranges: &[],
-                });
+        let pipeline_layout = device_state.device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .label(None)
+                .bind_group_layouts(&[&bind_group_layout])
+                .push_constant_ranges(&[])
+                .build(),
+        );
 
         let mut vertex_buffers = Vec::with_capacity(vertex_buffer_count);
         for _ in 0..vertex_buffer_count {
@@ -260,14 +259,13 @@ impl RenderpassState {
                 .device
                 .create_shader_module(wgpu::include_wgsl!("renderpass-bindless.wgsl"));
 
-            let bindless_pipeline_layout =
-                device_state
-                    .device
-                    .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                        label: None,
-                        bind_group_layouts: &[&bindless_bind_group_layout],
-                        push_constant_ranges: &[],
-                    });
+            let bindless_pipeline_layout = device_state.device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .label(None)
+                    .bind_group_layouts(&[&bindless_bind_group_layout])
+                    .push_constant_ranges(&[])
+                    .build(),
+            );
 
             bindless_pipeline = Some(device_state.device.create_render_pipeline(
                 &wgpu::RenderPipelineDescriptor {

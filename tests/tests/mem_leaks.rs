@@ -73,13 +73,13 @@ async fn draw_test_with_reports(
     assert_eq!(report.bind_groups.num_allocated, 1);
     assert_eq!(report.bind_group_layouts.num_allocated, 1);
 
-    let ppl = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+    let ppl = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label(None)
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(&[])
+            .build(),
+    );
 
     let global_report = ctx.instance.generate_report().unwrap();
     let report = global_report.hub_report();

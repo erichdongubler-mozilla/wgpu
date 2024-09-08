@@ -32,9 +32,10 @@ impl Drop for PipelineLayout {
 ///
 /// Corresponds to [WebGPU `GPUPipelineLayoutDescriptor`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpupipelinelayoutdescriptor).
-#[derive(Clone, Debug, Default)]
+#[derive(bon::Builder, Clone, Debug, Default)]
 pub struct PipelineLayoutDescriptor<'a> {
     /// Debug label of the pipeline layout. This will show up in graphics debuggers for easy identification.
+    #[builder(default, into)]
     pub label: Label<'a>,
     /// Bind groups that this pipeline uses. The first entry will provide all the bindings for
     /// "set = 0", second entry will provide all the bindings for "set = 1" etc.
@@ -44,6 +45,7 @@ pub struct PipelineLayoutDescriptor<'a> {
     /// buffer.
     ///
     /// If this array is non-empty, the [`Features::PUSH_CONSTANTS`] must be enabled.
+    #[builder(default)]
     pub push_constant_ranges: &'a [PushConstantRange],
 }
 #[cfg(send_sync)]

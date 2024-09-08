@@ -342,11 +342,13 @@ fn render_pass(
 ) {
     let format = wgpu::TextureFormat::Rgba8Unorm;
 
-    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[],
-        push_constant_ranges: &[],
-    });
+    let pipeline_layout = device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label(None)
+            .bind_group_layouts(&[])
+            .push_constant_ranges(&[])
+            .build(),
+    );
 
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,

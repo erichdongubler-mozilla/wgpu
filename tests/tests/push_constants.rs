@@ -85,16 +85,16 @@ async fn partial_update_test(ctx: TestingContext) {
         }],
     });
 
-    let pipeline_layout = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pipeline_layout"),
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[wgpu::PushConstantRange {
+    let pipeline_layout = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label("pipeline_layout")
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(&[wgpu::PushConstantRange {
                 stages: wgpu::ShaderStages::COMPUTE,
                 range: 0..32,
-            }],
-        });
+            }])
+            .build(),
+    );
 
     let pipeline = ctx
         .device
