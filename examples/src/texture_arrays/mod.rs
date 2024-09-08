@@ -168,22 +168,18 @@ impl crate::framework::Example for Example {
         };
         let red_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("red"),
-            view_formats: &[],
             ..texture_descriptor
         });
         let green_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("green"),
-            view_formats: &[],
             ..texture_descriptor
         });
         let blue_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("blue"),
-            view_formats: &[],
             ..texture_descriptor
         });
         let white_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("white"),
-            view_formats: &[],
             ..texture_descriptor
         });
 
