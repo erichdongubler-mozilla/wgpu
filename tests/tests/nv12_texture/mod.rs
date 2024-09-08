@@ -33,11 +33,10 @@ static NV12_TEXTURE_CREATION_SAMPLING: GpuTestConfiguration = GpuTestConfigurati
                     compilation_options: Default::default(),
                     targets: &[Some(target_format.into())],
                 }),
-                primitive: wgpu::PrimitiveState {
-                    topology: wgpu::PrimitiveTopology::TriangleStrip,
-                    strip_index_format: Some(wgpu::IndexFormat::Uint32),
-                    ..Default::default()
-                },
+                primitive: wgpu::PrimitiveState::builder()
+                    .topology(wgpu::PrimitiveTopology::TriangleStrip)
+                    .strip_index_format(wgpu::IndexFormat::Uint32)
+                    .build(),
                 depth_stencil: None,
                 multisample: Default::default(),
                 multiview: None,

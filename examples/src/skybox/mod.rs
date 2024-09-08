@@ -202,10 +202,9 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
             depth_stencil: Some(wgpu::DepthStencilState {
                 format: Self::DEPTH_FORMAT,
                 depth_write_enabled: false,
@@ -236,10 +235,9 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
             depth_stencil: Some(wgpu::DepthStencilState {
                 format: Self::DEPTH_FORMAT,
                 depth_write_enabled: true,

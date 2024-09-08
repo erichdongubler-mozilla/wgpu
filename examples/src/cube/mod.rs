@@ -247,10 +247,9 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .cull_mode(wgpu::Face::Back)
+                .build(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,
@@ -287,12 +286,11 @@ impl crate::framework::Example for Example {
                         write_mask: wgpu::ColorWrites::ALL,
                     })],
                 }),
-                primitive: wgpu::PrimitiveState {
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    polygon_mode: wgpu::PolygonMode::Line,
-                    ..Default::default()
-                },
+                primitive: wgpu::PrimitiveState::builder()
+                    .front_face(wgpu::FrontFace::Ccw)
+                    .cull_mode(wgpu::Face::Back)
+                    .polygon_mode(wgpu::PolygonMode::Line)
+                    .build(),
                 depth_stencil: None,
                 multisample: Default::default(),
                 multiview: None,

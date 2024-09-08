@@ -2270,11 +2270,12 @@ pub enum PolygonMode {
 /// Corresponds to [WebGPU `GPUPrimitiveState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpuprimitivestate).
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[derive(bon::Builder, Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct PrimitiveState {
     /// The primitive topology used to interpret vertices.
+    #[builder(default)]
     pub topology: PrimitiveTopology,
     /// When drawing strip topologies with indices, this is the required format for the index buffer.
     /// This has no effect on non-indexed or non-strip draws.
@@ -2285,6 +2286,7 @@ pub struct PrimitiveState {
     pub strip_index_format: Option<IndexFormat>,
     /// The face to consider the front for the purpose of culling and stencil operations.
     #[cfg_attr(feature = "serde", serde(default))]
+    #[builder(default)]
     pub front_face: FrontFace,
     /// The face culling mode.
     #[cfg_attr(feature = "serde", serde(default))]
@@ -2293,6 +2295,7 @@ pub struct PrimitiveState {
     ///
     /// Enabling this requires `Features::DEPTH_CLIP_CONTROL` to be enabled.
     #[cfg_attr(feature = "serde", serde(default))]
+    #[builder(default)]
     pub unclipped_depth: bool,
     /// Controls the way each polygon is rasterized. Can be either `Fill` (default), `Line` or `Point`
     ///
@@ -2300,11 +2303,13 @@ pub struct PrimitiveState {
     ///
     /// Setting this to `Point` requires `Features::POLYGON_MODE_POINT` to be enabled.
     #[cfg_attr(feature = "serde", serde(default))]
+    #[builder(default)]
     pub polygon_mode: PolygonMode,
     /// If set to true, the primitives are rendered with conservative overestimation. I.e. any rastered pixel touched by it is filled.
     /// Only valid for PolygonMode::Fill!
     ///
     /// Enabling this requires `Features::CONSERVATIVE_RASTERIZATION` to be enabled.
+    #[builder(default)]
     pub conservative: bool,
 }
 

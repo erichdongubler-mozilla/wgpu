@@ -497,15 +497,16 @@ impl crate::framework::Example for Example {
                     buffers: &[vb_desc.clone()],
                 },
                 fragment: None,
-                primitive: wgpu::PrimitiveState {
-                    topology: wgpu::PrimitiveTopology::TriangleList,
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    unclipped_depth: device
-                        .features()
-                        .contains(wgpu::Features::DEPTH_CLIP_CONTROL),
-                    ..Default::default()
-                },
+                primitive: wgpu::PrimitiveState::builder()
+                    .topology(wgpu::PrimitiveTopology::TriangleList)
+                    .front_face(wgpu::FrontFace::Ccw)
+                    .cull_mode(wgpu::Face::Back)
+                    .unclipped_depth(
+                        device
+                            .features()
+                            .contains(wgpu::Features::DEPTH_CLIP_CONTROL),
+                    )
+                    .build(),
                 depth_stencil: Some(wgpu::DepthStencilState {
                     format: Self::SHADOW_FORMAT,
                     depth_write_enabled: true,
@@ -641,11 +642,10 @@ impl crate::framework::Example for Example {
                     compilation_options: Default::default(),
                     targets: &[Some(config.view_formats[0].into())],
                 }),
-                primitive: wgpu::PrimitiveState {
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    ..Default::default()
-                },
+                primitive: wgpu::PrimitiveState::builder()
+                    .front_face(wgpu::FrontFace::Ccw)
+                    .cull_mode(wgpu::Face::Back)
+                    .build(),
                 depth_stencil: Some(wgpu::DepthStencilState {
                     format: Self::DEPTH_FORMAT,
                     depth_write_enabled: true,

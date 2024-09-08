@@ -226,11 +226,10 @@ impl crate::framework::Example for Example {
                     write_mask: wgpu::ColorWrites::default(),
                 })],
             }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleStrip,
-                strip_index_format: Some(wgpu::IndexFormat::Uint16),
-                ..wgpu::PrimitiveState::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::TriangleStrip)
+                .strip_index_format(wgpu::IndexFormat::Uint16)
+                .build(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,

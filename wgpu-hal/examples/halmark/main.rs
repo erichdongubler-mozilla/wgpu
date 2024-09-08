@@ -267,10 +267,9 @@ impl<A: hal::Api> Example<A> {
                 constants: &constants,
                 zero_initialize_workgroup_memory: true,
             }),
-            primitive: wgt::PrimitiveState {
-                topology: wgt::PrimitiveTopology::TriangleStrip,
-                ..wgt::PrimitiveState::default()
-            },
+            primitive: wgt::PrimitiveState::builder()
+                .topology(wgt::PrimitiveTopology::TriangleStrip)
+                .build(),
             depth_stencil: None,
             multisample: Default::default(),
             color_targets: &[Some(wgt::ColorTargetState {
