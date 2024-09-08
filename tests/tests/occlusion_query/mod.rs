@@ -6,20 +6,22 @@ static OCCLUSION_QUERY: GpuTestConfiguration = GpuTestConfiguration::new()
     .parameters(TestParameters::default().expect_fail(FailureCase::webgl2()))
     .run_async(|ctx| async move {
         // Create depth texture
-        let depth_texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Depth texture"),
-            size: wgpu::Extent3d {
-                width: 64,
-                height: 64,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Depth32Float,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
+        let depth_texture = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Depth texture")
+                .size(wgpu::Extent3d {
+                    width: 64,
+                    height: 64,
+                    depth_or_array_layers: 1,
+                })
+                .mip_level_count(1)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Depth32Float)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .view_formats(&[])
+                .build(),
+        );
         let depth_texture_view = depth_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
         // Setup pipeline using a simple shader with hardcoded vertices

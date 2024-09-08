@@ -68,16 +68,16 @@ async fn reinterpret(
 ) {
     let tex = ctx.device.create_texture_with_data(
         &ctx.queue,
-        &wgpu::TextureDescriptor {
-            label: None,
-            dimension: wgpu::TextureDimension::D2,
-            size,
-            format: src_format,
-            usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
-            mip_level_count: 1,
-            sample_count: 1,
-            view_formats: &[reinterpret_to],
-        },
+        &wgpu::TextureDescriptor::builder()
+            .label(None)
+            .dimension(wgpu::TextureDimension::D2)
+            .size(size)
+            .format(src_format)
+            .usage(wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING)
+            .mip_level_count(1)
+            .sample_count(1)
+            .view_formats(&[reinterpret_to])
+            .build(),
         wgpu::util::TextureDataOrder::LayerMajor,
         bytemuck::cast_slice(src_data),
     );
@@ -121,16 +121,18 @@ async fn reinterpret(
         label: None,
     });
 
-    let target_tex = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size,
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: src_format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[],
-    });
+    let target_tex = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label(None)
+            .size(size)
+            .mip_level_count(1)
+            .sample_count(1)
+            .dimension(wgpu::TextureDimension::D2)
+            .format(src_format)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC)
+            .view_formats(&[])
+            .build(),
+    );
     let target_view = target_tex.create_view(&wgpu::TextureViewDescriptor::default());
 
     let mut encoder = ctx

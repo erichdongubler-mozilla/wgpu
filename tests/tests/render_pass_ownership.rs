@@ -454,17 +454,16 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
     };
     let target_msaa = 4;
     let target_format = wgpu::TextureFormat::Bgra8UnormSrgb;
+    let target_formats = [target_format];
 
-    let target_desc = wgpu::TextureDescriptor {
-        label: Some("target_tex"),
-        size: target_size,
-        mip_level_count: 1,
-        sample_count: target_msaa,
-        dimension: wgpu::TextureDimension::D2,
-        format: target_format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[target_format],
-    };
+    let target_desc = wgpu::TextureDescriptor::builder()
+        .label("target_tex")
+        .size(target_size)
+        .sample_count(target_msaa)
+        .format(target_format)
+        .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+        .view_formats(&target_formats)
+        .build();
     let target_tex = ctx.device.create_texture(&target_desc);
     let target_tex_resolve = ctx.device.create_texture(&wgpu::TextureDescriptor {
         label: Some("target_resolve"),

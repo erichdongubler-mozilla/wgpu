@@ -140,39 +140,45 @@ static DEVICE_DESTROY_THEN_MORE: GpuTestConfiguration = GpuTestConfiguration::ne
             height: 512,
             depth_or_array_layers: 1,
         };
-        let texture_for_view = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 2,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rg8Uint,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
+        let texture_for_view = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .size(texture_extent)
+                .mip_level_count(2)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Rg8Uint)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .view_formats(&[])
+                .build(),
+        );
         let target_view = texture_for_view.create_view(&wgpu::TextureViewDescriptor::default());
 
-        let texture_for_read = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 2,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rg8Uint,
-            usage: wgpu::TextureUsages::COPY_SRC,
-            view_formats: &[],
-        });
+        let texture_for_read = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .size(texture_extent)
+                .mip_level_count(2)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Rg8Uint)
+                .usage(wgpu::TextureUsages::COPY_SRC)
+                .view_formats(&[])
+                .build(),
+        );
 
-        let texture_for_write = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 2,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rg8Uint,
-            usage: wgpu::TextureUsages::COPY_DST,
-            view_formats: &[],
-        });
+        let texture_for_write = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .size(texture_extent)
+                .mip_level_count(2)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Rg8Uint)
+                .usage(wgpu::TextureUsages::COPY_DST)
+                .view_formats(&[])
+                .build(),
+        );
 
         // Create some buffers.
         let buffer_source = ctx.device.create_buffer(&wgpu::BufferDescriptor {
@@ -298,20 +304,22 @@ static DEVICE_DESTROY_THEN_MORE: GpuTestConfiguration = GpuTestConfiguration::ne
         fail(
             &ctx.device,
             || {
-                let _ = ctx.device.create_texture(&wgpu::TextureDescriptor {
-                    label: None,
-                    size: wgpu::Extent3d {
-                        width: 512,
-                        height: 512,
-                        depth_or_array_layers: 1,
-                    },
-                    mip_level_count: 2,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::Rg8Uint,
-                    usage: wgpu::TextureUsages::COPY_SRC,
-                    view_formats: &[],
-                });
+                let _ = ctx.device.create_texture(
+                    &wgpu::TextureDescriptor::builder()
+                        .label(None)
+                        .size(wgpu::Extent3d {
+                            width: 512,
+                            height: 512,
+                            depth_or_array_layers: 1,
+                        })
+                        .mip_level_count(2)
+                        .sample_count(1)
+                        .dimension(wgpu::TextureDimension::D2)
+                        .format(wgpu::TextureFormat::Rg8Uint)
+                        .usage(wgpu::TextureUsages::COPY_SRC)
+                        .view_formats(&[])
+                        .build(),
+                );
             },
             Some("device with '' label is invalid"),
         );
@@ -852,16 +860,18 @@ static DEVICE_DESTROY_THEN_BUFFER_CLEANUP: GpuTestConfiguration = GpuTestConfigu
             height: 512,
             depth_or_array_layers: 1,
         };
-        let _texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 2,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rg8Uint,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
+        let _texture = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .size(texture_extent)
+                .mip_level_count(2)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Rg8Uint)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .view_formats(&[])
+                .build(),
+        );
 
         // Destroy the device.
         ctx.device.destroy();

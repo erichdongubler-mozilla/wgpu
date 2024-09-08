@@ -16,20 +16,18 @@ async fn scissor_test_impl(
     scissor_rect: Rect,
     expected_data: [u8; BUFFER_SIZE],
 ) {
-    let texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("Offscreen texture"),
-        size: wgpu::Extent3d {
-            width: TEXTURE_WIDTH,
-            height: TEXTURE_HEIGHT,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[],
-    });
+    let texture = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label(Some("Offscreen texture"))
+            .size(wgpu::Extent3d {
+                width: TEXTURE_WIDTH,
+                height: TEXTURE_HEIGHT,
+                depth_or_array_layers: 1,
+            })
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .build(),
+    );
     let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
 
     let shader = ctx

@@ -22,19 +22,23 @@ static PARTIALLY_BOUNDED_ARRAY: GpuTestConfiguration = GpuTestConfiguration::new
             height: 1,
             depth_or_array_layers: 1,
         };
-        let storage_texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba32Float,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::COPY_DST
-                | wgpu::TextureUsages::STORAGE_BINDING
-                | wgpu::TextureUsages::COPY_SRC,
-            view_formats: &[],
-        });
+        let storage_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label(None)
+                .size(texture_extent)
+                .mip_level_count(1)
+                .sample_count(1)
+                .dimension(wgpu::TextureDimension::D2)
+                .format(wgpu::TextureFormat::Rgba32Float)
+                .usage(
+                    wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::COPY_DST
+                        | wgpu::TextureUsages::STORAGE_BINDING
+                        | wgpu::TextureUsages::COPY_SRC,
+                )
+                .view_formats(&[])
+                .build(),
+        );
 
         let texture_view = storage_texture.create_view(&wgpu::TextureViewDescriptor::default());
 

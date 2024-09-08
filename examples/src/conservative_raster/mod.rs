@@ -18,21 +18,25 @@ impl Example {
         bind_group_layout_upscale: &wgpu::BindGroupLayout,
     ) -> (wgpu::TextureView, wgpu::BindGroup) {
         let texture_view = device
-            .create_texture(&wgpu::TextureDescriptor {
-                label: Some("Low Resolution Target"),
-                size: wgpu::Extent3d {
-                    width: (config.width / 16).max(1),
-                    height: (config.height / 16).max(1),
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: RENDER_TARGET_FORMAT,
-                usage: wgpu::TextureUsages::TEXTURE_BINDING
-                    | wgpu::TextureUsages::RENDER_ATTACHMENT,
-                view_formats: &[],
-            })
+            .create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label("Low Resolution Target")
+                    .size(wgpu::Extent3d {
+                        width: (config.width / 16).max(1),
+                        height: (config.height / 16).max(1),
+                        depth_or_array_layers: 1,
+                    })
+                    .mip_level_count(1)
+                    .sample_count(1)
+                    .dimension(wgpu::TextureDimension::D2)
+                    .format(RENDER_TARGET_FORMAT)
+                    .usage(
+                        wgpu::TextureUsages::TEXTURE_BINDING
+                            | wgpu::TextureUsages::RENDER_ATTACHMENT,
+                    )
+                    .view_formats(&[])
+                    .build(),
+            )
             .create_view(&Default::default());
 
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
