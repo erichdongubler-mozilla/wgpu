@@ -8,8 +8,6 @@ static COPY_OVERFLOW_Z: GpuTestConfiguration = GpuTestConfiguration::new().run_s
 
     let t1 = ctx.device.create_texture(
         &wgpu::TextureDescriptor::builder()
-            .label(None)
-            .dimension(wgpu::TextureDimension::D2)
             .size(wgpu::Extent3d {
                 width: 256,
                 height: 256,
@@ -17,9 +15,6 @@ static COPY_OVERFLOW_Z: GpuTestConfiguration = GpuTestConfiguration::new().run_s
             })
             .format(wgpu::TextureFormat::Rgba8Uint)
             .usage(wgpu::TextureUsages::COPY_DST)
-            .mip_level_count(1)
-            .sample_count(1)
-            .view_formats(&[])
             .build(),
     );
     let t2 = ctx.device.create_texture(

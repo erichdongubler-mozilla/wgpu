@@ -26,15 +26,11 @@ impl Example {
                         height: (config.height / 16).max(1),
                         depth_or_array_layers: 1,
                     })
-                    .mip_level_count(1)
-                    .sample_count(1)
-                    .dimension(wgpu::TextureDimension::D2)
                     .format(RENDER_TARGET_FORMAT)
                     .usage(
                         wgpu::TextureUsages::TEXTURE_BINDING
                             | wgpu::TextureUsages::RENDER_ATTACHMENT,
                     )
-                    .view_formats(&[])
                     .build(),
             )
             .create_view(&Default::default());

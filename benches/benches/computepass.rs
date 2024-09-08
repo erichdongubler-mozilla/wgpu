@@ -148,12 +148,8 @@ impl ComputepassState {
                 &wgpu::TextureDescriptor::builder()
                     .label(&*format!("StorageTexture {i}"))
                     .size(Default::default())
-                    .mip_level_count(1)
-                    .sample_count(1)
-                    .dimension(wgpu::TextureDimension::D2)
                     .format(wgpu::TextureFormat::R32Float)
                     .usage(wgpu::TextureUsages::STORAGE_BINDING)
-                    .view_formats(&[])
                     .build(),
             );
             storage_texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {

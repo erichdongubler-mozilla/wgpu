@@ -216,12 +216,8 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             &wgpu::TextureDescriptor::builder()
                 .label("dummy")
                 .size(Default::default())
-                .mip_level_count(1)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::Rgba8Unorm)
                 .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_DST)
-                .view_formats(&[])
                 .build(),
             wgpu::util::TextureDataOrder::LayerMajor,
             &[0, 0, 0, 1],

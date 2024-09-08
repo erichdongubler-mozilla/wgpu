@@ -27,18 +27,13 @@ static BGRA8_UNORM_STORAGE: GpuTestConfiguration = GpuTestConfiguration::new()
         let device = &ctx.device;
         let texture = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
                 .size(wgpu::Extent3d {
                     width: 256,
                     height: 256,
                     depth_or_array_layers: 1,
                 })
-                .mip_level_count(1)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::Bgra8Unorm)
                 .usage(wgpu::TextureUsages::STORAGE_BINDING | wgpu::TextureUsages::COPY_SRC)
-                .view_formats(&[])
                 .build(),
         );
 

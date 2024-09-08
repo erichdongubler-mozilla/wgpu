@@ -7,18 +7,13 @@ static QUEUE_WRITE_TEXTURE_OVERFLOW: GpuTestConfiguration =
     GpuTestConfiguration::new().run_sync(|ctx| {
         let texture = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
                 .size(wgpu::Extent3d {
                     width: 146,
                     height: 25,
                     depth_or_array_layers: 192,
                 })
-                .mip_level_count(1)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::Rgba32Float)
                 .usage(wgpu::TextureUsages::COPY_DST)
-                .view_formats(&[])
                 .build(),
         );
 

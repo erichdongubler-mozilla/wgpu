@@ -5,18 +5,13 @@ use wgpu_test::{fail, gpu_test, GpuTestConfiguration, TestParameters};
 fn create_texture_binding(device: &wgpu::Device, format: wgpu::TextureFormat, filterable: bool) {
     let texture = device.create_texture(
         &wgpu::TextureDescriptor::builder()
-            .label(None)
             .size(wgpu::Extent3d {
                 width: 256,
                 height: 256,
                 depth_or_array_layers: 1,
             })
-            .mip_level_count(1)
-            .sample_count(1)
-            .dimension(wgpu::TextureDimension::D2)
             .format(format)
             .usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
-            .view_formats(&[])
             .build(),
     );
 
