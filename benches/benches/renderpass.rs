@@ -172,35 +172,38 @@ impl RenderpassState {
             });
         }
 
-        let pipeline =
-            device_state
-                .device
-                .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                    label: None,
-                    layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState::from_module(&sm)
+        let pipeline = device_state.device.create_render_pipeline(
+            &wgpu::RenderPipelineDescriptor::builder()
+                .label(None)
+                .layout(&pipeline_layout)
+                .vertex(
+                    wgpu::VertexState::from_module(&sm)
                         .entry_point("vs_main")
                         .buffers(&vertex_buffer_layouts)
                         .build(),
-                    primitive: wgpu::PrimitiveState::builder()
+                )
+                .primitive(
+                    wgpu::PrimitiveState::builder()
                         .front_face(wgpu::FrontFace::Cw)
                         .cull_mode(wgpu::Face::Back)
                         .build(),
-                    depth_stencil: None,
-                    multisample: Default::default(),
-                    fragment: Some(
-                        wgpu::FragmentState::from_module(&sm)
-                            .entry_point("fs_main")
-                            .targets(&[Some(
-                                wgpu::ColorTargetState::builder()
-                                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
-                                    .build(),
-                            )])
-                            .build(),
-                    ),
-                    multiview: None,
-                    cache: None,
-                });
+                )
+                .maybe_depth_stencil(None)
+                .multisample(Default::default())
+                .fragment(
+                    wgpu::FragmentState::from_module(&sm)
+                        .entry_point("fs_main")
+                        .targets(&[Some(
+                            wgpu::ColorTargetState::builder()
+                                .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                .build(),
+                        )])
+                        .build(),
+                )
+                .maybe_multiview(None)
+                .maybe_cache(None)
+                .build(),
+        );
 
         let render_target = device_state
             .device
@@ -257,22 +260,25 @@ impl RenderpassState {
             );
 
             bindless_pipeline = Some(
-                device_state
-                    .device
-                    .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                        label: None,
-                        layout: Some(&bindless_pipeline_layout),
-                        vertex: wgpu::VertexState::from_module(&bindless_shader_module)
-                            .entry_point("vs_main")
-                            .buffers(&vertex_buffer_layouts)
-                            .build(),
-                        primitive: wgpu::PrimitiveState::builder()
-                            .front_face(wgpu::FrontFace::Cw)
-                            .cull_mode(wgpu::Face::Back)
-                            .build(),
-                        depth_stencil: None,
-                        multisample: Default::default(),
-                        fragment: Some(
+                device_state.device.create_render_pipeline(
+                    &wgpu::RenderPipelineDescriptor::builder()
+                        .label(None)
+                        .layout(&bindless_pipeline_layout)
+                        .vertex(
+                            wgpu::VertexState::from_module(&bindless_shader_module)
+                                .entry_point("vs_main")
+                                .buffers(&vertex_buffer_layouts)
+                                .build(),
+                        )
+                        .primitive(
+                            wgpu::PrimitiveState::builder()
+                                .front_face(wgpu::FrontFace::Cw)
+                                .cull_mode(wgpu::Face::Back)
+                                .build(),
+                        )
+                        .maybe_depth_stencil(None)
+                        .multisample(Default::default())
+                        .fragment(
                             wgpu::FragmentState::from_module(&bindless_shader_module)
                                 .entry_point("fs_main")
                                 .targets(&[Some(
@@ -281,10 +287,11 @@ impl RenderpassState {
                                         .build(),
                                 )])
                                 .build(),
-                        ),
-                        multiview: None,
-                        cache: None,
-                    }),
+                        )
+                        .maybe_multiview(None)
+                        .maybe_cache(None)
+                        .build(),
+                ),
             );
         }
 

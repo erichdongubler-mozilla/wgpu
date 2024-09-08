@@ -129,9 +129,10 @@ static_assertions::assert_impl_all!(FragmentState<'_>: Send, Sync);
 ///
 /// Corresponds to [WebGPU `GPURenderPipelineDescriptor`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpurenderpipelinedescriptor).
-#[derive(Clone, Debug)]
+#[derive(bon::Builder, Clone, Debug)]
 pub struct RenderPipelineDescriptor<'a> {
     /// Debug label of the pipeline. This will show up in graphics debuggers for easy identification.
+    #[builder(default, into)]
     pub label: Label<'a>,
     /// The layout of bind groups for this pipeline.
     ///
@@ -156,10 +157,12 @@ pub struct RenderPipelineDescriptor<'a> {
     /// The compiled vertex stage, its entry point, and the input buffers layout.
     pub vertex: VertexState<'a>,
     /// The properties of the pipeline at the primitive assembly and rasterization level.
+    #[builder(default)]
     pub primitive: PrimitiveState,
     /// The effect of draw calls on the depth and stencil aspects of the output target, if any.
     pub depth_stencil: Option<DepthStencilState>,
     /// The multi-sampling properties of the pipeline.
+    #[builder(default)]
     pub multisample: MultisampleState,
     /// The compiled fragment stage, its entry point, and the color targets.
     pub fragment: Option<FragmentState<'a>>,
