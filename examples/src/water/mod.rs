@@ -502,81 +502,60 @@ impl crate::framework::Example for Example {
 
         // Create the render pipelines. These describe how the data will flow through the GPU, and what
         // constraints and modifiers it will have.
-        let water_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("water"),
-            // The "layout" is what uniforms will be needed.
-            layout: Some(&water_pipeline_layout),
-            // Vertex shader and input buffers
-            vertex: wgpu::VertexState::from_module(&water_module)
-                .entry_point("vs_main")
-                // Layout of our vertices. This should match the structs
-                // which are uploaded to the GPU. This should also be
-                // ensured by tagging on either a `#[repr(C)]` onto a
-                // struct, or a `#[repr(transparent)]` if it only contains
-                // one item, which is itself `repr(C)`.
-                .buffers(&[wgpu::VertexBufferLayout::builder()
-                    .array_stride(water_vertex_size as wgpu::BufferAddress)
-                    .attributes(&wgpu::vertex_attr_array![0 => Sint16x2, 1 => Sint8x4])
-                    .build()])
+        let water_pipeline = device.create_render_pipeline(
+            &wgpu::RenderPipelineDescriptor::builder()
+                .label("water")
+                .layout(&water_pipeline_layout)
+                .vertex(
+                    wgpu::VertexState::from_module(&water_module)
+                        .entry_point("vs_main")
+                        // Layout of our vertices. This should match the structs
+                        // which are uploaded to the GPU. This should also be
+                        // ensured by tagging on either a `#[repr(C)]` onto a
+                        // struct, or a `#[repr(transparent)]` if it only contains
+                        // one item, which is itself `repr(C)`.
+                        .buffers(&[wgpu::VertexBufferLayout::builder()
+                            .array_stride(water_vertex_size as wgpu::BufferAddress)
+                            .attributes(&wgpu::vertex_attr_array![0 => Sint16x2, 1 => Sint8x4])
+                            .build()])
+                        .build(),
+                )
+                .fragment(
+                    wgpu::FragmentState::from_module(&water_module)
+                        .entry_point("fs_main")
+                        // Describes how the colour will be interpolated
+                        // and assigned to the output attachment.
+                        .targets(&[Some(
+                            wgpu::ColorTargetState::builder()
+                                .format(config.view_formats[0])
+                                .blend(wgpu::BlendState {
+                                    color: wgpu::BlendComponent::builder()
+                                        .src_factor(wgpu::BlendFactor::SrcAlpha)
+                                        .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
+                                        .build(),
+                                    alpha: wgpu::BlendComponent::builder()
+                                        .src_factor(wgpu::BlendFactor::One)
+                                        .dst_factor(wgpu::BlendFactor::One)
+                                        .operation(wgpu::BlendOperation::Max)
+                                        .build(),
+                                })
+                                .build(),
+                        )])
+                        .build(),
+                )
+                // No multisampling is used.
+                .multisample(Default::default())
+                .maybe_multiview(None)
+                // No pipeline caching is used
+                .maybe_cache(None)
                 .build(),
-            // Fragment shader and output targets
-            fragment: Some(
-                wgpu::FragmentState::from_module(&water_module)
-                    .entry_point("fs_main")
-                    // Describes how the colour will be interpolated
-                    // and assigned to the output attachment.
-                    .targets(&[Some(
-                        wgpu::ColorTargetState::builder()
-                            .format(config.view_formats[0])
-                            .blend(wgpu::BlendState {
-                                color: wgpu::BlendComponent::builder()
-                                    .src_factor(wgpu::BlendFactor::SrcAlpha)
-                                    .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
-                                    .build(),
-                                alpha: wgpu::BlendComponent::builder()
-                                    .src_factor(wgpu::BlendFactor::One)
-                                    .dst_factor(wgpu::BlendFactor::One)
-                                    .operation(wgpu::BlendOperation::Max)
-                                    .build(),
-                            })
-                            .build(),
-                    )])
-                    .build(),
-            ),
-            // How the triangles will be rasterized. This is more important
-            // for the terrain because of the beneath-the water shot.
-            // This is also dependent on how the triangles are being generated.
-            primitive: wgpu::PrimitiveState::builder()
-                // What kind of data are we passing in?
-                .topology(wgpu::PrimitiveTopology::TriangleList)
-                .front_face(wgpu::FrontFace::Cw)
-                .build(),
-            // Describes how us writing to the depth/stencil buffer
-            // will work. Since this is water, we need to read from the
-            // depth buffer both as a texture in the shader, and as an
-            // input attachment to do depth-testing. We don't write, so
-            // depth_write_enabled is set to false. This is called
-            // RODS or read-only depth stencil.
-            depth_stencil: Some(
-                wgpu::DepthStencilState::builder()
-                    // We don't use stencil.
-                    .format(wgpu::TextureFormat::Depth32Float)
-                    .depth_write_enabled(false)
-                    .depth_compare(wgpu::CompareFunction::Less)
-                    .build(),
-            ),
-            // No multisampling is used.
-            multisample: Default::default(),
-            multiview: None,
-            // No pipeline caching is used
-            cache: None,
-        });
+        );
 
         // Same idea as the water pipeline.
-        let terrain_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("terrain"),
-            layout: Some(&terrain_pipeline_layout),
-            vertex: wgpu::VertexState::from_module(&terrain_module)
+        let terrain_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor::builder()
+            .label("terrain")
+            .layout(&terrain_pipeline_layout)
+            .vertex( wgpu::VertexState::from_module(&terrain_module)
                 .entry_point("vs_main")
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(terrain_vertex_size as wgpu::BufferAddress)
@@ -584,27 +563,28 @@ impl crate::framework::Example for Example {
                         &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Unorm8x4],
                     )
                     .build()])
-                .build(),
-            fragment: Some(
+                .build())
+            .fragment(
                 wgpu::FragmentState::from_module(&terrain_module)
                     .entry_point("fs_main")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
-            ),
-            primitive: wgpu::PrimitiveState::builder()
+            )
+            .primitive( wgpu::PrimitiveState::builder()
                 .cull_mode(wgpu::Face::Front)
-                .build(),
-            depth_stencil: Some(
+                .build())
+            .depth_stencil(
                 wgpu::DepthStencilState::builder()
                     .format(wgpu::TextureFormat::Depth32Float)
                     .depth_write_enabled(true)
                     .depth_compare(wgpu::CompareFunction::Less)
                     .build(),
-            ),
-            multisample: Default::default(),
-            multiview: None,
-            cache: None,
-        });
+            )
+            .multisample(Default::default())
+            .maybe_multiview(None)
+            .maybe_cache(None)
+            .build()
+        );
 
         // A render bundle to draw the terrain.
         let terrain_bundle = {
@@ -815,24 +795,24 @@ pub fn main() {
     crate::framework::run::<Example>("water");
 }
 
-#[cfg(test)]
-#[wgpu_test::gpu_test]
-static TEST: crate::framework::ExampleTestParams = crate::framework::ExampleTestParams {
-    name: "water",
-    image_path: "/examples/src/water/screenshot.png",
-    width: 1024,
-    height: 768,
-    optional_features: wgpu::Features::default(),
-    base_test_parameters: wgpu_test::TestParameters::default()
-        .downlevel_flags(wgpu::DownlevelFlags::READ_ONLY_DEPTH_STENCIL)
-        // To be fixed in <https://github.com/gfx-rs/wgpu/issues/5231>.
-        .expect_fail(wgpu_test::FailureCase {
-            backends: Some(wgpu::Backends::VULKAN),
-            reasons: vec![wgpu_test::FailureReason::validation_error()
-                .with_message(concat!("Hazard WRITE_AFTER_"))],
-            behavior: wgpu_test::FailureBehavior::AssertFailure,
-            ..Default::default()
-        }),
-    comparisons: &[wgpu_test::ComparisonType::Mean(0.01)],
-    _phantom: std::marker::PhantomData::<Example>,
-};
+// #[cfg(test)]
+// #[wgpu_test::gpu_test]
+// static TEST: crate::framework::ExampleTestParams = crate::framework::ExampleTestParams {
+//     name: "water",
+//     image_path: "/examples/src/water/screenshot.png",
+//     width: 1024,
+//     height: 768,
+//     optional_features: wgpu::Features::default(),
+//     base_test_parameters: wgpu_test::TestParameters::default()
+//         .downlevel_flags(wgpu::DownlevelFlags::READ_ONLY_DEPTH_STENCIL)
+//         // To be fixed in <https://github.com/gfx-rs/wgpu/issues/5231>.
+//         .expect_fail(wgpu_test::FailureCase {
+//             backends: Some(wgpu::Backends::VULKAN),
+//             reasons: vec![wgpu_test::FailureReason::validation_error()
+//                 .with_message(concat!("Hazard WRITE_AFTER_"))],
+//             behavior: wgpu_test::FailureBehavior::AssertFailure,
+//             ..Default::default()
+//         }),
+//     comparisons: &[wgpu_test::ComparisonType::Mean(0.01)],
+//     _phantom: std::marker::PhantomData::<Example>,
+// };

@@ -28,24 +28,26 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                 .format(TextureFormat::Rgba8Unorm)
                 .build(),
         )];
-        let _ = ctx
-            .device
-            .create_render_pipeline(&RenderPipelineDescriptor {
-                label: Some("Pipeline"),
-                layout: Some(&pipeline_layout),
-                vertex: VertexState::from_module(&module)
-                    .entry_point("vs_main")
-                    .build(),
-                primitive: Default::default(),
-                depth_stencil: None,
-                multisample: Default::default(),
-                fragment: Some(
+        let _ = ctx.device.create_render_pipeline(
+            &RenderPipelineDescriptor::builder()
+                .label("Pipeline")
+                .layout(&pipeline_layout)
+                .vertex(
+                    VertexState::from_module(&module)
+                        .entry_point("vs_main")
+                        .build(),
+                )
+                .primitive(Default::default())
+                .maybe_depth_stencil(None)
+                .multisample(Default::default())
+                .fragment(
                     FragmentState::from_module(&module)
                         .entry_point("fs_main")
                         .targets(targets)
                         .build(),
-                ),
-                multiview: None,
-                cache: None,
-            });
+                )
+                .maybe_multiview(None)
+                .maybe_cache(None)
+                .build(),
+        );
     });
