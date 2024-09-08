@@ -99,10 +99,9 @@ async fn reinterpret(
                 compilation_options: Default::default(),
                 targets: &[Some(src_format.into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,

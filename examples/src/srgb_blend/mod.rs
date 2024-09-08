@@ -141,10 +141,9 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
             }),
-            primitive: wgpu::PrimitiveState {
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .cull_mode(wgpu::Face::Back)
+                .build(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,

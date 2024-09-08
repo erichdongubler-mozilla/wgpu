@@ -292,12 +292,11 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleStrip,
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::TriangleStrip)
+                .front_face(wgpu::FrontFace::Ccw)
+                .cull_mode(wgpu::Face::Back)
+                .build(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,

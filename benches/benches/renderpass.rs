@@ -184,15 +184,10 @@ impl RenderpassState {
                         buffers: &vertex_buffer_layouts,
                         compilation_options: wgpu::PipelineCompilationOptions::default(),
                     },
-                    primitive: wgpu::PrimitiveState {
-                        topology: wgpu::PrimitiveTopology::TriangleList,
-                        strip_index_format: None,
-                        front_face: wgpu::FrontFace::Cw,
-                        cull_mode: Some(wgpu::Face::Back),
-                        polygon_mode: wgpu::PolygonMode::Fill,
-                        unclipped_depth: false,
-                        conservative: false,
-                    },
+                    primitive: wgpu::PrimitiveState::builder()
+                        .front_face(wgpu::FrontFace::Cw)
+                        .cull_mode(wgpu::Face::Back)
+                        .build(),
                     depth_stencil: None,
                     multisample: Default::default(),
                     fragment: Some(wgpu::FragmentState {
@@ -263,41 +258,43 @@ impl RenderpassState {
                     .build(),
             );
 
-            bindless_pipeline = Some(device_state.device.create_render_pipeline(
-                &wgpu::RenderPipelineDescriptor {
-                    label: None,
-                    layout: Some(&bindless_pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &bindless_shader_module,
-                        entry_point: Some("vs_main"),
-                        buffers: &vertex_buffer_layouts,
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    },
-                    primitive: wgpu::PrimitiveState {
-                        topology: wgpu::PrimitiveTopology::TriangleList,
-                        strip_index_format: None,
-                        front_face: wgpu::FrontFace::Cw,
-                        cull_mode: Some(wgpu::Face::Back),
-                        polygon_mode: wgpu::PolygonMode::Fill,
-                        unclipped_depth: false,
-                        conservative: false,
-                    },
-                    depth_stencil: None,
-                    multisample: Default::default(),
-                    fragment: Some(wgpu::FragmentState {
-                        module: &bindless_shader_module,
-                        entry_point: Some("fs_main"),
-                        targets: &[Some(wgpu::ColorTargetState {
-                            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                            blend: None,
-                            write_mask: wgpu::ColorWrites::ALL,
-                        })],
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
+            bindless_pipeline = Some(
+                device_state
+                    .device
+                    .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                        label: None,
+                        layout: Some(&bindless_pipeline_layout),
+                        vertex: wgpu::VertexState {
+                            module: &bindless_shader_module,
+                            entry_point: Some("vs_main"),
+                            buffers: &vertex_buffer_layouts,
+                            compilation_options: wgpu::PipelineCompilationOptions::default(),
+                        },
+                        primitive: wgpu::PrimitiveState::builder()
+                            .topology(wgpu::PrimitiveTopology::TriangleList)
+                            .maybe_strip_index_format(None)
+                            .front_face(wgpu::FrontFace::Cw)
+                            .cull_mode(wgpu::Face::Back)
+                            .polygon_mode(wgpu::PolygonMode::Fill)
+                            .unclipped_depth(false)
+                            .conservative(false)
+                            .build(),
+                        depth_stencil: None,
+                        multisample: Default::default(),
+                        fragment: Some(wgpu::FragmentState {
+                            module: &bindless_shader_module,
+                            entry_point: Some("fs_main"),
+                            targets: &[Some(wgpu::ColorTargetState {
+                                format: wgpu::TextureFormat::Rgba8UnormSrgb,
+                                blend: None,
+                                write_mask: wgpu::ColorWrites::ALL,
+                            })],
+                            compilation_options: wgpu::PipelineCompilationOptions::default(),
+                        }),
+                        multiview: None,
+                        cache: None,
                     }),
-                    multiview: None,
-                    cache: None,
-                },
-            ));
+            );
         }
 
         Self {

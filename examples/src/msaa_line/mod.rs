@@ -67,11 +67,10 @@ impl Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::LineList,
-                front_face: wgpu::FrontFace::Ccw,
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::LineList)
+                .front_face(wgpu::FrontFace::Ccw)
+                .build(),
             depth_stencil: None,
             multisample: wgpu::MultisampleState {
                 count: sample_count,

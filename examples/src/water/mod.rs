@@ -549,12 +549,11 @@ impl crate::framework::Example for Example {
             // How the triangles will be rasterized. This is more important
             // for the terrain because of the beneath-the water shot.
             // This is also dependent on how the triangles are being generated.
-            primitive: wgpu::PrimitiveState {
+            primitive: wgpu::PrimitiveState::builder()
                 // What kind of data are we passing in?
-                topology: wgpu::PrimitiveTopology::TriangleList,
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
+                .topology(wgpu::PrimitiveTopology::TriangleList)
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
             // Describes how us writing to the depth/stencil buffer
             // will work. Since this is water, we need to read from the
             // depth buffer both as a texture in the shader, and as an
@@ -596,11 +595,11 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Front),
-                ..Default::default()
-            },
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Ccw)
+                .cull_mode(wgpu::Face::Front)
+                .build()
+            ,
             depth_stencil: Some(wgpu::DepthStencilState {
                 format: wgpu::TextureFormat::Depth32Float,
                 depth_write_enabled: true,

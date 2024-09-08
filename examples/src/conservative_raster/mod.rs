@@ -99,10 +99,7 @@ impl crate::framework::Example for Example {
                     compilation_options: Default::default(),
                     targets: &[Some(RENDER_TARGET_FORMAT.into())],
                 }),
-                primitive: wgpu::PrimitiveState {
-                    conservative: true,
-                    ..Default::default()
-                },
+                primitive: wgpu::PrimitiveState::builder().conservative(true).build(),
                 depth_stencil: None,
                 multisample: Default::default(),
                 multiview: None,
@@ -152,11 +149,10 @@ impl crate::framework::Example for Example {
                         compilation_options: Default::default(),
                         targets: &[Some(config.view_formats[0].into())],
                     }),
-                    primitive: wgpu::PrimitiveState {
-                        polygon_mode: wgpu::PolygonMode::Line,
-                        topology: wgpu::PrimitiveTopology::LineStrip,
-                        ..Default::default()
-                    },
+                    primitive: wgpu::PrimitiveState::builder()
+                        .polygon_mode(wgpu::PolygonMode::Line)
+                        .topology(wgpu::PrimitiveTopology::LineStrip)
+                        .build(),
                     depth_stencil: None,
                     multisample: Default::default(),
                     multiview: None,
