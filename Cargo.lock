@@ -3637,6 +3637,7 @@ name = "wgpu"
 version = "22.0.0"
 dependencies = [
  "arrayvec",
+ "bon",
  "cfg_aliases",
  "document-features",
  "js-sys",
@@ -3680,6 +3681,7 @@ dependencies = [
  "arrayvec",
  "bit-vec",
  "bitflags 2.6.0",
+ "bon",
  "bytemuck",
  "cfg_aliases",
  "document-features",

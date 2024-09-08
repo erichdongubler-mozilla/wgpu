@@ -595,12 +595,13 @@ pub enum PushConstantUploadError {
 /// Describes a pipeline layout.
 ///
 /// A `PipelineLayoutDescriptor` can be used to create a pipeline layout.
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(bon::Builder, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct PipelineLayoutDescriptor<'a> {
     /// Debug label of the pipeline layout.
     ///
     /// This will show up in graphics debuggers for easy identification.
+    #[builder(default, into)]
     pub label: Label<'a>,
     /// Bind groups that this pipeline uses. The first entry will provide all the bindings for
     /// "set = 0", second entry will provide all the bindings for "set = 1" etc.
@@ -612,6 +613,7 @@ pub struct PipelineLayoutDescriptor<'a> {
     /// If this array is non-empty, the
     /// [`Features::PUSH_CONSTANTS`](wgt::Features::PUSH_CONSTANTS) feature must
     /// be enabled.
+    #[builder(default)]
     pub push_constant_ranges: Cow<'a, [wgt::PushConstantRange]>,
 }
 

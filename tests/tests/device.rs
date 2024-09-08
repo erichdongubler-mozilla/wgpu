@@ -461,13 +461,13 @@ static DEVICE_DESTROY_THEN_MORE: GpuTestConfiguration = GpuTestConfiguration::ne
         fail(
             &ctx.device,
             || {
-                let _ = ctx
-                    .device
-                    .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                        label: None,
-                        bind_group_layouts: &[],
-                        push_constant_ranges: &[],
-                    });
+                let _ = ctx.device.create_pipeline_layout(
+                    &wgpu::PipelineLayoutDescriptor::builder()
+                        .label(None)
+                        .bind_group_layouts(&[])
+                        .push_constant_ranges(&[])
+                        .build(),
+                );
             },
             Some("device with '' label is invalid"),
         );

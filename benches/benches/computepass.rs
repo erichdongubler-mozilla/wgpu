@@ -222,14 +222,13 @@ impl ComputepassState {
             .device
             .create_shader_module(wgpu::include_wgsl!("computepass.wgsl"));
 
-        let pipeline_layout =
-            device_state
-                .device
-                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                    label: None,
-                    bind_group_layouts: &[&bind_group_layout],
-                    push_constant_ranges: &[],
-                });
+        let pipeline_layout = device_state.device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .label(None)
+                .bind_group_layouts(&[&bind_group_layout])
+                .push_constant_ranges(&[])
+                .build(),
+        );
 
         let pipeline =
             device_state
@@ -317,14 +316,13 @@ impl ComputepassState {
                 .device
                 .create_shader_module(wgpu::include_wgsl!("computepass-bindless.wgsl"));
 
-            let bindless_pipeline_layout =
-                device_state
-                    .device
-                    .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                        label: None,
-                        bind_group_layouts: &[&bindless_bind_group_layout],
-                        push_constant_ranges: &[],
-                    });
+            let bindless_pipeline_layout = device_state.device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .label(None)
+                    .bind_group_layouts(&[&bindless_bind_group_layout])
+                    .push_constant_ranges(&[])
+                    .build(),
+            );
 
             let bindless_pipeline =
                 device_state

@@ -462,11 +462,13 @@ impl crate::framework::Example for Example {
                         count: None,
                     }],
                 });
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("shadow"),
-                bind_group_layouts: &[&bind_group_layout, &local_bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            let pipeline_layout = device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .label("shadow")
+                    .bind_group_layouts(&[&bind_group_layout, &local_bind_group_layout])
+                    .push_constant_ranges(&[])
+                    .build(),
+            );
 
             let uniform_buf = device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
@@ -578,11 +580,13 @@ impl crate::framework::Example for Example {
                     ],
                     label: None,
                 });
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("main"),
-                bind_group_layouts: &[&bind_group_layout, &local_bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            let pipeline_layout = device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .label("main")
+                    .bind_group_layouts(&[&bind_group_layout, &local_bind_group_layout])
+                    .push_constant_ranges(&[])
+                    .build(),
+            );
 
             let mx_total = Self::generate_matrix(config.width as f32 / config.height as f32);
             let forward_uniforms = GlobalUniforms {

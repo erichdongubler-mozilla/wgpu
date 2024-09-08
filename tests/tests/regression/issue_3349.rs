@@ -83,16 +83,16 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
         }],
     });
 
-    let pll = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pll"),
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[wgpu::PushConstantRange {
+    let pll = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label("pll")
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(&[wgpu::PushConstantRange {
                 stages: wgpu::ShaderStages::VERTEX_FRAGMENT,
                 range: 0..16,
-            }],
-        });
+            }])
+            .build(),
+    );
 
     let pipeline = ctx
         .device

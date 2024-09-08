@@ -439,13 +439,13 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
         }],
     });
 
-    let pipeline_layout = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pipeline_layout"),
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+    let pipeline_layout = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label("pipeline_layout")
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(&[])
+            .build(),
+    );
 
     let target_size = wgpu::Extent3d {
         width: 4,
