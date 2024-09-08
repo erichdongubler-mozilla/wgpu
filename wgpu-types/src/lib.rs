@@ -5306,10 +5306,11 @@ impl_bitflags!(BufferUsages);
 /// Corresponds to [WebGPU `GPUBufferDescriptor`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpubufferdescriptor).
 #[repr(C)]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(bon::Builder, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct BufferDescriptor<L> {
+pub struct BufferDescriptor<L: Default> {
     /// Debug label of a buffer. This will show up in graphics debuggers for easy identification.
+    #[builder(default)]
     pub label: L,
     /// Size of a buffer, in bytes.
     pub size: BufferAddress,
@@ -5321,13 +5322,14 @@ pub struct BufferDescriptor<L> {
     ///
     /// If this is `true`, [`size`](#structfield.size) must be a multiple of
     /// [`COPY_BUFFER_ALIGNMENT`].
+    #[builder(default)]
     pub mapped_at_creation: bool,
 }
 
-impl<L> BufferDescriptor<L> {
+impl<L: Default> BufferDescriptor<L> {
     /// Takes a closure and maps the label of the buffer descriptor into another.
     #[must_use]
-    pub fn map_label<K>(&self, fun: impl FnOnce(&L) -> K) -> BufferDescriptor<K> {
+    pub fn map_label<K: Default>(&self, fun: impl FnOnce(&L) -> K) -> BufferDescriptor<K> {
         BufferDescriptor {
             label: fun(&self.label),
             size: self.size,
