@@ -183,10 +183,10 @@ impl crate::framework::Example for Example {
             ..texture_descriptor
         });
 
-        let red_texture_view = red_texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let green_texture_view = green_texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let blue_texture_view = blue_texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let white_texture_view = white_texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let red_texture_view = red_texture.create_view(&Default::default());
+        let green_texture_view = green_texture.create_view(&Default::default());
+        let blue_texture_view = blue_texture.create_view(&Default::default());
+        let white_texture_view = white_texture.create_view(&Default::default());
 
         queue.write_texture(
             red_texture.as_image_copy(),
