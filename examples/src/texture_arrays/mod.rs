@@ -157,7 +157,7 @@ impl crate::framework::Example for Example {
         let white_texture_data = create_texture_data(Color::White);
 
         let texture_descriptor = wgpu::TextureDescriptor {
-            size: wgpu::Extent3d::default(),
+            size: Default::default(),
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
