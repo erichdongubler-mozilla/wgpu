@@ -24,11 +24,7 @@ static PARTIALLY_BOUNDED_ARRAY: GpuTestConfiguration = GpuTestConfiguration::new
         };
         let storage_texture = device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
                 .size(texture_extent)
-                .mip_level_count(1)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::Rgba32Float)
                 .usage(
                     wgpu::TextureUsages::TEXTURE_BINDING
@@ -36,7 +32,6 @@ static PARTIALLY_BOUNDED_ARRAY: GpuTestConfiguration = GpuTestConfiguration::new
                         | wgpu::TextureUsages::STORAGE_BINDING
                         | wgpu::TextureUsages::COPY_SRC,
                 )
-                .view_formats(&[])
                 .build(),
         );
 

@@ -35,18 +35,13 @@ static DROP_ENCODER_AFTER_ERROR: GpuTestConfiguration = GpuTestConfiguration::ne
 
         let target_tex = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
                 .size(wgpu::Extent3d {
                     width: 100,
                     height: 100,
                     depth_or_array_layers: 1,
                 })
-                .mip_level_count(1)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::R8Unorm)
                 .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
-                .view_formats(&[])
                 .build(),
         );
         let target_view = target_tex.create_view(&wgpu::TextureViewDescriptor::default());
@@ -105,14 +100,9 @@ fn encoder_operations_fail_while_pass_alive(ctx: TestingContext) {
         });
 
     let texture_desc = wgpu::TextureDescriptor::builder()
-        .label(None)
         .size(Default::default())
-        .mip_level_count(1)
-        .sample_count(1)
-        .dimension(wgpu::TextureDimension::D2)
         .format(wgpu::TextureFormat::Rgba8Unorm)
         .usage(wgpu::TextureUsages::COPY_DST)
-        .view_formats(&[])
         .build();
     let texture_dst = ctx.device.create_texture(&texture_desc);
     let texture_src = ctx.device.create_texture(&wgpu::TextureDescriptor {

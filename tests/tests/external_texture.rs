@@ -255,16 +255,12 @@ static IMAGE_BITMAP_IMPORT: GpuTestConfiguration =
                             height: 3,
                             depth_or_array_layers: dest_layers,
                         })
-                        .mip_level_count(1)
-                        .sample_count(1)
-                        .dimension(wgpu::TextureDimension::D2)
                         .format(wgpu::TextureFormat::Rgba8UnormSrgb)
                         .usage(
                             wgpu::TextureUsages::RENDER_ATTACHMENT
                                 | wgpu::TextureUsages::COPY_DST
                                 | wgpu::TextureUsages::COPY_SRC,
                         )
-                        .view_formats(&[])
                         .build(),
                 );
 

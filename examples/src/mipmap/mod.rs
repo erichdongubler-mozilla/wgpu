@@ -229,16 +229,12 @@ impl crate::framework::Example for Example {
             &wgpu::TextureDescriptor::builder()
                 .size(texture_extent)
                 .mip_level_count(MIP_LEVEL_COUNT)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(TEXTURE_FORMAT)
                 .usage(
                     wgpu::TextureUsages::TEXTURE_BINDING
                         | wgpu::TextureUsages::RENDER_ATTACHMENT
                         | wgpu::TextureUsages::COPY_DST,
                 )
-                .label(None)
-                .view_formats(&[])
                 .build(),
         );
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());

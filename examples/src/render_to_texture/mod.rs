@@ -32,15 +32,11 @@ async fn run(_path: Option<String>) {
 
     let render_target = device.create_texture(
         &wgpu::TextureDescriptor::builder()
-            .label(None)
             .size(wgpu::Extent3d {
                 width: TEXTURE_DIMS.0 as u32,
                 height: TEXTURE_DIMS.1 as u32,
                 depth_or_array_layers: 1,
             })
-            .mip_level_count(1)
-            .sample_count(1)
-            .dimension(wgpu::TextureDimension::D2)
             .format(wgpu::TextureFormat::Rgba8UnormSrgb)
             .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC)
             .view_formats(&[wgpu::TextureFormat::Rgba8UnormSrgb])

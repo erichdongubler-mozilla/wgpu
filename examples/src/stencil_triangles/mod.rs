@@ -182,11 +182,7 @@ impl crate::framework::Example for Example {
                     height: config.height,
                     depth_or_array_layers: 1,
                 })
-                .mip_level_count(1)
-                .sample_count(1)
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::Stencil8)
-                .view_formats(&[])
                 .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
                 .build(),
         );

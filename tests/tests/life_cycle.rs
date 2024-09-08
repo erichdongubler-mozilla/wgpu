@@ -82,18 +82,14 @@ static TEXTURE_DESTROY: GpuTestConfiguration =
     GpuTestConfiguration::new().run_async(|ctx| async move {
         let texture = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
                 .size(wgpu::Extent3d {
                     width: 128,
                     height: 128,
                     depth_or_array_layers: 1,
                 })
-                .mip_level_count(1)
                 .sample_count(1) // multisampling is not supported for clear
-                .dimension(wgpu::TextureDimension::D2)
                 .format(wgpu::TextureFormat::Rgba8Snorm)
                 .usage(wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING)
-                .view_formats(&[])
                 .build(),
         );
 

@@ -9,8 +9,6 @@ static WRITE_TEXTURE_SUBSET_2D: GpuTestConfiguration =
 
         let tex = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
-                .dimension(wgpu::TextureDimension::D2)
                 .size(wgpu::Extent3d {
                     width: size,
                     height: size,
@@ -22,9 +20,6 @@ static WRITE_TEXTURE_SUBSET_2D: GpuTestConfiguration =
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::TEXTURE_BINDING,
                 )
-                .mip_level_count(1)
-                .sample_count(1)
-                .view_formats(&[])
                 .build(),
         );
         let data = vec![1u8; size as usize * 2];
@@ -108,7 +103,6 @@ static WRITE_TEXTURE_SUBSET_3D: GpuTestConfiguration =
         let depth = 4;
         let tex = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
                 .dimension(wgpu::TextureDimension::D3)
                 .size(wgpu::Extent3d {
                     width: size,
@@ -121,9 +115,6 @@ static WRITE_TEXTURE_SUBSET_3D: GpuTestConfiguration =
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::TEXTURE_BINDING,
                 )
-                .mip_level_count(1)
-                .sample_count(1)
-                .view_formats(&[])
                 .build(),
         );
         let data = vec![1u8; (size * size) as usize * 2];
@@ -207,8 +198,6 @@ static WRITE_TEXTURE_NO_OOB: GpuTestConfiguration =
 
         let tex = ctx.device.create_texture(
             &wgpu::TextureDescriptor::builder()
-                .label(None)
-                .dimension(wgpu::TextureDimension::D2)
                 .size(wgpu::Extent3d {
                     width: size,
                     height: size,
@@ -216,9 +205,6 @@ static WRITE_TEXTURE_NO_OOB: GpuTestConfiguration =
                 })
                 .format(wgpu::TextureFormat::R8Uint)
                 .usage(wgpu::TextureUsages::COPY_DST)
-                .mip_level_count(1)
-                .sample_count(1)
-                .view_formats(&[])
                 .build(),
         );
         let data = vec![1u8; size as usize * 2 + 100]; // check that we don't attempt to copy OOB internally by adding 100 bytes here

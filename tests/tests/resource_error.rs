@@ -38,7 +38,6 @@ static BAD_TEXTURE: GpuTestConfiguration = GpuTestConfiguration::new().run_sync(
         || {
             ctx.device.create_texture(
                 &wgpu::TextureDescriptor::builder()
-                    .label(None)
                     .size(wgpu::Extent3d {
                         width: 0,
                         height: 12345678,
@@ -49,7 +48,6 @@ static BAD_TEXTURE: GpuTestConfiguration = GpuTestConfiguration::new().run_sync(
                     .dimension(wgpu::TextureDimension::D2)
                     .format(wgpu::TextureFormat::Rgba8UnormSrgb)
                     .usage(wgpu::TextureUsages::all())
-                    .view_formats(&[])
                     .build(),
             )
         },
