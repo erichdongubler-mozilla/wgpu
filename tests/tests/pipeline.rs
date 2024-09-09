@@ -191,10 +191,10 @@ static NO_TARGETLESS_RENDER: GpuTestConfiguration = GpuTestConfiguration::new()
                             label: None,
                             layout: None,
                             vertex: wgpu::VertexState::from_module(
-                                    &ctx.device.create_shader_module(TRIVIAL_VERTEX_SHADER_DESC),
-                                )
-                                .entry_point("main")
-                                .build(),
+                                &ctx.device.create_shader_module(TRIVIAL_VERTEX_SHADER_DESC),
+                            )
+                            .entry_point("main")
+                            .build(),
                             primitive: Default::default(),
                             depth_stencil: None,
                             multisample: wgpu::MultisampleState {

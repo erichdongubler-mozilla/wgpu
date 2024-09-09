@@ -193,12 +193,14 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::from_module(&shader)
                 .entry_point("vs_sky")
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_sky"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&shader)
+                    .entry_point("fs_sky")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .front_face(wgpu::FrontFace::Cw)
                 .build(),
@@ -224,12 +226,14 @@ impl crate::framework::Example for Example {
                     .attributes(&wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3])
                     .build()])
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_entity"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&shader)
+                    .entry_point("fs_entity")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .front_face(wgpu::FrontFace::Cw)
                 .build(),

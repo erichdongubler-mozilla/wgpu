@@ -251,6 +251,11 @@ async fn vertex_index_common(ctx: TestingContext) {
             .build(),
     );
 
+    let targets = &[Some(
+        wgpu::ColorTargetState::builder()
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .build(),
+    )];
     let mut pipeline_desc = wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&ppl),
@@ -260,16 +265,14 @@ async fn vertex_index_common(ctx: TestingContext) {
         primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),
-        fragment: Some(wgpu::FragmentState {
-            module: &shader,
-            entry_point: Some("fs_main"),
-            compilation_options: Default::default(),
-            targets: &[Some(
-                wgpu::ColorTargetState::builder()
-                    .format(wgpu::TextureFormat::Rgba8Unorm)
-                    .build(),
-            )],
-        }),
+        fragment: Some(
+            wgpu::FragmentState::builder()
+                .module(&shader)
+                .entry_point("fs_main")
+                .compilation_options(Default::default())
+                .targets(targets)
+                .build(),
+        ),
         multiview: None,
         cache: None,
     };

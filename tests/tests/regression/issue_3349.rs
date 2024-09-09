@@ -102,16 +102,18 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
             vertex: wgpu::VertexState::from_module(&vs_sm)
                 .entry_point("vs_main")
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &fs_sm,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(
-                    wgpu::ColorTargetState::builder()
-                        .format(wgpu::TextureFormat::Rgba8Unorm)
-                        .build(),
-                )],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&fs_sm)
+                    .entry_point("fs_main")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(wgpu::TextureFormat::Rgba8Unorm)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),

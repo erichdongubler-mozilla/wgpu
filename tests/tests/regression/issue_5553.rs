@@ -23,6 +23,11 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                 .build(),
         );
 
+        let targets = &[Some(
+            ColorTargetState::builder()
+                .format(TextureFormat::Rgba8Unorm)
+                .build(),
+        )];
         let _ = ctx
             .device
             .create_render_pipeline(&RenderPipelineDescriptor {
@@ -34,16 +39,14 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                 primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
-                fragment: Some(FragmentState {
-                    module: &module,
-                    entry_point: Some("fs_main"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(
-                        ColorTargetState::builder()
-                            .format(TextureFormat::Rgba8Unorm)
-                            .build(),
-                    )],
-                }),
+                fragment: Some(
+                    FragmentState::builder()
+                        .module(&module)
+                        .entry_point("fs_main")
+                        .compilation_options(Default::default())
+                        .targets(targets)
+                        .build(),
+                ),
                 multiview: None,
                 cache: None,
             });

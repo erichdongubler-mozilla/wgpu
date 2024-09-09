@@ -90,12 +90,14 @@ impl crate::framework::Example for Example {
                 vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
                     .entry_point("vs_main")
                     .build(),
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("fs_main_red"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(RENDER_TARGET_FORMAT.into())],
-                }),
+                fragment: Some(
+                    wgpu::FragmentState::builder()
+                        .module(&shader_triangle_and_lines)
+                        .entry_point("fs_main_red")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(RENDER_TARGET_FORMAT.into())])
+                        .build(),
+                ),
                 primitive: wgpu::PrimitiveState::builder().conservative(true).build(),
                 depth_stencil: None,
                 multisample: Default::default(),
@@ -110,12 +112,14 @@ impl crate::framework::Example for Example {
                 vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
                     .entry_point("vs_main")
                     .build(),
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("fs_main_blue"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(RENDER_TARGET_FORMAT.into())],
-                }),
+                fragment: Some(
+                    wgpu::FragmentState::builder()
+                        .module(&shader_triangle_and_lines)
+                        .entry_point("fs_main_blue")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(RENDER_TARGET_FORMAT.into())])
+                        .build(),
+                ),
                 primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
@@ -134,12 +138,14 @@ impl crate::framework::Example for Example {
                     vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
                         .entry_point("vs_main")
                         .build(),
-                    fragment: Some(wgpu::FragmentState {
-                        module: &shader_triangle_and_lines,
-                        entry_point: Some("fs_main_white"),
-                        compilation_options: Default::default(),
-                        targets: &[Some(config.view_formats[0].into())],
-                    }),
+                    fragment: Some(
+                        wgpu::FragmentState::builder()
+                            .module(&shader_triangle_and_lines)
+                            .entry_point("fs_main_white")
+                            .compilation_options(Default::default())
+                            .targets(&[Some(config.view_formats[0].into())])
+                            .build(),
+                    ),
                     primitive: wgpu::PrimitiveState::builder()
                         .polygon_mode(wgpu::PolygonMode::Line)
                         .topology(wgpu::PrimitiveTopology::LineStrip)
@@ -191,12 +197,14 @@ impl crate::framework::Example for Example {
                     vertex: wgpu::VertexState::from_module(&shader)
                         .entry_point("vs_main")
                         .build(),
-                    fragment: Some(wgpu::FragmentState {
-                        module: &shader,
-                        entry_point: Some("fs_main"),
-                        compilation_options: Default::default(),
-                        targets: &[Some(config.view_formats[0].into())],
-                    }),
+                    fragment: Some(
+                        wgpu::FragmentState::builder()
+                            .module(&shader)
+                            .entry_point("fs_main")
+                            .compilation_options(Default::default())
+                            .targets(&[Some(config.view_formats[0].into())])
+                            .build(),
+                    ),
                     primitive: Default::default(),
                     depth_stencil: None,
                     multisample: Default::default(),

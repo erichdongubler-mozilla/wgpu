@@ -60,12 +60,14 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         vertex: wgpu::VertexState::from_module(&shader)
             .entry_point("vs_main")
             .build(),
-        fragment: Some(wgpu::FragmentState {
-            module: &shader,
-            entry_point: Some("fs_main"),
-            compilation_options: Default::default(),
-            targets: &[Some(swapchain_format.into())],
-        }),
+        fragment: Some(
+            wgpu::FragmentState::builder()
+                .module(&shader)
+                .entry_point("fs_main")
+                .compilation_options(Default::default())
+                .targets(&[Some(swapchain_format.into())])
+                .build(),
+        ),
         primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),

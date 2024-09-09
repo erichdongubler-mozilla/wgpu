@@ -502,12 +502,14 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
                     attributes: &wgpu::vertex_attr_array![0 => Uint32],
                 }])
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &sm,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(target_format.into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&sm)
+                    .entry_point("fs_main")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(target_format.into())])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .topology(wgpu::PrimitiveTopology::TriangleStrip)
                 .strip_index_format(wgpu::IndexFormat::Uint32)
