@@ -215,10 +215,10 @@ impl crate::framework::Example for Example {
 
         let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let vertex_buffers = [wgpu::VertexBufferLayout {
-            array_stride: vertex_size as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
+        let vertex_buffers = [wgpu::VertexBufferLayout::builder()
+            .array_stride(vertex_size as wgpu::BufferAddress)
+            .step_mode(wgpu::VertexStepMode::Vertex)
+            .attributes(&[
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x4,
                     offset: 0,
@@ -229,8 +229,8 @@ impl crate::framework::Example for Example {
                     offset: 4 * 4,
                     shader_location: 1,
                 },
-            ],
-        }];
+            ])
+            .build()];
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,

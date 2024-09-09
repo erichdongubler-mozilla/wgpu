@@ -53,16 +53,16 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     entry_point: Some("double_buffer_vert"),
                     compilation_options: Default::default(),
                     buffers: &[
-                        VertexBufferLayout {
-                            array_stride: 16,
-                            step_mode: VertexStepMode::Vertex,
-                            attributes: &vertex_attr_array![0 => Float32x4],
-                        },
-                        VertexBufferLayout {
-                            array_stride: 4,
-                            step_mode: VertexStepMode::Vertex,
-                            attributes: &vertex_attr_array![5 => Float32],
-                        },
+                        VertexBufferLayout::builder()
+                            .array_stride(16)
+                            .step_mode(VertexStepMode::Vertex)
+                            .attributes(&vertex_attr_array![0 => Float32x4])
+                            .build(),
+                        VertexBufferLayout::builder()
+                            .array_stride(4)
+                            .step_mode(VertexStepMode::Vertex)
+                            .attributes(&vertex_attr_array![5 => Float32])
+                            .build(),
                     ],
                 },
                 primitive: Default::default(),
@@ -91,11 +91,11 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     module: &module,
                     entry_point: Some("single_buffer_vert"),
                     compilation_options: Default::default(),
-                    buffers: &[VertexBufferLayout {
-                        array_stride: 16,
-                        step_mode: VertexStepMode::Vertex,
-                        attributes: &vertex_attr_array![0 => Float32x4],
-                    }],
+                    buffers: &[VertexBufferLayout::builder()
+                        .array_stride(16)
+                        .step_mode(VertexStepMode::Vertex)
+                        .attributes(&vertex_attr_array![0 => Float32x4])
+                        .build()],
                 },
                 primitive: Default::default(),
                 depth_stencil: None,

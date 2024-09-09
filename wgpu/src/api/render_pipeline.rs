@@ -48,11 +48,12 @@ impl RenderPipeline {
 ///
 /// Corresponds to [WebGPU `GPUVertexBufferLayout`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpuvertexbufferlayout).
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(bon::Builder, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct VertexBufferLayout<'a> {
     /// The stride, in bytes, between elements of this buffer.
     pub array_stride: BufferAddress,
     /// How often this vertex buffer is "stepped" forward.
+    #[builder(default)]
     pub step_mode: VertexStepMode,
     /// The list of attributes which comprise a single vertex.
     pub attributes: &'a [VertexAttribute],

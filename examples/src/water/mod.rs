@@ -516,11 +516,11 @@ impl crate::framework::Example for Example {
                 // ensured by tagging on either a `#[repr(C)]` onto a
                 // struct, or a `#[repr(transparent)]` if it only contains
                 // one item, which is itself `repr(C)`.
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: water_vertex_size as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Sint16x2, 1 => Sint8x4],
-                }],
+                buffers: &[wgpu::VertexBufferLayout::builder()
+                    .array_stride(water_vertex_size as wgpu::BufferAddress)
+                    .step_mode(wgpu::VertexStepMode::Vertex)
+                    .attributes(&wgpu::vertex_attr_array![0 => Sint16x2, 1 => Sint8x4])
+                    .build()],
             },
             // Fragment shader and output targets
             fragment: Some(wgpu::FragmentState {
@@ -583,11 +583,12 @@ impl crate::framework::Example for Example {
                 module: &terrain_module,
                 entry_point: Some("vs_main"),
                 compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: terrain_vertex_size as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Unorm8x4],
-                }],
+                buffers: &[wgpu::VertexBufferLayout::builder()
+                    .array_stride(terrain_vertex_size as wgpu::BufferAddress)
+                    .attributes(
+                        &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Unorm8x4],
+                    )
+                    .build()],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &terrain_module,
@@ -597,8 +598,7 @@ impl crate::framework::Example for Example {
             }),
             primitive: wgpu::PrimitiveState::builder()
                 .cull_mode(wgpu::Face::Front)
-                .build()
-            ,
+                .build(),
             depth_stencil: Some(wgpu::DepthStencilState {
                 format: wgpu::TextureFormat::Depth32Float,
                 depth_write_enabled: true,
@@ -608,7 +608,7 @@ impl crate::framework::Example for Example {
             }),
             multisample: Default::default(),
             multiview: None,
-            cache: None
+            cache: None,
         });
 
         // A render bundle to draw the terrain.
