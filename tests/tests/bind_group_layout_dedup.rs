@@ -61,9 +61,7 @@ async fn bgl_dedupe(ctx: TestingContext) {
 
     let pipeline_layout = ctx.device.create_pipeline_layout(
         &wgpu::PipelineLayoutDescriptor::builder()
-            .label(None)
             .bind_group_layouts(&[&bgl_1b])
-            .push_constant_ranges(&[])
             .build(),
     );
 
@@ -121,9 +119,7 @@ fn bgl_dedupe_with_dropped_user_handle(ctx: TestingContext) {
 
     let pipeline_layout = ctx.device.create_pipeline_layout(
         &wgpu::PipelineLayoutDescriptor::builder()
-            .label(None)
             .bind_group_layouts(&[&bgl_1])
-            .push_constant_ranges(&[])
             .build(),
     );
 

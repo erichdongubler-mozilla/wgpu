@@ -247,9 +247,7 @@ async fn vertex_index_common(ctx: TestingContext) {
 
     let ppl = ctx.device.create_pipeline_layout(
         &wgpu::PipelineLayoutDescriptor::builder()
-            .label(None)
             .bind_group_layouts(&[&bgl])
-            .push_constant_ranges(&[])
             .build(),
     );
 

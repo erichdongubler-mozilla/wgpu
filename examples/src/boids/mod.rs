@@ -108,7 +108,6 @@ impl crate::framework::Example for Example {
             &wgpu::PipelineLayoutDescriptor::builder()
                 .label("compute")
                 .bind_group_layouts(&[&compute_bind_group_layout])
-                .push_constant_ranges(&[])
                 .build(),
         );
 
@@ -118,7 +117,6 @@ impl crate::framework::Example for Example {
             &wgpu::PipelineLayoutDescriptor::builder()
                 .label("render")
                 .bind_group_layouts(&[])
-                .push_constant_ranges(&[])
                 .build(),
         );
 

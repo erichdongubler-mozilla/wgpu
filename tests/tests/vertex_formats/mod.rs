@@ -203,9 +203,7 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
 
     let ppl = ctx.device.create_pipeline_layout(
         &wgpu::PipelineLayoutDescriptor::builder()
-            .label(None)
             .bind_group_layouts(&[&bgl])
-            .push_constant_ranges(&[])
             .build(),
     );
 

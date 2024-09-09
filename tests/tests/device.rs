@@ -463,9 +463,7 @@ static DEVICE_DESTROY_THEN_MORE: GpuTestConfiguration = GpuTestConfiguration::ne
             || {
                 let _ = ctx.device.create_pipeline_layout(
                     &wgpu::PipelineLayoutDescriptor::builder()
-                        .label(None)
                         .bind_group_layouts(&[])
-                        .push_constant_ranges(&[])
                         .build(),
                 );
             },

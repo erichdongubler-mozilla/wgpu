@@ -305,7 +305,6 @@ impl crate::framework::Example for Example {
             &wgpu::PipelineLayoutDescriptor::builder()
                 .label("main")
                 .bind_group_layouts(&[&bind_group_layout])
-                .push_constant_ranges(&[])
                 .build(),
         );
 
