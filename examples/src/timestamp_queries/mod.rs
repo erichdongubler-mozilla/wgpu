@@ -355,8 +355,7 @@ fn render_pass(
             .entry_point("vs_main")
             .build(),
         fragment: Some(
-            wgpu::FragmentState::builder()
-                .module(module)
+            wgpu::FragmentState::from_module(module)
                 .entry_point("fs_main")
                 .targets(&[Some(format.into())])
                 .build(),

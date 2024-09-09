@@ -98,8 +98,7 @@ async fn draw_test_with_reports(
             depth_stencil: None,
             multisample: Default::default(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_main")
                     .targets(&[Some(
                         wgpu::ColorTargetState::builder()

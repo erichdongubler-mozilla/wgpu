@@ -59,8 +59,7 @@ impl Example {
                     .build()])
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(shader)
+                wgpu::FragmentState::from_module(shader)
                     .entry_point("fs_main")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),

@@ -626,8 +626,7 @@ impl crate::framework::Example for Example {
                     .buffers(&[vb_desc])
                     .build(),
                 fragment: Some(
-                    wgpu::FragmentState::builder()
-                        .module(&shader)
+                    wgpu::FragmentState::from_module(&shader)
                         .entry_point(if supports_storage_resources {
                             "fs_main"
                         } else {

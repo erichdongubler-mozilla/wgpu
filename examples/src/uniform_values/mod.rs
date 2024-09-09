@@ -176,8 +176,7 @@ impl WgpuContext {
                 .entry_point("vs_main")
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_main")
                     .targets(&[Some(swapchain_format.into())])
                     .build(),

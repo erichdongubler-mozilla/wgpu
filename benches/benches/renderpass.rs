@@ -189,8 +189,7 @@ impl RenderpassState {
                     depth_stencil: None,
                     multisample: Default::default(),
                     fragment: Some(
-                        wgpu::FragmentState::builder()
-                            .module(&sm)
+                        wgpu::FragmentState::from_module(&sm)
                             .entry_point("fs_main")
                             .targets(&[Some(
                                 wgpu::ColorTargetState::builder()
@@ -274,8 +273,7 @@ impl RenderpassState {
                         depth_stencil: None,
                         multisample: Default::default(),
                         fragment: Some(
-                            wgpu::FragmentState::builder()
-                                .module(&bindless_shader_module)
+                            wgpu::FragmentState::from_module(&bindless_shader_module)
                                 .entry_point("fs_main")
                                 .targets(&[Some(
                                     wgpu::ColorTargetState::builder()

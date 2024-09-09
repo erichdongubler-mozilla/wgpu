@@ -770,8 +770,7 @@ static DIFFERENT_BGL_ORDER_BW_SHADER_AND_API: GpuTestConfiguration = GpuTestConf
             .device
             .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 fragment: Some(
-                    wgpu::FragmentState::builder()
-                        .module(&trivial_shaders_with_some_reversed_bindings)
+                    wgpu::FragmentState::from_module(&trivial_shaders_with_some_reversed_bindings)
                         .entry_point("fs_main")
                         .targets(&[Some(
                             wgt::ColorTargetState::builder()

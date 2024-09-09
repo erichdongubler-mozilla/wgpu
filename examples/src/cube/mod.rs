@@ -239,8 +239,7 @@ impl crate::framework::Example for Example {
                 .buffers(&vertex_buffers)
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_main")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
@@ -266,8 +265,7 @@ impl crate::framework::Example for Example {
                     .buffers(&vertex_buffers)
                     .build(),
                 fragment: Some(
-                    wgpu::FragmentState::builder()
-                        .module(&shader)
+                    wgpu::FragmentState::from_module(&shader)
                         .entry_point("fs_wire")
                         .targets(&[Some(
                             wgpu::ColorTargetState::builder()

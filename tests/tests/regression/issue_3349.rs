@@ -103,8 +103,7 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
                 .entry_point("vs_main")
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&fs_sm)
+                wgpu::FragmentState::from_module(&fs_sm)
                     .entry_point("fs_main")
                     .targets(&[Some(
                         wgpu::ColorTargetState::builder()

@@ -40,8 +40,7 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                 depth_stencil: None,
                 multisample: Default::default(),
                 fragment: Some(
-                    FragmentState::builder()
-                        .module(&module)
+                    FragmentState::from_module(&module)
                         .entry_point("fs_main")
                         .targets(targets)
                         .build(),

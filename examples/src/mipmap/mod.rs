@@ -90,8 +90,7 @@ impl Example {
                 .entry_point("vs_main")
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_main")
                     .targets(&[Some(TEXTURE_FORMAT.into())])
                     .build(),
@@ -282,8 +281,7 @@ impl crate::framework::Example for Example {
                 .entry_point("vs_main")
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_main")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
