@@ -517,8 +517,6 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
                     .format(depth_stencil_format)
                     .depth_write_enabled(true)
                     .depth_compare(wgpu::CompareFunction::LessEqual)
-                    .stencil(wgpu::StencilState::default())
-                    .bias(wgpu::DepthBiasState::default())
                     .build(),
             ),
             multisample: wgpu::MultisampleState {

@@ -207,8 +207,6 @@ impl crate::framework::Example for Example {
                     .format(Self::DEPTH_FORMAT)
                     .depth_write_enabled(false)
                     .depth_compare(wgpu::CompareFunction::LessEqual)
-                    .stencil(wgpu::StencilState::default())
-                    .bias(wgpu::DepthBiasState::default())
                     .build(),
             ),
             multisample: Default::default(),
@@ -240,8 +238,6 @@ impl crate::framework::Example for Example {
                     .format(Self::DEPTH_FORMAT)
                     .depth_write_enabled(true)
                     .depth_compare(wgpu::CompareFunction::LessEqual)
-                    .stencil(wgpu::StencilState::default())
-                    .bias(wgpu::DepthBiasState::default())
                     .build(),
             ),
             multisample: Default::default(),
