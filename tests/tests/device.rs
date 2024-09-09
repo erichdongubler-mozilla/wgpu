@@ -515,7 +515,7 @@ static DEVICE_DESTROY_THEN_MORE: GpuTestConfiguration = GpuTestConfiguration::ne
                         },
                         primitive: wgpu::PrimitiveState::default(),
                         depth_stencil: None,
-                        multisample: wgpu::MultisampleState::default(),
+                        multisample: Default::default(),
                         fragment: None,
                         multiview: None,
                         cache: None,
@@ -794,7 +794,7 @@ static DIFFERENT_BGL_ORDER_BW_SHADER_AND_API: GpuTestConfiguration = GpuTestConf
                 },
                 primitive: wgt::PrimitiveState::default(),
                 depth_stencil: None,
-                multisample: wgt::MultisampleState::default(),
+                multisample: Default::default(),
                 multiview: None,
                 cache: None,
             });

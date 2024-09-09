@@ -67,7 +67,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 },
                 primitive: PrimitiveState::default(),
                 depth_stencil: None,
-                multisample: MultisampleState::default(),
+                multisample: Default::default(),
                 fragment: Some(FragmentState {
                     module: &module,
                     entry_point: Some("double_buffer_frag"),
@@ -99,7 +99,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 },
                 primitive: PrimitiveState::default(),
                 depth_stencil: None,
-                multisample: MultisampleState::default(),
+                multisample: Default::default(),
                 fragment: Some(FragmentState {
                     module: &module,
                     entry_point: Some("single_buffer_frag"),

@@ -262,7 +262,7 @@ async fn vertex_index_common(ctx: TestingContext) {
         },
         primitive: wgpu::PrimitiveState::default(),
         depth_stencil: None,
-        multisample: wgpu::MultisampleState::default(),
+        multisample: Default::default(),
         fragment: Some(wgpu::FragmentState {
             module: &shader,
             entry_point: Some("fs_main"),

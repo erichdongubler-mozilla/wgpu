@@ -570,7 +570,7 @@ impl crate::framework::Example for Example {
                 bias: wgpu::DepthBiasState::default(),
             }),
             // No multisampling is used.
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             // No pipeline caching is used
             cache: None,
@@ -608,7 +608,7 @@ impl crate::framework::Example for Example {
                 stencil: wgpu::StencilState::default(),
                 bias: wgpu::DepthBiasState::default(),
             }),
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None
         });
