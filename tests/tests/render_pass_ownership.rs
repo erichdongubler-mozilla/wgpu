@@ -494,8 +494,7 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("pipeline"),
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState::builder()
-                .module(&sm)
+            vertex: wgpu::VertexState::from_module(&sm)
                 .entry_point("vs_main")
                 .buffers(&[wgpu::VertexBufferLayout {
                     array_stride: 4,

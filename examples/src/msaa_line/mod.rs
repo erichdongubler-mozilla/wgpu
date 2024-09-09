@@ -51,8 +51,7 @@ impl Example {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(pipeline_layout),
-            vertex: wgpu::VertexState::builder()
-                .module(shader)
+            vertex: wgpu::VertexState::from_module(shader)
                 .entry_point("vs_main")
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(size_of::<Vertex>() as wgpu::BufferAddress)

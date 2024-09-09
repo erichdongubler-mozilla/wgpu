@@ -87,8 +87,7 @@ impl crate::framework::Example for Example {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("Conservative Rasterization"),
                 layout: Some(&pipeline_layout_empty),
-                vertex: wgpu::VertexState::builder()
-                    .module(&shader_triangle_and_lines)
+                vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
                     .entry_point("vs_main")
                     .build(),
                 fragment: Some(wgpu::FragmentState {
@@ -108,8 +107,7 @@ impl crate::framework::Example for Example {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("Regular Rasterization"),
                 layout: Some(&pipeline_layout_empty),
-                vertex: wgpu::VertexState::builder()
-                    .module(&shader_triangle_and_lines)
+                vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
                     .entry_point("vs_main")
                     .build(),
                 fragment: Some(wgpu::FragmentState {
@@ -133,8 +131,7 @@ impl crate::framework::Example for Example {
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: Some("Lines"),
                     layout: Some(&pipeline_layout_empty),
-                    vertex: wgpu::VertexState::builder()
-                        .module(&shader_triangle_and_lines)
+                    vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
                         .entry_point("vs_main")
                         .build(),
                     fragment: Some(wgpu::FragmentState {
@@ -191,8 +188,7 @@ impl crate::framework::Example for Example {
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: Some("Upscale"),
                     layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState::builder()
-                        .module(&shader)
+                    vertex: wgpu::VertexState::from_module(&shader)
                         .entry_point("vs_main")
                         .build(),
                     fragment: Some(wgpu::FragmentState {

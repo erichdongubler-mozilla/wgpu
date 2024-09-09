@@ -351,8 +351,7 @@ fn render_pass(
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&pipeline_layout),
-        vertex: wgpu::VertexState::builder()
-            .module(module)
+        vertex: wgpu::VertexState::from_module(module)
             .entry_point("vs_main")
             .build(),
         fragment: Some(wgpu::FragmentState {

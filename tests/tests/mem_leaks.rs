@@ -91,8 +91,7 @@ async fn draw_test_with_reports(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&ppl),
-            vertex: wgpu::VertexState::builder()
-                .module(&shader)
+            vertex: wgpu::VertexState::from_module(&shader)
                 .entry_point("vs_main_builtin")
                 .build(),
             primitive: Default::default(),

@@ -119,8 +119,7 @@ async fn pulling_common(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: None,
-            vertex: wgpu::VertexState::builder()
-                .module(&shader)
+            vertex: wgpu::VertexState::from_module(&shader)
                 .entry_point("vs_main")
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(8)

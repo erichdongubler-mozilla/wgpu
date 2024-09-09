@@ -67,8 +67,10 @@ static_assertions::assert_impl_all!(VertexBufferLayout<'_>: Send, Sync);
 /// Corresponds to [WebGPU `GPUVertexState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpuvertexstate).
 #[derive(bon::Builder, Clone, Debug)]
+#[builder(start_fn = from_module)]
 pub struct VertexState<'a> {
     /// The compiled shader module for this stage.
+    #[builder(start_fn)]
     pub module: &'a ShaderModule,
     /// The name of the entry point in the compiled shader to use.
     ///

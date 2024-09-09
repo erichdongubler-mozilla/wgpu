@@ -28,8 +28,7 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
             .create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("Pipeline"),
                 layout: Some(&pipeline_layout),
-                vertex: VertexState::builder()
-                    .module(&module)
+                vertex: VertexState::from_module(&module)
                     .entry_point("vs_main")
                     .build(),
                 primitive: Default::default(),

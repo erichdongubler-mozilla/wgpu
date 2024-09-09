@@ -48,8 +48,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
             .create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("Double Pipeline"),
                 layout: Some(&pipeline_layout),
-                vertex: VertexState::builder()
-                    .module(&module)
+                vertex: VertexState::from_module(&module)
                     .entry_point("double_buffer_vert")
                     .buffers(&[
                         VertexBufferLayout::builder()
@@ -84,8 +83,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
             .create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("Single Pipeline"),
                 layout: Some(&pipeline_layout),
-                vertex: VertexState::builder()
-                    .module(&module)
+                vertex: VertexState::from_module(&module)
                     .entry_point("single_buffer_vert")
                     .buffers(&[VertexBufferLayout::builder()
                         .array_stride(16)

@@ -21,8 +21,7 @@ static NV12_TEXTURE_CREATION_SAMPLING: GpuTestConfiguration = GpuTestConfigurati
             .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("nv12 pipeline"),
                 layout: None,
-                vertex: wgpu::VertexState::builder()
-                    .module(&shader)
+                vertex: wgpu::VertexState::from_module(&shader)
                     .entry_point("vs_main")
                     .build(),
                 fragment: Some(wgpu::FragmentState {

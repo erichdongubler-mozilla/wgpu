@@ -237,9 +237,8 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
         let pipeline_desc = wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&ppl),
-            vertex: wgpu::VertexState::builder()
+            vertex: wgpu::VertexState::from_module(&shader)
                 .buffers(buffers)
-                .module(&shader)
                 .entry_point(test.entry_point)
                 .build(),
             primitive: Default::default(),
