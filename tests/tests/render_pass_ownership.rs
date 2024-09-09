@@ -503,8 +503,7 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
                 }])
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&sm)
+                wgpu::FragmentState::from_module(&sm)
                     .entry_point("fs_main")
                     .targets(&[Some(target_format.into())])
                     .build(),

@@ -56,8 +56,7 @@ async fn run(_path: Option<String>) {
             .entry_point("vs_main")
             .build(),
         fragment: Some(
-            wgpu::FragmentState::builder()
-                .module(&shader)
+            wgpu::FragmentState::from_module(&shader)
                 .entry_point("fs_main")
                 .targets(&[Some(wgpu::TextureFormat::Rgba8UnormSrgb.into())])
                 .build(),

@@ -91,8 +91,7 @@ impl crate::framework::Example for Example {
                     .entry_point("vs_main")
                     .build(),
                 fragment: Some(
-                    wgpu::FragmentState::builder()
-                        .module(&shader_triangle_and_lines)
+                    wgpu::FragmentState::from_module(&shader_triangle_and_lines)
                         .entry_point("fs_main_red")
                         .targets(&[Some(RENDER_TARGET_FORMAT.into())])
                         .build(),
@@ -112,8 +111,7 @@ impl crate::framework::Example for Example {
                     .entry_point("vs_main")
                     .build(),
                 fragment: Some(
-                    wgpu::FragmentState::builder()
-                        .module(&shader_triangle_and_lines)
+                    wgpu::FragmentState::from_module(&shader_triangle_and_lines)
                         .entry_point("fs_main_blue")
                         .targets(&[Some(RENDER_TARGET_FORMAT.into())])
                         .build(),
@@ -137,8 +135,7 @@ impl crate::framework::Example for Example {
                         .entry_point("vs_main")
                         .build(),
                     fragment: Some(
-                        wgpu::FragmentState::builder()
-                            .module(&shader_triangle_and_lines)
+                        wgpu::FragmentState::from_module(&shader_triangle_and_lines)
                             .entry_point("fs_main_white")
                             .compilation_options(Default::default())
                             .targets(&[Some(config.view_formats[0].into())])
@@ -196,8 +193,7 @@ impl crate::framework::Example for Example {
                         .entry_point("vs_main")
                         .build(),
                     fragment: Some(
-                        wgpu::FragmentState::builder()
-                            .module(&shader)
+                        wgpu::FragmentState::from_module(&shader)
                             .entry_point("fs_main")
                             .compilation_options(Default::default())
                             .targets(&[Some(config.view_formats[0].into())])

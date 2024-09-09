@@ -323,8 +323,7 @@ impl crate::framework::Example for Example {
                     .build()])
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(fragment_shader_module)
+                wgpu::FragmentState::from_module(fragment_shader_module)
                     .entry_point(fragment_entry_point)
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),

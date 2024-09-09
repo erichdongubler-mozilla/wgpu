@@ -194,8 +194,7 @@ impl crate::framework::Example for Example {
                 .entry_point("vs_sky")
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_sky")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
@@ -226,8 +225,7 @@ impl crate::framework::Example for Example {
                     .build()])
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fs_entity")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),

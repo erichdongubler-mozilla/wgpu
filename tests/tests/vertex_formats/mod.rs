@@ -250,8 +250,7 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             depth_stencil: None,
             multisample: Default::default(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&shader)
+                wgpu::FragmentState::from_module(&shader)
                     .entry_point("fragment_main")
                     .targets(targets)
                     .build(),

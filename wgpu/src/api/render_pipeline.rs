@@ -99,8 +99,10 @@ static_assertions::assert_impl_all!(VertexState<'_>: Send, Sync);
 /// Corresponds to [WebGPU `GPUFragmentState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpufragmentstate).
 #[derive(bon::Builder, Clone, Debug)]
+#[builder(start_fn = from_module)]
 pub struct FragmentState<'a> {
     /// The compiled shader module for this stage.
+    #[builder(start_fn)]
     pub module: &'a ShaderModule,
     /// The name of the entry point in the compiled shader to use.
     ///

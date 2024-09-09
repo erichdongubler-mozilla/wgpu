@@ -521,8 +521,7 @@ impl crate::framework::Example for Example {
                 .build(),
             // Fragment shader and output targets
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&water_module)
+                wgpu::FragmentState::from_module(&water_module)
                     .entry_point("fs_main")
                     // Describes how the colour will be interpolated
                     // and assigned to the output attachment.
@@ -587,8 +586,7 @@ impl crate::framework::Example for Example {
                     .build()])
                 .build(),
             fragment: Some(
-                wgpu::FragmentState::builder()
-                    .module(&terrain_module)
+                wgpu::FragmentState::from_module(&terrain_module)
                     .entry_point("fs_main")
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),

@@ -65,8 +65,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 depth_stencil: None,
                 multisample: Default::default(),
                 fragment: Some(
-                    FragmentState::builder()
-                        .module(&module)
+                    FragmentState::from_module(&module)
                         .entry_point("double_buffer_frag")
                         .targets(&[Some(
                             ColorTargetState::builder()
@@ -95,8 +94,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 depth_stencil: None,
                 multisample: Default::default(),
                 fragment: Some(
-                    FragmentState::builder()
-                        .module(&module)
+                    FragmentState::from_module(&module)
                         .entry_point("single_buffer_frag")
                         .targets(&[Some(
                             ColorTargetState::builder()
