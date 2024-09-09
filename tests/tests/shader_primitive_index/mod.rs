@@ -125,7 +125,6 @@ async fn pulling_common(
                 compilation_options: Default::default(),
                 buffers: &[wgpu::VertexBufferLayout::builder()
                     .array_stride(8)
-                    .step_mode(wgpu::VertexStepMode::Vertex)
                     .attributes(&[wgpu::VertexAttribute {
                         format: wgpu::VertexFormat::Float32x2,
                         offset: 0,

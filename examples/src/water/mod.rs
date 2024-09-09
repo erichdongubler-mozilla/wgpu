@@ -518,7 +518,6 @@ impl crate::framework::Example for Example {
                 // one item, which is itself `repr(C)`.
                 buffers: &[wgpu::VertexBufferLayout::builder()
                     .array_stride(water_vertex_size as wgpu::BufferAddress)
-                    .step_mode(wgpu::VertexStepMode::Vertex)
                     .attributes(&wgpu::vertex_attr_array![0 => Sint16x2, 1 => Sint8x4])
                     .build()],
             },

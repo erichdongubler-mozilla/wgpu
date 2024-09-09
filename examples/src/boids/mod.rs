@@ -135,7 +135,6 @@ impl crate::framework::Example for Example {
                         .build(),
                     wgpu::VertexBufferLayout::builder()
                         .array_stride(2 * 4)
-                        .step_mode(wgpu::VertexStepMode::Vertex)
                         .attributes(&wgpu::vertex_attr_array![2 => Float32x2])
                         .build(),
                 ],
