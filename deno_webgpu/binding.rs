@@ -223,7 +223,6 @@ pub fn op_webgpu_create_pipeline_layout(
     let descriptor = wgpu_core::binding_model::PipelineLayoutDescriptor::builder()
         .label(label)
         .bind_group_layouts(Cow::from(bind_group_layouts))
-        .push_constant_ranges(Default::default())
         .build();
 
     gfx_put!(instance.device_create_pipeline_layout(

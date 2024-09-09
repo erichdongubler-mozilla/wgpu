@@ -40,7 +40,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
             &PipelineLayoutDescriptor::builder()
                 .label("Pipeline Layout")
                 .bind_group_layouts(&[])
-                .push_constant_ranges(&[])
                 .build(),
         );
 

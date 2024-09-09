@@ -80,9 +80,7 @@ static BGRA8_UNORM_STORAGE: GpuTestConfiguration = GpuTestConfiguration::new()
 
         let pl = device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor::builder()
-                .label(None)
                 .bind_group_layouts(&[&bgl])
-                .push_constant_ranges(&[])
                 .build(),
         );
 

@@ -432,7 +432,6 @@ impl crate::framework::Example for Example {
             &wgpu::PipelineLayoutDescriptor::builder()
                 .label("water")
                 .bind_group_layouts(&[&water_bind_group_layout])
-                .push_constant_ranges(&[])
                 .build(),
         );
 
@@ -440,7 +439,6 @@ impl crate::framework::Example for Example {
             &wgpu::PipelineLayoutDescriptor::builder()
                 .label("terrain")
                 .bind_group_layouts(&[&terrain_bind_group_layout])
-                .push_constant_ranges(&[])
                 .build(),
         );
 

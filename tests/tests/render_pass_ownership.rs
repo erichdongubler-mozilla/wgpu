@@ -443,7 +443,6 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
         &wgpu::PipelineLayoutDescriptor::builder()
             .label("pipeline_layout")
             .bind_group_layouts(&[&bgl])
-            .push_constant_ranges(&[])
             .build(),
     );
 

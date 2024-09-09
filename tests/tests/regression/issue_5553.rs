@@ -20,7 +20,6 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
             &PipelineLayoutDescriptor::builder()
                 .label("Pipeline Layout")
                 .bind_group_layouts(&[])
-                .push_constant_ranges(&[])
                 .build(),
         );
 

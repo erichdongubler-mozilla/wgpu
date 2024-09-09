@@ -265,7 +265,6 @@ async fn shader_input_output_test(
 
     let pll = ctx.device.create_pipeline_layout(
         &PipelineLayoutDescriptor::builder()
-            .label(None)
             .bind_group_layouts(&[&bgl])
             .push_constant_ranges(match storage_type {
                 InputStorageType::PushConstant => &[PushConstantRange {

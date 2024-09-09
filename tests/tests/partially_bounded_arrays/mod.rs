@@ -58,7 +58,6 @@ static PARTIALLY_BOUNDED_ARRAY: GpuTestConfiguration = GpuTestConfiguration::new
             &wgpu::PipelineLayoutDescriptor::builder()
                 .label("main")
                 .bind_group_layouts(&[&bind_group_layout])
-                .push_constant_ranges(&[])
                 .build(),
         );
 

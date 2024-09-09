@@ -75,9 +75,7 @@ async fn draw_test_with_reports(
 
     let ppl = ctx.device.create_pipeline_layout(
         &wgpu::PipelineLayoutDescriptor::builder()
-            .label(None)
             .bind_group_layouts(&[&bgl])
-            .push_constant_ranges(&[])
             .build(),
     );
 
