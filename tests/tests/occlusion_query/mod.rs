@@ -36,7 +36,7 @@ static OCCLUSION_QUERY: GpuTestConfiguration = GpuTestConfiguration::new()
                     buffers: &[],
                 },
                 fragment: None,
-                primitive: wgpu::PrimitiveState::default(),
+                primitive: Default::default(),
                 depth_stencil: Some(wgpu::DepthStencilState {
                     format: wgpu::TextureFormat::Depth32Float,
                     depth_write_enabled: true,

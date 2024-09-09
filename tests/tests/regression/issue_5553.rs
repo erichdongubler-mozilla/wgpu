@@ -34,7 +34,7 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                     compilation_options: Default::default(),
                     buffers: &[],
                 },
-                primitive: PrimitiveState::default(),
+                primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
                 fragment: Some(FragmentState {

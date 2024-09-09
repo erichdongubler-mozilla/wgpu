@@ -65,7 +65,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                         },
                     ],
                 },
-                primitive: PrimitiveState::default(),
+                primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
                 fragment: Some(FragmentState {
@@ -97,7 +97,7 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                         attributes: &vertex_attr_array![0 => Float32x4],
                     }],
                 },
-                primitive: PrimitiveState::default(),
+                primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
                 fragment: Some(FragmentState {
