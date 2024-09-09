@@ -98,10 +98,7 @@ impl Example {
                 compilation_options: Default::default(),
                 targets: &[Some(TEXTURE_FORMAT.into())],
             }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
-                ..Default::default()
-            },
+            primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,

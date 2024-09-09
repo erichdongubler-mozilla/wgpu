@@ -260,7 +260,7 @@ async fn vertex_index_common(ctx: TestingContext) {
             entry_point: Some("vs_main_builtin"),
             compilation_options: Default::default(),
         },
-        primitive: wgpu::PrimitiveState::default(),
+        primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),
         fragment: Some(wgpu::FragmentState {

@@ -64,7 +64,7 @@ async fn run(_path: Option<String>) {
             compilation_options: Default::default(),
             targets: &[Some(wgpu::TextureFormat::Rgba8UnormSrgb.into())],
         }),
-        primitive: wgpu::PrimitiveState::default(),
+        primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),
         multiview: None,

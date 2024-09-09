@@ -97,7 +97,7 @@ async fn draw_test_with_reports(
                 entry_point: Some("vs_main_builtin"),
                 compilation_options: Default::default(),
             },
-            primitive: wgpu::PrimitiveState::default(),
+            primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),
             fragment: Some(wgpu::FragmentState {

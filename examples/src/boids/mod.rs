@@ -146,7 +146,7 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 targets: &[Some(config.view_formats[0].into())],
             }),
-            primitive: wgpu::PrimitiveState::default(),
+            primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,

@@ -69,7 +69,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             compilation_options: Default::default(),
             targets: &[Some(swapchain_format.into())],
         }),
-        primitive: wgpu::PrimitiveState::default(),
+        primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),
         multiview: None,

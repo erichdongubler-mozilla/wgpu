@@ -133,7 +133,7 @@ async fn pulling_common(
                     }],
                 }],
             },
-            primitive: wgpu::PrimitiveState::default(),
+            primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),
             fragment: Some(wgpu::FragmentState {

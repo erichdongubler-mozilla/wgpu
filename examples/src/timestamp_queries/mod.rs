@@ -363,7 +363,7 @@ fn render_pass(
             compilation_options: Default::default(),
             targets: &[Some(format.into())],
         }),
-        primitive: wgpu::PrimitiveState::default(),
+        primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),
         multiview: None,

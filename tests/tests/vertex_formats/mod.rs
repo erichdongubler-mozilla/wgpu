@@ -243,7 +243,7 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
                 entry_point: Some(test.entry_point),
                 compilation_options: Default::default(),
             },
-            primitive: wgpu::PrimitiveState::default(),
+            primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),
             fragment: Some(wgpu::FragmentState {
