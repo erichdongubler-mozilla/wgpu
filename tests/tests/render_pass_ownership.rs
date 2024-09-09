@@ -494,16 +494,16 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("pipeline"),
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &sm,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
+            vertex: wgpu::VertexState::builder()
+                .module(&sm)
+                .entry_point("vs_main")
+                .compilation_options(Default::default())
+                .buffers(&[wgpu::VertexBufferLayout {
                     array_stride: 4,
                     step_mode: wgpu::VertexStepMode::Vertex,
                     attributes: &wgpu::vertex_attr_array![0 => Uint32],
-                }],
-            },
+                }])
+                .build(),
             fragment: Some(wgpu::FragmentState {
                 module: &sm,
                 entry_point: Some("fs_main"),

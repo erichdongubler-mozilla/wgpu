@@ -313,17 +313,17 @@ impl crate::framework::Example for Example {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &base_shader_module,
-                entry_point: Some("vert_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout::builder()
+            vertex: wgpu::VertexState::builder()
+                .module(&base_shader_module)
+                .entry_point("vert_main")
+                .compilation_options(Default::default())
+                .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(vertex_size as wgpu::BufferAddress)
                     .attributes(
                         &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2, 2 => Sint32],
                     )
-                    .build()],
-            },
+                    .build()])
+                .build(),
             fragment: Some(wgpu::FragmentState {
                 module: fragment_shader_module,
                 entry_point: Some(fragment_entry_point),

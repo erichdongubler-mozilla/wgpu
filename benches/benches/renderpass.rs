@@ -178,12 +178,12 @@ impl RenderpassState {
                 .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: None,
                     layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &sm,
-                        entry_point: Some("vs_main"),
-                        buffers: &vertex_buffer_layouts,
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    },
+                    vertex: wgpu::VertexState::builder()
+                        .module(&sm)
+                        .entry_point("vs_main")
+                        .buffers(&vertex_buffer_layouts)
+                        .compilation_options(wgpu::PipelineCompilationOptions::default())
+                        .build(),
                     primitive: wgpu::PrimitiveState::builder()
                         .front_face(wgpu::FrontFace::Cw)
                         .cull_mode(wgpu::Face::Back)
@@ -264,12 +264,12 @@ impl RenderpassState {
                     .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                         label: None,
                         layout: Some(&bindless_pipeline_layout),
-                        vertex: wgpu::VertexState {
-                            module: &bindless_shader_module,
-                            entry_point: Some("vs_main"),
-                            buffers: &vertex_buffer_layouts,
-                            compilation_options: wgpu::PipelineCompilationOptions::default(),
-                        },
+                        vertex: wgpu::VertexState::builder()
+                            .module(&bindless_shader_module)
+                            .entry_point("vs_main")
+                            .buffers(&vertex_buffer_layouts)
+                            .compilation_options(wgpu::PipelineCompilationOptions::default())
+                            .build(),
                         primitive: wgpu::PrimitiveState::builder()
                             .front_face(wgpu::FrontFace::Cw)
                             .cull_mode(wgpu::Face::Back)

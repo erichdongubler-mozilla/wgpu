@@ -124,12 +124,12 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &vertex_buffers,
-            },
+            vertex: wgpu::VertexState::builder()
+                .module(&shader)
+                .entry_point("vs_main")
+                .compilation_options(Default::default())
+                .buffers(&vertex_buffers)
+                .build(),
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
                 entry_point: Some("fs_main"),

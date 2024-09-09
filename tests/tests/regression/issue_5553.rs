@@ -28,12 +28,12 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
             .create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("Pipeline"),
                 layout: Some(&pipeline_layout),
-                vertex: VertexState {
-                    module: &module,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[],
-                },
+                vertex: VertexState::builder()
+                    .module(&module)
+                    .entry_point("vs_main")
+                    .compilation_options(Default::default())
+                    .buffers(&[])
+                    .build(),
                 primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
