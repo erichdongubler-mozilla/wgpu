@@ -236,7 +236,6 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             vertex: wgpu::VertexState {
                 buffers: &[wgpu::VertexBufferLayout::builder()
                     .array_stride(0) // Calculate, please!
-                    .step_mode(wgpu::VertexStepMode::Vertex)
                     .attributes(test.attributes)
                     .build()],
                 module: &shader,

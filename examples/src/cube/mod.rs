@@ -217,7 +217,6 @@ impl crate::framework::Example for Example {
 
         let vertex_buffers = [wgpu::VertexBufferLayout::builder()
             .array_stride(vertex_size as wgpu::BufferAddress)
-            .step_mode(wgpu::VertexStepMode::Vertex)
             .attributes(&[
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x4,

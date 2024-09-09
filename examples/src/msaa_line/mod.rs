@@ -57,7 +57,6 @@ impl Example {
                 compilation_options: Default::default(),
                 buffers: &[wgpu::VertexBufferLayout::builder()
                     .array_stride(size_of::<Vertex>() as wgpu::BufferAddress)
-                    .step_mode(wgpu::VertexStepMode::Vertex)
                     .attributes(&wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x4])
                     .build()],
             },
