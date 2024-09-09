@@ -82,21 +82,23 @@ impl crate::framework::Example for Example {
                     .build(),
             ),
             primitive: Default::default(),
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Stencil8,
-                depth_write_enabled: false,
-                depth_compare: wgpu::CompareFunction::Always,
-                stencil: wgpu::StencilState {
-                    front: wgpu::StencilFaceState {
-                        compare: wgpu::CompareFunction::Always,
-                        pass_op: wgpu::StencilOperation::Replace,
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(wgpu::TextureFormat::Stencil8)
+                    .depth_write_enabled(false)
+                    .depth_compare(wgpu::CompareFunction::Always)
+                    .stencil(wgpu::StencilState {
+                        front: wgpu::StencilFaceState {
+                            compare: wgpu::CompareFunction::Always,
+                            pass_op: wgpu::StencilOperation::Replace,
+                            ..Default::default()
+                        },
+                        back: wgpu::StencilFaceState::IGNORE,
                         ..Default::default()
-                    },
-                    back: wgpu::StencilFaceState::IGNORE,
-                    ..Default::default()
-                },
-                bias: Default::default(),
-            }),
+                    })
+                    .bias(Default::default())
+                    .build(),
+            ),
             multisample: Default::default(),
             multiview: None,
             cache: None,
@@ -116,20 +118,22 @@ impl crate::framework::Example for Example {
                     .build(),
             ),
             primitive: Default::default(),
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Stencil8,
-                depth_write_enabled: false,
-                depth_compare: wgpu::CompareFunction::Always,
-                stencil: wgpu::StencilState {
-                    front: wgpu::StencilFaceState {
-                        compare: wgpu::CompareFunction::Greater,
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(wgpu::TextureFormat::Stencil8)
+                    .depth_write_enabled(false)
+                    .depth_compare(wgpu::CompareFunction::Always)
+                    .stencil(wgpu::StencilState {
+                        front: wgpu::StencilFaceState {
+                            compare: wgpu::CompareFunction::Greater,
+                            ..Default::default()
+                        },
+                        back: wgpu::StencilFaceState::IGNORE,
                         ..Default::default()
-                    },
-                    back: wgpu::StencilFaceState::IGNORE,
-                    ..Default::default()
-                },
-                bias: Default::default(),
-            }),
+                    })
+                    .bias(Default::default())
+                    .build(),
+            ),
             multisample: Default::default(),
             multiview: None,
             cache: None,

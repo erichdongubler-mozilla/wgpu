@@ -34,13 +34,15 @@ static OCCLUSION_QUERY: GpuTestConfiguration = GpuTestConfiguration::new()
                     .build(),
                 fragment: None,
                 primitive: Default::default(),
-                depth_stencil: Some(wgpu::DepthStencilState {
-                    format: wgpu::TextureFormat::Depth32Float,
-                    depth_write_enabled: true,
-                    depth_compare: wgpu::CompareFunction::Less,
-                    stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState::default(),
-                }),
+                depth_stencil: Some(
+                    wgpu::DepthStencilState::builder()
+                        .format(wgpu::TextureFormat::Depth32Float)
+                        .depth_write_enabled(true)
+                        .depth_compare(wgpu::CompareFunction::Less)
+                        .stencil(wgpu::StencilState::default())
+                        .bias(wgpu::DepthBiasState::default())
+                        .build(),
+                ),
                 multisample: Default::default(),
                 multiview: None,
                 cache: None,

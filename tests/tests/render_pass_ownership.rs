@@ -512,13 +512,15 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
                 .topology(wgpu::PrimitiveTopology::TriangleStrip)
                 .strip_index_format(wgpu::IndexFormat::Uint32)
                 .build(),
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: depth_stencil_format,
-                depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::LessEqual,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(depth_stencil_format)
+                    .depth_write_enabled(true)
+                    .depth_compare(wgpu::CompareFunction::LessEqual)
+                    .stencil(wgpu::StencilState::default())
+                    .bias(wgpu::DepthBiasState::default())
+                    .build(),
+            ),
             multisample: wgpu::MultisampleState {
                 count: target_msaa,
                 ..Default::default()
