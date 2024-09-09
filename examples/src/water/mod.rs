@@ -532,7 +532,6 @@ impl crate::framework::Example for Example {
                         color: wgpu::BlendComponent::builder()
                             .src_factor(wgpu::BlendFactor::SrcAlpha)
                             .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
-                            .operation(wgpu::BlendOperation::Add)
                             .build(),
                         alpha: wgpu::BlendComponent::builder()
                             .src_factor(wgpu::BlendFactor::One)
