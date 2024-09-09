@@ -52,12 +52,12 @@ async fn run(_path: Option<String>) {
     let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: None,
-        vertex: wgpu::VertexState {
-            module: &shader,
-            entry_point: Some("vs_main"),
-            compilation_options: Default::default(),
-            buffers: &[],
-        },
+        vertex: wgpu::VertexState::builder()
+            .module(&shader)
+            .entry_point("vs_main")
+            .compilation_options(Default::default())
+            .buffers(&[])
+            .build(),
         fragment: Some(wgpu::FragmentState {
             module: &shader,
             entry_point: Some("fs_main"),

@@ -119,19 +119,19 @@ async fn pulling_common(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: None,
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout::builder()
+            vertex: wgpu::VertexState::builder()
+                .module(&shader)
+                .entry_point("vs_main")
+                .compilation_options(Default::default())
+                .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(8)
                     .attributes(&[wgpu::VertexAttribute {
                         format: wgpu::VertexFormat::Float32x2,
                         offset: 0,
                         shader_location: 0,
                     }])
-                    .build()],
-            },
+                    .build()])
+                .build(),
             primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),

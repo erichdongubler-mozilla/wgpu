@@ -87,12 +87,12 @@ impl crate::framework::Example for Example {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("Conservative Rasterization"),
                 layout: Some(&pipeline_layout_empty),
-                vertex: wgpu::VertexState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[],
-                },
+                vertex: wgpu::VertexState::builder()
+                    .module(&shader_triangle_and_lines)
+                    .entry_point("vs_main")
+                    .compilation_options(Default::default())
+                    .buffers(&[])
+                    .build(),
                 fragment: Some(wgpu::FragmentState {
                     module: &shader_triangle_and_lines,
                     entry_point: Some("fs_main_red"),
@@ -110,12 +110,12 @@ impl crate::framework::Example for Example {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("Regular Rasterization"),
                 layout: Some(&pipeline_layout_empty),
-                vertex: wgpu::VertexState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[],
-                },
+                vertex: wgpu::VertexState::builder()
+                    .module(&shader_triangle_and_lines)
+                    .entry_point("vs_main")
+                    .compilation_options(Default::default())
+                    .buffers(&[])
+                    .build(),
                 fragment: Some(wgpu::FragmentState {
                     module: &shader_triangle_and_lines,
                     entry_point: Some("fs_main_blue"),
@@ -137,12 +137,12 @@ impl crate::framework::Example for Example {
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: Some("Lines"),
                     layout: Some(&pipeline_layout_empty),
-                    vertex: wgpu::VertexState {
-                        module: &shader_triangle_and_lines,
-                        entry_point: Some("vs_main"),
-                        compilation_options: Default::default(),
-                        buffers: &[],
-                    },
+                    vertex: wgpu::VertexState::builder()
+                        .module(&shader_triangle_and_lines)
+                        .entry_point("vs_main")
+                        .compilation_options(Default::default())
+                        .buffers(&[])
+                        .build(),
                     fragment: Some(wgpu::FragmentState {
                         module: &shader_triangle_and_lines,
                         entry_point: Some("fs_main_white"),
@@ -197,12 +197,12 @@ impl crate::framework::Example for Example {
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: Some("Upscale"),
                     layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &shader,
-                        entry_point: Some("vs_main"),
-                        compilation_options: Default::default(),
-                        buffers: &[],
-                    },
+                    vertex: wgpu::VertexState::builder()
+                        .module(&shader)
+                        .entry_point("vs_main")
+                        .compilation_options(Default::default())
+                        .buffers(&[])
+                        .build(),
                     fragment: Some(wgpu::FragmentState {
                         module: &shader,
                         entry_point: Some("fs_main"),

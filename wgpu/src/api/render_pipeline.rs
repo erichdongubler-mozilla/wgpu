@@ -66,7 +66,7 @@ static_assertions::assert_impl_all!(VertexBufferLayout<'_>: Send, Sync);
 ///
 /// Corresponds to [WebGPU `GPUVertexState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpuvertexstate).
-#[derive(Clone, Debug)]
+#[derive(bon::Builder, Clone, Debug)]
 pub struct VertexState<'a> {
     /// The compiled shader module for this stage.
     pub module: &'a ShaderModule,
@@ -81,8 +81,10 @@ pub struct VertexState<'a> {
     /// Advanced options for when this pipeline is compiled
     ///
     /// This implements `Default`, and for most users can be set to `Default::default()`
+    #[builder(default)]
     pub compilation_options: PipelineCompilationOptions<'a>,
     /// The format of any vertex buffers used with this pipeline.
+    #[builder(default)]
     pub buffers: &'a [VertexBufferLayout<'a>],
 }
 #[cfg(send_sync)]

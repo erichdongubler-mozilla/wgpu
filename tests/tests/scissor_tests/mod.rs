@@ -39,12 +39,12 @@ async fn scissor_test_impl(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Pipeline"),
             layout: None,
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
+            vertex: wgpu::VertexState::builder()
+                .module(&shader)
+                .entry_point("vs_main")
+                .compilation_options(Default::default())
+                .buffers(&[])
+                .build(),
             primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),

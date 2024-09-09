@@ -507,20 +507,20 @@ impl crate::framework::Example for Example {
             // The "layout" is what uniforms will be needed.
             layout: Some(&water_pipeline_layout),
             // Vertex shader and input buffers
-            vertex: wgpu::VertexState {
-                module: &water_module,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
+            vertex: wgpu::VertexState::builder()
+                .module(&water_module)
+                .entry_point("vs_main")
+                .compilation_options(Default::default())
                 // Layout of our vertices. This should match the structs
                 // which are uploaded to the GPU. This should also be
                 // ensured by tagging on either a `#[repr(C)]` onto a
                 // struct, or a `#[repr(transparent)]` if it only contains
                 // one item, which is itself `repr(C)`.
-                buffers: &[wgpu::VertexBufferLayout::builder()
+                .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(water_vertex_size as wgpu::BufferAddress)
                     .attributes(&wgpu::vertex_attr_array![0 => Sint16x2, 1 => Sint8x4])
-                    .build()],
-            },
+                    .build()])
+                .build(),
             // Fragment shader and output targets
             fragment: Some(wgpu::FragmentState {
                 module: &water_module,
@@ -578,17 +578,17 @@ impl crate::framework::Example for Example {
         let terrain_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("terrain"),
             layout: Some(&terrain_pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &terrain_module,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout::builder()
+            vertex: wgpu::VertexState::builder()
+                .module(&terrain_module)
+                .entry_point("vs_main")
+                .compilation_options(Default::default())
+                .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(terrain_vertex_size as wgpu::BufferAddress)
                     .attributes(
                         &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Unorm8x4],
                     )
-                    .build()],
-            },
+                    .build()])
+                .build(),
             fragment: Some(wgpu::FragmentState {
                 module: &terrain_module,
                 entry_point: Some("fs_main"),

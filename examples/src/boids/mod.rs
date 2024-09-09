@@ -123,11 +123,11 @@ impl crate::framework::Example for Example {
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&render_pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &draw_shader,
-                entry_point: Some("main_vs"),
-                compilation_options: Default::default(),
-                buffers: &[
+            vertex: wgpu::VertexState::builder()
+                .module(&draw_shader)
+                .entry_point("main_vs")
+                .compilation_options(Default::default())
+                .buffers(&[
                     wgpu::VertexBufferLayout::builder()
                         .array_stride(4 * 4)
                         .step_mode(wgpu::VertexStepMode::Instance)
@@ -137,8 +137,8 @@ impl crate::framework::Example for Example {
                         .array_stride(2 * 4)
                         .attributes(&wgpu::vertex_attr_array![2 => Float32x2])
                         .build(),
-                ],
-            },
+                ])
+                .build(),
             fragment: Some(wgpu::FragmentState {
                 module: &draw_shader,
                 entry_point: Some("main_fs"),

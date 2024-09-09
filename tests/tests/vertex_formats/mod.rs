@@ -230,18 +230,19 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             usage: wgpu::BufferUsages::VERTEX,
         });
 
+        let buffers = &[wgpu::VertexBufferLayout::builder()
+                    .array_stride(0) // Calculate, please!
+                    .attributes(test.attributes)
+                    .build()];
         let pipeline_desc = wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&ppl),
-            vertex: wgpu::VertexState {
-                buffers: &[wgpu::VertexBufferLayout::builder()
-                    .array_stride(0) // Calculate, please!
-                    .attributes(test.attributes)
-                    .build()],
-                module: &shader,
-                entry_point: Some(test.entry_point),
-                compilation_options: Default::default(),
-            },
+            vertex: wgpu::VertexState::builder()
+                .buffers(buffers)
+                .module(&shader)
+                .entry_point(test.entry_point)
+                .compilation_options(Default::default())
+                .build(),
             primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),

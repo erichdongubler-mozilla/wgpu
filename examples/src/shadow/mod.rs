@@ -490,12 +490,12 @@ impl crate::framework::Example for Example {
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("shadow"),
                 layout: Some(&pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_bake"),
-                    compilation_options: Default::default(),
-                    buffers: &[vb_desc.clone()],
-                },
+                vertex: wgpu::VertexState::builder()
+                    .module(&shader)
+                    .entry_point("vs_bake")
+                    .compilation_options(Default::default())
+                    .buffers(&[vb_desc.clone()])
+                    .build(),
                 fragment: None,
                 primitive: wgpu::PrimitiveState::builder()
                     .cull_mode(wgpu::Face::Back)
@@ -624,12 +624,12 @@ impl crate::framework::Example for Example {
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("main"),
                 layout: Some(&pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[vb_desc],
-                },
+                vertex: wgpu::VertexState::builder()
+                    .module(&shader)
+                    .entry_point("vs_main")
+                    .compilation_options(Default::default())
+                    .buffers(&[vb_desc])
+                    .build(),
                 fragment: Some(wgpu::FragmentState {
                     module: &shader,
                     entry_point: Some(if supports_storage_resources {

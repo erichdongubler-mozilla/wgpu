@@ -351,12 +351,12 @@ fn render_pass(
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&pipeline_layout),
-        vertex: wgpu::VertexState {
-            module,
-            entry_point: Some("vs_main"),
-            compilation_options: Default::default(),
-            buffers: &[],
-        },
+        vertex: wgpu::VertexState::builder()
+            .module(module)
+            .entry_point("vs_main")
+            .compilation_options(Default::default())
+            .buffers(&[])
+            .build(),
         fragment: Some(wgpu::FragmentState {
             module,
             entry_point: Some("fs_main"),
