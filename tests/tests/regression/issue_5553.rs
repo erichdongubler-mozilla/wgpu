@@ -36,7 +36,7 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                 },
                 primitive: PrimitiveState::default(),
                 depth_stencil: None,
-                multisample: MultisampleState::default(),
+                multisample: Default::default(),
                 fragment: Some(FragmentState {
                     module: &module,
                     entry_point: Some("fs_main"),

@@ -146,7 +146,7 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
                 ..Default::default()
             },
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });

@@ -100,7 +100,7 @@ impl crate::framework::Example for Example {
                 },
                 bias: Default::default(),
             }),
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -136,7 +136,7 @@ impl crate::framework::Example for Example {
                 },
                 bias: Default::default(),
             }),
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });

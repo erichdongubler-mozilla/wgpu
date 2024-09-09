@@ -194,7 +194,7 @@ impl RenderpassState {
                         conservative: false,
                     },
                     depth_stencil: None,
-                    multisample: wgpu::MultisampleState::default(),
+                    multisample: Default::default(),
                     fragment: Some(wgpu::FragmentState {
                         module: &sm,
                         entry_point: Some("fs_main"),
@@ -283,7 +283,7 @@ impl RenderpassState {
                         conservative: false,
                     },
                     depth_stencil: None,
-                    multisample: wgpu::MultisampleState::default(),
+                    multisample: Default::default(),
                     fragment: Some(wgpu::FragmentState {
                         module: &bindless_shader_module,
                         entry_point: Some("fs_main"),

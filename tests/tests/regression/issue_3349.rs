@@ -117,7 +117,7 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
             }),
             primitive: wgpu::PrimitiveState::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });

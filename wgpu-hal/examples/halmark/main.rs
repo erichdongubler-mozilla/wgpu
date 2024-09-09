@@ -272,7 +272,7 @@ impl<A: hal::Api> Example<A> {
                 ..wgt::PrimitiveState::default()
             },
             depth_stencil: None,
-            multisample: wgt::MultisampleState::default(),
+            multisample: Default::default(),
             color_targets: &[Some(wgt::ColorTargetState {
                 format: surface_config.format,
                 blend: Some(wgt::BlendState::ALPHA_BLENDING),

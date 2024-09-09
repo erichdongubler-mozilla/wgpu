@@ -245,7 +245,7 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             },
             primitive: wgpu::PrimitiveState::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
                 entry_point: Some("fragment_main"),
