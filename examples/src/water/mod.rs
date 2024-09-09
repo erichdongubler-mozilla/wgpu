@@ -507,8 +507,7 @@ impl crate::framework::Example for Example {
             // The "layout" is what uniforms will be needed.
             layout: Some(&water_pipeline_layout),
             // Vertex shader and input buffers
-            vertex: wgpu::VertexState::builder()
-                .module(&water_module)
+            vertex: wgpu::VertexState::from_module(&water_module)
                 .entry_point("vs_main")
                 // Layout of our vertices. This should match the structs
                 // which are uploaded to the GPU. This should also be
@@ -577,8 +576,7 @@ impl crate::framework::Example for Example {
         let terrain_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("terrain"),
             layout: Some(&terrain_pipeline_layout),
-            vertex: wgpu::VertexState::builder()
-                .module(&terrain_module)
+            vertex: wgpu::VertexState::from_module(&terrain_module)
                 .entry_point("vs_main")
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(terrain_vertex_size as wgpu::BufferAddress)

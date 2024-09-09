@@ -178,8 +178,7 @@ impl RenderpassState {
                 .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: None,
                     layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState::builder()
-                        .module(&sm)
+                    vertex: wgpu::VertexState::from_module(&sm)
                         .entry_point("vs_main")
                         .buffers(&vertex_buffer_layouts)
                         .build(),
@@ -263,8 +262,7 @@ impl RenderpassState {
                     .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                         label: None,
                         layout: Some(&bindless_pipeline_layout),
-                        vertex: wgpu::VertexState::builder()
-                            .module(&bindless_shader_module)
+                        vertex: wgpu::VertexState::from_module(&bindless_shader_module)
                             .entry_point("vs_main")
                             .buffers(&vertex_buffer_layouts)
                             .build(),

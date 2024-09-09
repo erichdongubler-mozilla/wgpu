@@ -52,8 +52,7 @@ async fn run(_path: Option<String>) {
     let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: None,
-        vertex: wgpu::VertexState::builder()
-            .module(&shader)
+        vertex: wgpu::VertexState::from_module(&shader)
             .entry_point("vs_main")
             .build(),
         fragment: Some(wgpu::FragmentState {

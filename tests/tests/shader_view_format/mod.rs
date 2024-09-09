@@ -86,8 +86,7 @@ async fn reinterpret(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("reinterpret pipeline"),
             layout: None,
-            vertex: wgpu::VertexState::builder()
-                .module(shader)
+            vertex: wgpu::VertexState::from_module(shader)
                 .entry_point("vs_main")
                 .build(),
             fragment: Some(wgpu::FragmentState {

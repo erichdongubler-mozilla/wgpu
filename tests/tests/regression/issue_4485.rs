@@ -41,8 +41,7 @@ async fn test_impl(ctx: &TestingContext) {
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Pipeline"),
             layout: None,
-            vertex: wgpu::VertexState::builder()
-                .module(&shader)
+            vertex: wgpu::VertexState::from_module(&shader)
                 .entry_point("vs_main")
                 .build(),
             primitive: Default::default(),

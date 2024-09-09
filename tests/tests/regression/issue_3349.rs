@@ -99,8 +99,7 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("pipeline"),
             layout: Some(&pll),
-            vertex: wgpu::VertexState::builder()
-                .module(&vs_sm)
+            vertex: wgpu::VertexState::from_module(&vs_sm)
                 .entry_point("vs_main")
                 .build(),
             fragment: Some(wgpu::FragmentState {

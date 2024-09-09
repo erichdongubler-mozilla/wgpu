@@ -507,8 +507,7 @@ static DEVICE_DESTROY_THEN_MORE: GpuTestConfiguration = GpuTestConfiguration::ne
                     .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                         label: None,
                         layout: None,
-                        vertex: wgpu::VertexState::builder()
-                            .module(&shader_module)
+                        vertex: wgpu::VertexState::from_module(&shader_module)
                             .entry_point("")
                             .build(),
                         primitive: Default::default(),
@@ -784,10 +783,11 @@ static DIFFERENT_BGL_ORDER_BW_SHADER_AND_API: GpuTestConfiguration = GpuTestConf
 
                 // Other fields below aren't interesting for this text.
                 label: None,
-                vertex: wgpu::VertexState::builder()
-                    .module(&trivial_shaders_with_some_reversed_bindings)
-                    .entry_point("vs_main")
-                    .build(),
+                vertex: wgpu::VertexState::from_module(
+                    &trivial_shaders_with_some_reversed_bindings,
+                )
+                .entry_point("vs_main")
+                .build(),
                 primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),

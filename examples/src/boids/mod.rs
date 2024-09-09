@@ -123,8 +123,7 @@ impl crate::framework::Example for Example {
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&render_pipeline_layout),
-            vertex: wgpu::VertexState::builder()
-                .module(&draw_shader)
+            vertex: wgpu::VertexState::from_module(&draw_shader)
                 .entry_point("main_vs")
                 .buffers(&[
                     wgpu::VertexBufferLayout::builder()
