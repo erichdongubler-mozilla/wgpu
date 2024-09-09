@@ -524,8 +524,7 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
             }),
             multisample: wgpu::MultisampleState {
                 count: target_msaa,
-                mask: !0,
-                alpha_to_coverage_enabled: false,
+                ..Default::default()
             },
             multiview: None,
             cache: None,
