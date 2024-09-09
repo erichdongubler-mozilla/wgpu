@@ -122,7 +122,6 @@ async fn pulling_common(
             vertex: wgpu::VertexState::builder()
                 .module(&shader)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(8)
                     .attributes(&[wgpu::VertexAttribute {

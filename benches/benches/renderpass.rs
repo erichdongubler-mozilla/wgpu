@@ -182,7 +182,6 @@ impl RenderpassState {
                         .module(&sm)
                         .entry_point("vs_main")
                         .buffers(&vertex_buffer_layouts)
-                        .compilation_options(wgpu::PipelineCompilationOptions::default())
                         .build(),
                     primitive: wgpu::PrimitiveState::builder()
                         .front_face(wgpu::FrontFace::Cw)
@@ -268,7 +267,6 @@ impl RenderpassState {
                             .module(&bindless_shader_module)
                             .entry_point("vs_main")
                             .buffers(&vertex_buffer_layouts)
-                            .compilation_options(wgpu::PipelineCompilationOptions::default())
                             .build(),
                         primitive: wgpu::PrimitiveState::builder()
                             .front_face(wgpu::FrontFace::Cw)

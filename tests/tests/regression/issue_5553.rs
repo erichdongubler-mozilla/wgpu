@@ -31,8 +31,6 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                 vertex: VertexState::builder()
                     .module(&module)
                     .entry_point("vs_main")
-                    .compilation_options(Default::default())
-                    .buffers(&[])
                     .build(),
                 primitive: Default::default(),
                 depth_stencil: None,

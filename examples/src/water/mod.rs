@@ -510,7 +510,6 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::builder()
                 .module(&water_module)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
                 // Layout of our vertices. This should match the structs
                 // which are uploaded to the GPU. This should also be
                 // ensured by tagging on either a `#[repr(C)]` onto a
@@ -581,7 +580,6 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::builder()
                 .module(&terrain_module)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(terrain_vertex_size as wgpu::BufferAddress)
                     .attributes(

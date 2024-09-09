@@ -497,7 +497,6 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
             vertex: wgpu::VertexState::builder()
                 .module(&sm)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
                 .buffers(&[wgpu::VertexBufferLayout {
                     array_stride: 4,
                     step_mode: wgpu::VertexStepMode::Vertex,

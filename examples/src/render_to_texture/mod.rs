@@ -55,8 +55,6 @@ async fn run(_path: Option<String>) {
         vertex: wgpu::VertexState::builder()
             .module(&shader)
             .entry_point("vs_main")
-            .compilation_options(Default::default())
-            .buffers(&[])
             .build(),
         fragment: Some(wgpu::FragmentState {
             module: &shader,

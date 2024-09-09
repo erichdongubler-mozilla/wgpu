@@ -316,7 +316,6 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::builder()
                 .module(&base_shader_module)
                 .entry_point("vert_main")
-                .compilation_options(Default::default())
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(vertex_size as wgpu::BufferAddress)
                     .attributes(

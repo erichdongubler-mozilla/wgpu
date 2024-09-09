@@ -60,8 +60,6 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         vertex: wgpu::VertexState::builder()
             .module(&shader)
             .entry_point("vs_main")
-            .buffers(&[])
-            .compilation_options(Default::default())
             .build(),
         fragment: Some(wgpu::FragmentState {
             module: &shader,
