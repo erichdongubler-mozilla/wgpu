@@ -596,7 +596,6 @@ impl crate::framework::Example for Example {
                 targets: &[Some(config.view_formats[0].into())],
             }),
             primitive: wgpu::PrimitiveState::builder()
-                .front_face(wgpu::FrontFace::Ccw)
                 .cull_mode(wgpu::Face::Front)
                 .build()
             ,

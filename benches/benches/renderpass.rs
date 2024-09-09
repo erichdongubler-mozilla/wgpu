@@ -271,13 +271,8 @@ impl RenderpassState {
                             compilation_options: wgpu::PipelineCompilationOptions::default(),
                         },
                         primitive: wgpu::PrimitiveState::builder()
-                            .topology(wgpu::PrimitiveTopology::TriangleList)
-                            .maybe_strip_index_format(None)
                             .front_face(wgpu::FrontFace::Cw)
                             .cull_mode(wgpu::Face::Back)
-                            .polygon_mode(wgpu::PolygonMode::Fill)
-                            .unclipped_depth(false)
-                            .conservative(false)
                             .build(),
                         depth_stencil: None,
                         multisample: Default::default(),
