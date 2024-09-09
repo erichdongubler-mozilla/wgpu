@@ -28,7 +28,6 @@ static NV12_TEXTURE_CREATION_SAMPLING: GpuTestConfiguration = GpuTestConfigurati
                     wgpu::FragmentState::builder()
                         .module(&shader)
                         .entry_point("fs_main")
-                        .compilation_options(Default::default())
                         .targets(&[Some(target_format.into())])
                         .build(),
                 ),

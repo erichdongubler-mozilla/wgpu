@@ -93,7 +93,6 @@ impl Example {
                 wgpu::FragmentState::builder()
                     .module(&shader)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     .targets(&[Some(TEXTURE_FORMAT.into())])
                     .build(),
             ),
@@ -286,7 +285,6 @@ impl crate::framework::Example for Example {
                 wgpu::FragmentState::builder()
                     .module(&shader)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
             ),

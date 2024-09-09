@@ -358,7 +358,6 @@ fn render_pass(
             wgpu::FragmentState::builder()
                 .module(module)
                 .entry_point("fs_main")
-                .compilation_options(Default::default())
                 .targets(&[Some(format.into())])
                 .build(),
         ),

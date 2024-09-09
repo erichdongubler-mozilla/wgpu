@@ -93,7 +93,6 @@ async fn reinterpret(
                 wgpu::FragmentState::builder()
                     .module(shader)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     .targets(&[Some(src_format.into())])
                     .build(),
             ),

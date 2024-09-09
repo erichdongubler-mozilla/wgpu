@@ -269,7 +269,6 @@ async fn vertex_index_common(ctx: TestingContext) {
             wgpu::FragmentState::builder()
                 .module(&shader)
                 .entry_point("fs_main")
-                .compilation_options(Default::default())
                 .targets(targets)
                 .build(),
         ),

@@ -43,7 +43,6 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                     FragmentState::builder()
                         .module(&module)
                         .entry_point("fs_main")
-                        .compilation_options(Default::default())
                         .targets(targets)
                         .build(),
                 ),

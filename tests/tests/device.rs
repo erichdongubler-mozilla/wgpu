@@ -773,7 +773,6 @@ static DIFFERENT_BGL_ORDER_BW_SHADER_AND_API: GpuTestConfiguration = GpuTestConf
                     wgpu::FragmentState::builder()
                         .module(&trivial_shaders_with_some_reversed_bindings)
                         .entry_point("fs_main")
-                        .compilation_options(Default::default())
                         .targets(&[Some(
                             wgt::ColorTargetState::builder()
                                 .format(wgt::TextureFormat::Bgra8Unorm)

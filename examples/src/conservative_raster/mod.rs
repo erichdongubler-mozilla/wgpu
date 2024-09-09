@@ -94,7 +94,6 @@ impl crate::framework::Example for Example {
                     wgpu::FragmentState::builder()
                         .module(&shader_triangle_and_lines)
                         .entry_point("fs_main_red")
-                        .compilation_options(Default::default())
                         .targets(&[Some(RENDER_TARGET_FORMAT.into())])
                         .build(),
                 ),
@@ -116,7 +115,6 @@ impl crate::framework::Example for Example {
                     wgpu::FragmentState::builder()
                         .module(&shader_triangle_and_lines)
                         .entry_point("fs_main_blue")
-                        .compilation_options(Default::default())
                         .targets(&[Some(RENDER_TARGET_FORMAT.into())])
                         .build(),
                 ),

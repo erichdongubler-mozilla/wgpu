@@ -64,7 +64,6 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             wgpu::FragmentState::builder()
                 .module(&shader)
                 .entry_point("fs_main")
-                .compilation_options(Default::default())
                 .targets(&[Some(swapchain_format.into())])
                 .build(),
         ),

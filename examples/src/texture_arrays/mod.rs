@@ -326,7 +326,6 @@ impl crate::framework::Example for Example {
                 wgpu::FragmentState::builder()
                     .module(fragment_shader_module)
                     .entry_point(fragment_entry_point)
-                    .compilation_options(Default::default())
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
             ),

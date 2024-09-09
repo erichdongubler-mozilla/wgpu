@@ -137,7 +137,6 @@ async fn pulling_common(
                 wgpu::FragmentState::builder()
                     .module(&shader)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     .targets(&[Some(
                         wgpu::ColorTargetState::builder()
                             .format(wgpu::TextureFormat::Rgba8Unorm)

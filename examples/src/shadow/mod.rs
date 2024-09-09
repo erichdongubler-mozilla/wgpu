@@ -633,7 +633,6 @@ impl crate::framework::Example for Example {
                         } else {
                             "fs_main_without_storage"
                         })
-                        .compilation_options(Default::default())
                         .targets(&[Some(config.view_formats[0].into())])
                         .build(),
                 ),
