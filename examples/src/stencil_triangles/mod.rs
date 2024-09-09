@@ -85,7 +85,6 @@ impl crate::framework::Example for Example {
             depth_stencil: Some(
                 wgpu::DepthStencilState::builder()
                     .format(wgpu::TextureFormat::Stencil8)
-                    .depth_write_enabled(false)
                     .depth_compare(wgpu::CompareFunction::Always)
                     .stencil(wgpu::StencilState {
                         front: wgpu::StencilFaceState {
@@ -96,7 +95,6 @@ impl crate::framework::Example for Example {
                         back: wgpu::StencilFaceState::IGNORE,
                         ..Default::default()
                     })
-                    .bias(Default::default())
                     .build(),
             ),
             multisample: Default::default(),
@@ -121,7 +119,6 @@ impl crate::framework::Example for Example {
             depth_stencil: Some(
                 wgpu::DepthStencilState::builder()
                     .format(wgpu::TextureFormat::Stencil8)
-                    .depth_write_enabled(false)
                     .depth_compare(wgpu::CompareFunction::Always)
                     .stencil(wgpu::StencilState {
                         front: wgpu::StencilFaceState {
@@ -131,7 +128,6 @@ impl crate::framework::Example for Example {
                         back: wgpu::StencilFaceState::IGNORE,
                         ..Default::default()
                     })
-                    .bias(Default::default())
                     .build(),
             ),
             multisample: Default::default(),
