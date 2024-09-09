@@ -625,16 +625,18 @@ impl crate::framework::Example for Example {
                     .entry_point("vs_main")
                     .buffers(&[vb_desc])
                     .build(),
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some(if supports_storage_resources {
-                        "fs_main"
-                    } else {
-                        "fs_main_without_storage"
-                    }),
-                    compilation_options: Default::default(),
-                    targets: &[Some(config.view_formats[0].into())],
-                }),
+                fragment: Some(
+                    wgpu::FragmentState::builder()
+                        .module(&shader)
+                        .entry_point(if supports_storage_resources {
+                            "fs_main"
+                        } else {
+                            "fs_main_without_storage"
+                        })
+                        .compilation_options(Default::default())
+                        .targets(&[Some(config.view_formats[0].into())])
+                        .build(),
+                ),
                 primitive: wgpu::PrimitiveState::builder()
                     .cull_mode(wgpu::Face::Back)
                     .build(),

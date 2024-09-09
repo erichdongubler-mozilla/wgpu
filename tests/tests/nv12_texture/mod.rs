@@ -24,12 +24,14 @@ static NV12_TEXTURE_CREATION_SAMPLING: GpuTestConfiguration = GpuTestConfigurati
                 vertex: wgpu::VertexState::from_module(&shader)
                     .entry_point("vs_main")
                     .build(),
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some("fs_main"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(target_format.into())],
-                }),
+                fragment: Some(
+                    wgpu::FragmentState::builder()
+                        .module(&shader)
+                        .entry_point("fs_main")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(target_format.into())])
+                        .build(),
+                ),
                 primitive: wgpu::PrimitiveState::builder()
                     .topology(wgpu::PrimitiveTopology::TriangleStrip)
                     .strip_index_format(wgpu::IndexFormat::Uint32)

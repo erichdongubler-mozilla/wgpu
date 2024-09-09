@@ -89,12 +89,14 @@ async fn reinterpret(
             vertex: wgpu::VertexState::from_module(shader)
                 .entry_point("vs_main")
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(src_format.into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(shader)
+                    .entry_point("fs_main")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(src_format.into())])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .front_face(wgpu::FrontFace::Cw)
                 .build(),

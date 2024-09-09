@@ -238,12 +238,14 @@ impl crate::framework::Example for Example {
                 .entry_point("vs_main")
                 .buffers(&vertex_buffers)
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&shader)
+                    .entry_point("fs_main")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .cull_mode(wgpu::Face::Back)
                 .build(),
@@ -264,23 +266,25 @@ impl crate::framework::Example for Example {
                     .entry_point("vs_main")
                     .buffers(&vertex_buffers)
                     .build(),
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some("fs_wire"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(
-                        wgpu::ColorTargetState::builder()
-                            .format(config.view_formats[0])
-                            .blend(wgpu::BlendState {
-                                color: wgpu::BlendComponent::builder()
-                                    .src_factor(wgpu::BlendFactor::SrcAlpha)
-                                    .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
-                                    .build(),
-                                alpha: wgpu::BlendComponent::REPLACE,
-                            })
-                            .build(),
-                    )],
-                }),
+                fragment: Some(
+                    wgpu::FragmentState::builder()
+                        .module(&shader)
+                        .entry_point("fs_wire")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(
+                            wgpu::ColorTargetState::builder()
+                                .format(config.view_formats[0])
+                                .blend(wgpu::BlendState {
+                                    color: wgpu::BlendComponent::builder()
+                                        .src_factor(wgpu::BlendFactor::SrcAlpha)
+                                        .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
+                                        .build(),
+                                    alpha: wgpu::BlendComponent::REPLACE,
+                                })
+                                .build(),
+                        )])
+                        .build(),
+                ),
                 primitive: wgpu::PrimitiveState::builder()
                     .cull_mode(wgpu::Face::Back)
                     .polygon_mode(wgpu::PolygonMode::Line)

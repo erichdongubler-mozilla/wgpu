@@ -97,16 +97,17 @@ async fn draw_test_with_reports(
             primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(
-                    wgpu::ColorTargetState::builder()
-                        .format(wgpu::TextureFormat::Rgba8Unorm)
-                        .build(),
-                )],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(wgpu::TextureFormat::Rgba8Unorm)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             multiview: None,
             cache: None,
         });

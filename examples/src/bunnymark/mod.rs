@@ -213,17 +213,18 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::from_module(&shader)
                 .entry_point("vs_main")
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(
-                    wgpu::ColorTargetState::builder()
-                        .format(config.view_formats[0])
-                        .blend(wgpu::BlendState::ALPHA_BLENDING)
-                        .build(),
-                )],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(config.view_formats[0])
+                            .blend(wgpu::BlendState::ALPHA_BLENDING)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .topology(wgpu::PrimitiveTopology::TriangleStrip)
                 .strip_index_format(wgpu::IndexFormat::Uint16)

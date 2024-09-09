@@ -98,7 +98,7 @@ static_assertions::assert_impl_all!(VertexState<'_>: Send, Sync);
 ///
 /// Corresponds to [WebGPU `GPUFragmentState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpufragmentstate).
-#[derive(Clone, Debug)]
+#[derive(bon::Builder, Clone, Debug)]
 pub struct FragmentState<'a> {
     /// The compiled shader module for this stage.
     pub module: &'a ShaderModule,
@@ -113,6 +113,7 @@ pub struct FragmentState<'a> {
     /// Advanced options for when this pipeline is compiled
     ///
     /// This implements `Default`, and for most users can be set to `Default::default()`
+    #[builder(default)]
     pub compilation_options: PipelineCompilationOptions<'a>,
     /// The color state of the render targets.
     pub targets: &'a [Option<ColorTargetState>],

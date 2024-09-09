@@ -137,12 +137,14 @@ impl crate::framework::Example for Example {
                         .build(),
                 ])
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &draw_shader,
-                entry_point: Some("main_fs"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&draw_shader)
+                    .entry_point("main_fs")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
             primitive: Default::default(),
             depth_stencil: None,
             multisample: Default::default(),

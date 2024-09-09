@@ -769,16 +769,18 @@ static DIFFERENT_BGL_ORDER_BW_SHADER_AND_API: GpuTestConfiguration = GpuTestConf
         let render_pipeline = ctx
             .device
             .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                fragment: Some(wgpu::FragmentState {
-                    module: &trivial_shaders_with_some_reversed_bindings,
-                    entry_point: Some("fs_main"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(
-                        wgt::ColorTargetState::builder()
-                            .format(wgt::TextureFormat::Bgra8Unorm)
-                            .build(),
-                    )],
-                }),
+                fragment: Some(
+                    wgpu::FragmentState::builder()
+                        .module(&trivial_shaders_with_some_reversed_bindings)
+                        .entry_point("fs_main")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(
+                            wgt::ColorTargetState::builder()
+                                .format(wgt::TextureFormat::Bgra8Unorm)
+                                .build(),
+                        )])
+                        .build(),
+                ),
                 layout: None,
 
                 // Other fields below aren't interesting for this text.

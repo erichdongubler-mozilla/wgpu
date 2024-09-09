@@ -188,16 +188,18 @@ impl RenderpassState {
                         .build(),
                     depth_stencil: None,
                     multisample: Default::default(),
-                    fragment: Some(wgpu::FragmentState {
-                        module: &sm,
-                        entry_point: Some("fs_main"),
-                        targets: &[Some(
-                            wgpu::ColorTargetState::builder()
-                                .format(wgpu::TextureFormat::Rgba8UnormSrgb)
-                                .build(),
-                        )],
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    }),
+                    fragment: Some(
+                        wgpu::FragmentState::builder()
+                            .module(&sm)
+                            .entry_point("fs_main")
+                            .targets(&[Some(
+                                wgpu::ColorTargetState::builder()
+                                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                    .build(),
+                            )])
+                            .compilation_options(wgpu::PipelineCompilationOptions::default())
+                            .build(),
+                    ),
                     multiview: None,
                     cache: None,
                 });
@@ -272,16 +274,18 @@ impl RenderpassState {
                             .build(),
                         depth_stencil: None,
                         multisample: Default::default(),
-                        fragment: Some(wgpu::FragmentState {
-                            module: &bindless_shader_module,
-                            entry_point: Some("fs_main"),
-                            targets: &[Some(
-                                wgpu::ColorTargetState::builder()
-                                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
-                                    .build(),
-                            )],
-                            compilation_options: wgpu::PipelineCompilationOptions::default(),
-                        }),
+                        fragment: Some(
+                            wgpu::FragmentState::builder()
+                                .module(&bindless_shader_module)
+                                .entry_point("fs_main")
+                                .targets(&[Some(
+                                    wgpu::ColorTargetState::builder()
+                                        .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                        .build(),
+                                )])
+                                .compilation_options(wgpu::PipelineCompilationOptions::default())
+                                .build(),
+                        ),
                         multiview: None,
                         cache: None,
                     }),

@@ -64,16 +64,18 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
-                fragment: Some(FragmentState {
-                    module: &module,
-                    entry_point: Some("double_buffer_frag"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(
-                        ColorTargetState::builder()
-                            .format(TextureFormat::Rgba8Unorm)
-                            .build(),
-                    )],
-                }),
+                fragment: Some(
+                    FragmentState::builder()
+                        .module(&module)
+                        .entry_point("double_buffer_frag")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(
+                            ColorTargetState::builder()
+                                .format(TextureFormat::Rgba8Unorm)
+                                .build(),
+                        )])
+                        .build(),
+                ),
                 multiview: None,
                 cache: None,
             });
@@ -93,16 +95,18 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 primitive: Default::default(),
                 depth_stencil: None,
                 multisample: Default::default(),
-                fragment: Some(FragmentState {
-                    module: &module,
-                    entry_point: Some("single_buffer_frag"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(
-                        ColorTargetState::builder()
-                            .format(TextureFormat::Rgba8Unorm)
-                            .build(),
-                    )],
-                }),
+                fragment: Some(
+                    FragmentState::builder()
+                        .module(&module)
+                        .entry_point("single_buffer_frag")
+                        .compilation_options(Default::default())
+                        .targets(&[Some(
+                            ColorTargetState::builder()
+                                .format(TextureFormat::Rgba8Unorm)
+                                .build(),
+                        )])
+                        .build(),
+                ),
                 multiview: None,
                 cache: None,
             });

@@ -354,12 +354,14 @@ fn render_pass(
         vertex: wgpu::VertexState::from_module(module)
             .entry_point("vs_main")
             .build(),
-        fragment: Some(wgpu::FragmentState {
-            module,
-            entry_point: Some("fs_main"),
-            compilation_options: Default::default(),
-            targets: &[Some(format.into())],
-        }),
+        fragment: Some(
+            wgpu::FragmentState::builder()
+                .module(module)
+                .entry_point("fs_main")
+                .compilation_options(Default::default())
+                .targets(&[Some(format.into())])
+                .build(),
+        ),
         primitive: Default::default(),
         depth_stencil: None,
         multisample: Default::default(),

@@ -128,17 +128,18 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
                 .entry_point("vs_main")
                 .buffers(&vertex_buffers)
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(
-                    wgpu::ColorTargetState::builder()
-                        .format(config.view_formats[0])
-                        .blend(wgpu::BlendState::ALPHA_BLENDING)
-                        .build(),
-                )],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(config.view_formats[0])
+                            .blend(wgpu::BlendState::ALPHA_BLENDING)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .cull_mode(wgpu::Face::Back)
                 .build(),

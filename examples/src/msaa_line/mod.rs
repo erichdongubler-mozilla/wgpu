@@ -58,12 +58,14 @@ impl Example {
                     .attributes(&wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x4])
                     .build()])
                 .build(),
-            fragment: Some(wgpu::FragmentState {
-                module: shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
+            fragment: Some(
+                wgpu::FragmentState::builder()
+                    .module(shader)
+                    .entry_point("fs_main")
+                    .compilation_options(Default::default())
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
             primitive: wgpu::PrimitiveState::builder()
                 .topology(wgpu::PrimitiveTopology::LineList)
                 .front_face(wgpu::FrontFace::Ccw)
