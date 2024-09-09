@@ -42,8 +42,6 @@ async fn scissor_test_impl(
             vertex: wgpu::VertexState::builder()
                 .module(&shader)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
-                .buffers(&[])
                 .build(),
             primitive: Default::default(),
             depth_stencil: None,

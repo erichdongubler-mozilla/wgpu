@@ -193,8 +193,6 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::builder()
                 .module(&shader)
                 .entry_point("vs_sky")
-                .compilation_options(Default::default())
-                .buffers(&[])
                 .build(),
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
@@ -222,7 +220,6 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::builder()
                 .module(&shader)
                 .entry_point("vs_entity")
-                .compilation_options(Default::default())
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(size_of::<Vertex>() as wgpu::BufferAddress)
                     .step_mode(wgpu::VertexStepMode::Vertex)

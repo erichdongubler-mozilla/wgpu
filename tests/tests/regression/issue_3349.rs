@@ -102,8 +102,6 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
             vertex: wgpu::VertexState::builder()
                 .module(&vs_sm)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
-                .buffers(&[])
                 .build(),
             fragment: Some(wgpu::FragmentState {
                 module: &fs_sm,

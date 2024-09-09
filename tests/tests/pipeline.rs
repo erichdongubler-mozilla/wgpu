@@ -195,8 +195,6 @@ static NO_TARGETLESS_RENDER: GpuTestConfiguration = GpuTestConfiguration::new()
                                     &ctx.device.create_shader_module(TRIVIAL_VERTEX_SHADER_DESC),
                                 )
                                 .entry_point("main")
-                                .compilation_options(Default::default())
-                                .buffers(&[])
                                 .build(),
                             primitive: Default::default(),
                             depth_stencil: None,

@@ -493,8 +493,6 @@ impl crate::framework::Example for Example {
                 vertex: wgpu::VertexState::builder()
                     .module(&shader)
                     .entry_point("vs_bake")
-                    .compilation_options(Default::default())
-                    .buffers(&[vb_desc.clone()])
                     .build(),
                 fragment: None,
                 primitive: wgpu::PrimitiveState::builder()
@@ -627,7 +625,6 @@ impl crate::framework::Example for Example {
                 vertex: wgpu::VertexState::builder()
                     .module(&shader)
                     .entry_point("vs_main")
-                    .compilation_options(Default::default())
                     .buffers(&[vb_desc])
                     .build(),
                 fragment: Some(wgpu::FragmentState {

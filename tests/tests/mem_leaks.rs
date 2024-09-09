@@ -92,10 +92,8 @@ async fn draw_test_with_reports(
             label: None,
             layout: Some(&ppl),
             vertex: wgpu::VertexState::builder()
-                .buffers(&[])
                 .module(&shader)
                 .entry_point("vs_main_builtin")
-                .compilation_options(Default::default())
                 .build(),
             primitive: Default::default(),
             depth_stencil: None,

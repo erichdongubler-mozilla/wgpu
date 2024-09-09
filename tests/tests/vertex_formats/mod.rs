@@ -241,7 +241,6 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
                 .buffers(buffers)
                 .module(&shader)
                 .entry_point(test.entry_point)
-                .compilation_options(Default::default())
                 .build(),
             primitive: Default::default(),
             depth_stencil: None,

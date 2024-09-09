@@ -126,7 +126,6 @@ impl crate::framework::Example for Example {
             vertex: wgpu::VertexState::builder()
                 .module(&draw_shader)
                 .entry_point("main_vs")
-                .compilation_options(Default::default())
                 .buffers(&[
                     wgpu::VertexBufferLayout::builder()
                         .array_stride(4 * 4)

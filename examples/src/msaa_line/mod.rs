@@ -54,7 +54,6 @@ impl Example {
             vertex: wgpu::VertexState::builder()
                 .module(shader)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
                 .buffers(&[wgpu::VertexBufferLayout::builder()
                     .array_stride(size_of::<Vertex>() as wgpu::BufferAddress)
                     .attributes(&wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x4])

@@ -127,7 +127,6 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
             vertex: wgpu::VertexState::builder()
                 .module(&shader)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
                 .buffers(&vertex_buffers)
                 .build(),
             fragment: Some(wgpu::FragmentState {

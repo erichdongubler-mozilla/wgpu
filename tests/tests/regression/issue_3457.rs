@@ -51,7 +51,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 vertex: VertexState::builder()
                     .module(&module)
                     .entry_point("double_buffer_vert")
-                    .compilation_options(Default::default())
                     .buffers(&[
                         VertexBufferLayout::builder()
                             .array_stride(16)
@@ -88,7 +87,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                 vertex: VertexState::builder()
                     .module(&module)
                     .entry_point("single_buffer_vert")
-                    .compilation_options(Default::default())
                     .buffers(&[VertexBufferLayout::builder()
                         .array_stride(16)
                         .attributes(&vertex_attr_array![0 => Float32x4])

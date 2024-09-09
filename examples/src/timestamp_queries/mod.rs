@@ -354,8 +354,6 @@ fn render_pass(
         vertex: wgpu::VertexState::builder()
             .module(module)
             .entry_point("vs_main")
-            .compilation_options(Default::default())
-            .buffers(&[])
             .build(),
         fragment: Some(wgpu::FragmentState {
             module,

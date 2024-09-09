@@ -44,8 +44,6 @@ async fn test_impl(ctx: &TestingContext) {
             vertex: wgpu::VertexState::builder()
                 .module(&shader)
                 .entry_point("vs_main")
-                .compilation_options(Default::default())
-                .buffers(&[])
                 .build(),
             primitive: Default::default(),
             depth_stencil: None,
