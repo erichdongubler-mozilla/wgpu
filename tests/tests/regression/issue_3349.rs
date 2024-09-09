@@ -106,7 +106,6 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
                 wgpu::FragmentState::builder()
                     .module(&fs_sm)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     .targets(&[Some(
                         wgpu::ColorTargetState::builder()
                             .format(wgpu::TextureFormat::Rgba8Unorm)

@@ -197,7 +197,6 @@ impl RenderpassState {
                                     .format(wgpu::TextureFormat::Rgba8UnormSrgb)
                                     .build(),
                             )])
-                            .compilation_options(wgpu::PipelineCompilationOptions::default())
                             .build(),
                     ),
                     multiview: None,
@@ -283,7 +282,6 @@ impl RenderpassState {
                                         .format(wgpu::TextureFormat::Rgba8UnormSrgb)
                                         .build(),
                                 )])
-                                .compilation_options(wgpu::PipelineCompilationOptions::default())
                                 .build(),
                         ),
                         multiview: None,

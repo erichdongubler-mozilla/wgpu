@@ -524,7 +524,6 @@ impl crate::framework::Example for Example {
                 wgpu::FragmentState::builder()
                     .module(&water_module)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     // Describes how the colour will be interpolated
                     // and assigned to the output attachment.
                     .targets(&[Some(
@@ -591,7 +590,6 @@ impl crate::framework::Example for Example {
                 wgpu::FragmentState::builder()
                     .module(&terrain_module)
                     .entry_point("fs_main")
-                    .compilation_options(Default::default())
                     .targets(&[Some(config.view_formats[0].into())])
                     .build(),
             ),

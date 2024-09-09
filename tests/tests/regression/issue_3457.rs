@@ -68,7 +68,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     FragmentState::builder()
                         .module(&module)
                         .entry_point("double_buffer_frag")
-                        .compilation_options(Default::default())
                         .targets(&[Some(
                             ColorTargetState::builder()
                                 .format(TextureFormat::Rgba8Unorm)
@@ -99,7 +98,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     FragmentState::builder()
                         .module(&module)
                         .entry_point("single_buffer_frag")
-                        .compilation_options(Default::default())
                         .targets(&[Some(
                             ColorTargetState::builder()
                                 .format(TextureFormat::Rgba8Unorm)

@@ -253,7 +253,6 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
                 wgpu::FragmentState::builder()
                     .module(&shader)
                     .entry_point("fragment_main")
-                    .compilation_options(Default::default())
                     .targets(targets)
                     .build(),
             ),
