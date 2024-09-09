@@ -287,7 +287,6 @@ impl crate::framework::Example for Example {
                     })],
                 }),
                 primitive: wgpu::PrimitiveState::builder()
-                    .front_face(wgpu::FrontFace::Ccw)
                     .cull_mode(wgpu::Face::Back)
                     .polygon_mode(wgpu::PolygonMode::Line)
                     .build(),

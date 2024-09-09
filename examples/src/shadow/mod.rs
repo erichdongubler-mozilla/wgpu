@@ -498,8 +498,6 @@ impl crate::framework::Example for Example {
                 },
                 fragment: None,
                 primitive: wgpu::PrimitiveState::builder()
-                    .topology(wgpu::PrimitiveTopology::TriangleList)
-                    .front_face(wgpu::FrontFace::Ccw)
                     .cull_mode(wgpu::Face::Back)
                     .unclipped_depth(
                         device
@@ -643,7 +641,6 @@ impl crate::framework::Example for Example {
                     targets: &[Some(config.view_formats[0].into())],
                 }),
                 primitive: wgpu::PrimitiveState::builder()
-                    .front_face(wgpu::FrontFace::Ccw)
                     .cull_mode(wgpu::Face::Back)
                     .build(),
                 depth_stencil: Some(wgpu::DepthStencilState {

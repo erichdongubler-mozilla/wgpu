@@ -294,7 +294,6 @@ impl crate::framework::Example for Example {
             }),
             primitive: wgpu::PrimitiveState::builder()
                 .topology(wgpu::PrimitiveTopology::TriangleStrip)
-                .front_face(wgpu::FrontFace::Ccw)
                 .cull_mode(wgpu::Face::Back)
                 .build(),
             depth_stencil: None,
