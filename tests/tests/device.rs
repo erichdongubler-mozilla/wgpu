@@ -773,11 +773,13 @@ static DIFFERENT_BGL_ORDER_BW_SHADER_AND_API: GpuTestConfiguration = GpuTestConf
                     module: &trivial_shaders_with_some_reversed_bindings,
                     entry_point: Some("fs_main"),
                     compilation_options: Default::default(),
-                    targets: &[Some(wgt::ColorTargetState {
-                        format: wgt::TextureFormat::Bgra8Unorm,
-                        blend: None,
-                        write_mask: wgt::ColorWrites::ALL,
-                    })],
+                    targets: &[Some(
+                        wgt::ColorTargetState::builder()
+                            .format(wgt::TextureFormat::Bgra8Unorm)
+                            .blend(None)
+                            .write_mask(wgt::ColorWrites::ALL)
+                            .build(),
+                    )],
                 }),
                 layout: None,
 

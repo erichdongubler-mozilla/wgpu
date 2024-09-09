@@ -248,11 +248,13 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
                 module: &shader,
                 entry_point: Some("fragment_main"),
                 compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
+                targets: &[Some(
+                    wgpu::ColorTargetState::builder()
+                        .format(wgpu::TextureFormat::Rgba8Unorm)
+                        .blend(None)
+                        .write_mask(wgpu::ColorWrites::ALL)
+                        .build(),
+                )],
             }),
             multiview: None,
             cache: None,

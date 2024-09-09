@@ -191,11 +191,13 @@ impl RenderpassState {
                     fragment: Some(wgpu::FragmentState {
                         module: &sm,
                         entry_point: Some("fs_main"),
-                        targets: &[Some(wgpu::ColorTargetState {
-                            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                            blend: None,
-                            write_mask: wgpu::ColorWrites::ALL,
-                        })],
+                        targets: &[Some(
+                            wgpu::ColorTargetState::builder()
+                                .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                .blend(None)
+                                .write_mask(wgpu::ColorWrites::ALL)
+                                .build(),
+                        )],
                         compilation_options: wgpu::PipelineCompilationOptions::default(),
                     }),
                     multiview: None,
@@ -275,11 +277,13 @@ impl RenderpassState {
                         fragment: Some(wgpu::FragmentState {
                             module: &bindless_shader_module,
                             entry_point: Some("fs_main"),
-                            targets: &[Some(wgpu::ColorTargetState {
-                                format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                                blend: None,
-                                write_mask: wgpu::ColorWrites::ALL,
-                            })],
+                            targets: &[Some(
+                                wgpu::ColorTargetState::builder()
+                                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                    .blend(None)
+                                    .write_mask(wgpu::ColorWrites::ALL)
+                                    .build(),
+                            )],
                             compilation_options: wgpu::PipelineCompilationOptions::default(),
                         }),
                         multiview: None,

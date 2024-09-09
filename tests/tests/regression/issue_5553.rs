@@ -38,11 +38,13 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                     module: &module,
                     entry_point: Some("fs_main"),
                     compilation_options: Default::default(),
-                    targets: &[Some(ColorTargetState {
-                        format: TextureFormat::Rgba8Unorm,
-                        blend: None,
-                        write_mask: ColorWrites::all(),
-                    })],
+                    targets: &[Some(
+                        ColorTargetState::builder()
+                            .format(TextureFormat::Rgba8Unorm)
+                            .blend(None)
+                            .write_mask(ColorWrites::all())
+                            .build(),
+                    )],
                 }),
                 multiview: None,
                 cache: None,

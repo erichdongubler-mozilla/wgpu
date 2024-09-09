@@ -217,11 +217,13 @@ impl crate::framework::Example for Example {
                 module: &shader,
                 entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::default(),
-                })],
+                targets: &[Some(
+                    wgpu::ColorTargetState::builder()
+                        .format(config.view_formats[0])
+                        .blend(wgpu::BlendState::ALPHA_BLENDING)
+                        .write_mask(wgpu::ColorWrites::default())
+                        .build(),
+                )],
             }),
             primitive: wgpu::PrimitiveState::builder()
                 .topology(wgpu::PrimitiveTopology::TriangleStrip)

@@ -74,11 +74,13 @@ impl crate::framework::Example for Example {
                 module: &shader,
                 entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::empty(),
-                })],
+                targets: &[Some(
+                    wgpu::ColorTargetState::builder()
+                        .format(config.view_formats[0])
+                        .maybe_blend(None)
+                        .write_mask(wgpu::ColorWrites::empty())
+                        .build(),
+                )],
             }),
             primitive: Default::default(),
             depth_stencil: Some(wgpu::DepthStencilState {

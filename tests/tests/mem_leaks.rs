@@ -101,11 +101,13 @@ async fn draw_test_with_reports(
                 module: &shader,
                 entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
+                targets: &[Some(
+                    wgpu::ColorTargetState::builder()
+                        .format(wgpu::TextureFormat::Rgba8Unorm)
+                        .blend(None)
+                        .write_mask(wgpu::ColorWrites::ALL)
+                        .build(),
+                )],
             }),
             multiview: None,
             cache: None,
