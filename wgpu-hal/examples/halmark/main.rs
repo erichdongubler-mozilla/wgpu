@@ -276,7 +276,6 @@ impl<A: hal::Api> Example<A> {
                 wgt::ColorTargetState::builder()
                     .format(surface_config.format)
                     .blend(wgt::BlendState::ALPHA_BLENDING)
-                    .write_mask(wgt::ColorWrites::default())
                     .build(),
             )],
             multiview: None,

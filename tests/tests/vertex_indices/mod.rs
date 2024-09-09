@@ -267,8 +267,6 @@ async fn vertex_index_common(ctx: TestingContext) {
             targets: &[Some(
                 wgpu::ColorTargetState::builder()
                     .format(wgpu::TextureFormat::Rgba8Unorm)
-                    .blend(None)
-                    .write_mask(wgpu::ColorWrites::ALL)
                     .build(),
             )],
         }),

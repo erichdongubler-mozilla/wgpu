@@ -136,7 +136,6 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
                     wgpu::ColorTargetState::builder()
                         .format(config.view_formats[0])
                         .blend(wgpu::BlendState::ALPHA_BLENDING)
-                        .write_mask(wgpu::ColorWrites::ALL)
                         .build(),
                 )],
             }),

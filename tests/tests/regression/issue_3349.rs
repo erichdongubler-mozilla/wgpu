@@ -109,8 +109,6 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
                 targets: &[Some(
                     wgpu::ColorTargetState::builder()
                         .format(wgpu::TextureFormat::Rgba8Unorm)
-                        .blend(None)
-                        .write_mask(wgpu::ColorWrites::ALL)
                         .build(),
                 )],
             }),

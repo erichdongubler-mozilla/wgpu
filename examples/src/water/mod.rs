@@ -540,7 +540,6 @@ impl crate::framework::Example for Example {
                                 .operation(wgpu::BlendOperation::Max)
                                 .build(),
                         })
-                        .write_mask(wgpu::ColorWrites::ALL)
                         .build(),
                 )],
             }),

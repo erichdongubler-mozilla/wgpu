@@ -41,8 +41,6 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
                     targets: &[Some(
                         ColorTargetState::builder()
                             .format(TextureFormat::Rgba8Unorm)
-                            .blend(None)
-                            .write_mask(ColorWrites::all())
                             .build(),
                     )],
                 }),

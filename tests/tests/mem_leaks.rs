@@ -104,8 +104,6 @@ async fn draw_test_with_reports(
                 targets: &[Some(
                     wgpu::ColorTargetState::builder()
                         .format(wgpu::TextureFormat::Rgba8Unorm)
-                        .blend(None)
-                        .write_mask(wgpu::ColorWrites::ALL)
                         .build(),
                 )],
             }),

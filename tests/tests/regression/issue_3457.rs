@@ -71,8 +71,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     targets: &[Some(
                         ColorTargetState::builder()
                             .format(TextureFormat::Rgba8Unorm)
-                            .blend(None)
-                            .write_mask(ColorWrites::all())
                             .build(),
                     )],
                 }),
@@ -102,8 +100,6 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     targets: &[Some(
                         ColorTargetState::builder()
                             .format(TextureFormat::Rgba8Unorm)
-                            .blend(None)
-                            .write_mask(ColorWrites::all())
                             .build(),
                     )],
                 }),
