@@ -93,8 +93,7 @@ impl crate::framework::Example for Example {
                         ..Default::default()
                     },
                     back: wgpu::StencilFaceState::IGNORE,
-                    read_mask: !0,
-                    write_mask: !0,
+                    ..Default::default()
                 },
                 bias: Default::default(),
             }),
@@ -127,8 +126,7 @@ impl crate::framework::Example for Example {
                         ..Default::default()
                     },
                     back: wgpu::StencilFaceState::IGNORE,
-                    read_mask: !0,
-                    write_mask: !0,
+                    ..Default::default()
                 },
                 bias: Default::default(),
             }),
