@@ -128,16 +128,16 @@ impl crate::framework::Example for Example {
                 entry_point: Some("main_vs"),
                 compilation_options: Default::default(),
                 buffers: &[
-                    wgpu::VertexBufferLayout {
-                        array_stride: 4 * 4,
-                        step_mode: wgpu::VertexStepMode::Instance,
-                        attributes: &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2],
-                    },
-                    wgpu::VertexBufferLayout {
-                        array_stride: 2 * 4,
-                        step_mode: wgpu::VertexStepMode::Vertex,
-                        attributes: &wgpu::vertex_attr_array![2 => Float32x2],
-                    },
+                    wgpu::VertexBufferLayout::builder()
+                        .array_stride(4 * 4)
+                        .step_mode(wgpu::VertexStepMode::Instance)
+                        .attributes(&wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2])
+                        .build(),
+                    wgpu::VertexBufferLayout::builder()
+                        .array_stride(2 * 4)
+                        .step_mode(wgpu::VertexStepMode::Vertex)
+                        .attributes(&wgpu::vertex_attr_array![2 => Float32x2])
+                        .build(),
                 ],
             },
             fragment: Some(wgpu::FragmentState {

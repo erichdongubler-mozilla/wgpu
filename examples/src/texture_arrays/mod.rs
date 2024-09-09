@@ -317,11 +317,13 @@ impl crate::framework::Example for Example {
                 module: &base_shader_module,
                 entry_point: Some("vert_main"),
                 compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: vertex_size as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2, 2 => Sint32],
-                }],
+                buffers: &[wgpu::VertexBufferLayout::builder()
+                    .array_stride(vertex_size as wgpu::BufferAddress)
+                    .step_mode(wgpu::VertexStepMode::Vertex)
+                    .attributes(
+                        &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2, 2 => Sint32],
+                    )
+                    .build()],
             },
             fragment: Some(wgpu::FragmentState {
                 module: fragment_shader_module,
@@ -333,7 +335,7 @@ impl crate::framework::Example for Example {
             depth_stencil: None,
             multisample: Default::default(),
             multiview: None,
-            cache: None
+            cache: None,
         });
 
         Self {
