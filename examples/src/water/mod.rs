@@ -526,21 +526,23 @@ impl crate::framework::Example for Example {
                 compilation_options: Default::default(),
                 // Describes how the colour will be interpolated
                 // and assigned to the output attachment.
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: Some(wgpu::BlendState {
-                        color: wgpu::BlendComponent::builder()
-                            .src_factor(wgpu::BlendFactor::SrcAlpha)
-                            .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
-                            .build(),
-                        alpha: wgpu::BlendComponent::builder()
-                            .src_factor(wgpu::BlendFactor::One)
-                            .dst_factor(wgpu::BlendFactor::One)
-                            .operation(wgpu::BlendOperation::Max)
-                            .build(),
-                    }),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
+                targets: &[Some(
+                    wgpu::ColorTargetState::builder()
+                        .format(config.view_formats[0])
+                        .blend(wgpu::BlendState {
+                            color: wgpu::BlendComponent::builder()
+                                .src_factor(wgpu::BlendFactor::SrcAlpha)
+                                .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
+                                .build(),
+                            alpha: wgpu::BlendComponent::builder()
+                                .src_factor(wgpu::BlendFactor::One)
+                                .dst_factor(wgpu::BlendFactor::One)
+                                .operation(wgpu::BlendOperation::Max)
+                                .build(),
+                        })
+                        .write_mask(wgpu::ColorWrites::ALL)
+                        .build(),
+                )],
             }),
             // How the triangles will be rasterized. This is more important
             // for the terrain because of the beneath-the water shot.

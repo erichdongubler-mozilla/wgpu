@@ -132,11 +132,13 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
                 module: &shader,
                 entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
+                targets: &[Some(
+                    wgpu::ColorTargetState::builder()
+                        .format(config.view_formats[0])
+                        .blend(wgpu::BlendState::ALPHA_BLENDING)
+                        .write_mask(wgpu::ColorWrites::ALL)
+                        .build(),
+                )],
             }),
             primitive: wgpu::PrimitiveState::builder()
                 .cull_mode(wgpu::Face::Back)

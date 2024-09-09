@@ -68,11 +68,13 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     module: &module,
                     entry_point: Some("double_buffer_frag"),
                     compilation_options: Default::default(),
-                    targets: &[Some(ColorTargetState {
-                        format: TextureFormat::Rgba8Unorm,
-                        blend: None,
-                        write_mask: ColorWrites::all(),
-                    })],
+                    targets: &[Some(
+                        ColorTargetState::builder()
+                            .format(TextureFormat::Rgba8Unorm)
+                            .blend(None)
+                            .write_mask(ColorWrites::all())
+                            .build(),
+                    )],
                 }),
                 multiview: None,
                 cache: None,
@@ -97,11 +99,13 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
                     module: &module,
                     entry_point: Some("single_buffer_frag"),
                     compilation_options: Default::default(),
-                    targets: &[Some(ColorTargetState {
-                        format: TextureFormat::Rgba8Unorm,
-                        blend: None,
-                        write_mask: ColorWrites::all(),
-                    })],
+                    targets: &[Some(
+                        ColorTargetState::builder()
+                            .format(TextureFormat::Rgba8Unorm)
+                            .blend(None)
+                            .write_mask(ColorWrites::all())
+                            .build(),
+                    )],
                 }),
                 multiview: None,
                 cache: None,

@@ -272,11 +272,13 @@ impl<A: hal::Api> Example<A> {
                 .build(),
             depth_stencil: None,
             multisample: Default::default(),
-            color_targets: &[Some(wgt::ColorTargetState {
-                format: surface_config.format,
-                blend: Some(wgt::BlendState::ALPHA_BLENDING),
-                write_mask: wgt::ColorWrites::default(),
-            })],
+            color_targets: &[Some(
+                wgt::ColorTargetState::builder()
+                    .format(surface_config.format)
+                    .blend(wgt::BlendState::ALPHA_BLENDING)
+                    .write_mask(wgt::ColorWrites::default())
+                    .build(),
+            )],
             multiview: None,
             cache: None,
         };
