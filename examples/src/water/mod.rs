@@ -529,16 +529,16 @@ impl crate::framework::Example for Example {
                 targets: &[Some(wgpu::ColorTargetState {
                     format: config.view_formats[0],
                     blend: Some(wgpu::BlendState {
-                        color: wgpu::BlendComponent {
-                            src_factor: wgpu::BlendFactor::SrcAlpha,
-                            dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
-                            operation: wgpu::BlendOperation::Add,
-                        },
-                        alpha: wgpu::BlendComponent {
-                            src_factor: wgpu::BlendFactor::One,
-                            dst_factor: wgpu::BlendFactor::One,
-                            operation: wgpu::BlendOperation::Max,
-                        },
+                        color: wgpu::BlendComponent::builder()
+                            .src_factor(wgpu::BlendFactor::SrcAlpha)
+                            .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
+                            .operation(wgpu::BlendOperation::Add)
+                            .build(),
+                        alpha: wgpu::BlendComponent::builder()
+                            .src_factor(wgpu::BlendFactor::One)
+                            .dst_factor(wgpu::BlendFactor::One)
+                            .operation(wgpu::BlendOperation::Max)
+                            .build(),
                     }),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],

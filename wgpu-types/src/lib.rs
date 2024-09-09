@@ -2053,16 +2053,19 @@ pub enum BlendOperation {
 /// Corresponds to [WebGPU `GPUBlendComponent`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpublendcomponent).
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(bon::Builder, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct BlendComponent {
     /// Multiplier for the source, which is produced by the fragment shader.
+    #[builder(default = BlendFactor::One)]
     pub src_factor: BlendFactor,
     /// Multiplier for the destination, which is stored in the target.
+    #[builder(default = BlendFactor::Zero)]
     pub dst_factor: BlendFactor,
     /// The binary operation applied to the source and destination,
     /// multiplied by their respective factors.
+    #[builder(default)]
     pub operation: BlendOperation,
 }
 
