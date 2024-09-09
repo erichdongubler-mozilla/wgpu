@@ -543,11 +543,6 @@ impl crate::framework::Example for Example {
                         )])
                         .build(),
                 )
-                // No multisampling is used.
-                .multisample(Default::default())
-                .maybe_multiview(None)
-                // No pipeline caching is used
-                .maybe_cache(None)
                 .build(),
         );
 
@@ -580,9 +575,6 @@ impl crate::framework::Example for Example {
                     .depth_compare(wgpu::CompareFunction::Less)
                     .build(),
             )
-            .multisample(Default::default())
-            .maybe_multiview(None)
-            .maybe_cache(None)
             .build()
         );
 

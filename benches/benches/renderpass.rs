@@ -174,7 +174,6 @@ impl RenderpassState {
 
         let pipeline = device_state.device.create_render_pipeline(
             &wgpu::RenderPipelineDescriptor::builder()
-                .label(None)
                 .layout(&pipeline_layout)
                 .vertex(
                     wgpu::VertexState::from_module(&sm)
@@ -188,8 +187,6 @@ impl RenderpassState {
                         .cull_mode(wgpu::Face::Back)
                         .build(),
                 )
-                .maybe_depth_stencil(None)
-                .multisample(Default::default())
                 .fragment(
                     wgpu::FragmentState::from_module(&sm)
                         .entry_point("fs_main")
@@ -200,8 +197,6 @@ impl RenderpassState {
                         )])
                         .build(),
                 )
-                .maybe_multiview(None)
-                .maybe_cache(None)
                 .build(),
         );
 
@@ -262,7 +257,6 @@ impl RenderpassState {
             bindless_pipeline = Some(
                 device_state.device.create_render_pipeline(
                     &wgpu::RenderPipelineDescriptor::builder()
-                        .label(None)
                         .layout(&bindless_pipeline_layout)
                         .vertex(
                             wgpu::VertexState::from_module(&bindless_shader_module)
@@ -276,8 +270,6 @@ impl RenderpassState {
                                 .cull_mode(wgpu::Face::Back)
                                 .build(),
                         )
-                        .maybe_depth_stencil(None)
-                        .multisample(Default::default())
                         .fragment(
                             wgpu::FragmentState::from_module(&bindless_shader_module)
                                 .entry_point("fs_main")
@@ -288,8 +280,6 @@ impl RenderpassState {
                                 )])
                                 .build(),
                         )
-                        .maybe_multiview(None)
-                        .maybe_cache(None)
                         .build(),
                 ),
             );
