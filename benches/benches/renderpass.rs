@@ -194,8 +194,6 @@ impl RenderpassState {
                         targets: &[Some(
                             wgpu::ColorTargetState::builder()
                                 .format(wgpu::TextureFormat::Rgba8UnormSrgb)
-                                .blend(None)
-                                .write_mask(wgpu::ColorWrites::ALL)
                                 .build(),
                         )],
                         compilation_options: wgpu::PipelineCompilationOptions::default(),
@@ -280,8 +278,6 @@ impl RenderpassState {
                             targets: &[Some(
                                 wgpu::ColorTargetState::builder()
                                     .format(wgpu::TextureFormat::Rgba8UnormSrgb)
-                                    .blend(None)
-                                    .write_mask(wgpu::ColorWrites::ALL)
                                     .build(),
                             )],
                             compilation_options: wgpu::PipelineCompilationOptions::default(),

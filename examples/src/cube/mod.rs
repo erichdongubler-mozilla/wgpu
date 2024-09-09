@@ -278,7 +278,6 @@ impl crate::framework::Example for Example {
                                     .build(),
                                 alpha: wgpu::BlendComponent::REPLACE,
                             })
-                            .write_mask(wgpu::ColorWrites::ALL)
                             .build(),
                     )],
                 }),

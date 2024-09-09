@@ -77,7 +77,6 @@ impl crate::framework::Example for Example {
                 targets: &[Some(
                     wgpu::ColorTargetState::builder()
                         .format(config.view_formats[0])
-                        .maybe_blend(None)
                         .write_mask(wgpu::ColorWrites::empty())
                         .build(),
                 )],

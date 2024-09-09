@@ -251,8 +251,6 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
                 targets: &[Some(
                     wgpu::ColorTargetState::builder()
                         .format(wgpu::TextureFormat::Rgba8Unorm)
-                        .blend(None)
-                        .write_mask(wgpu::ColorWrites::ALL)
                         .build(),
                 )],
             }),
