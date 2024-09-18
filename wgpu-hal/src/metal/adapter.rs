@@ -503,10 +503,17 @@ impl super::PrivateCapabilities {
             }
         }
 
-        let version: NSOperatingSystemVersion = unsafe {
+        #[allow(unused_assignments)]
+        let mut version: NSOperatingSystemVersion = unsafe {
             let process_info: *mut objc::runtime::Object =
                 msg_send![class!(NSProcessInfo), processInfo];
             msg_send![process_info, operatingSystemVersion]
+        };
+
+        version = NSOperatingSystemVersion {
+            major: 10,
+            minor: 11,
+            patch: 0,
         };
 
         let os_is_mac = device.supports_feature_set(MTLFeatureSet::macOS_GPUFamily1_v1);

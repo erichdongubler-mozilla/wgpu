@@ -173,7 +173,7 @@ impl super::Device {
         );
 
         let options = metal::CompileOptions::new();
-        options.set_language_version(self.shared.private_caps.msl_version);
+        options.set_language_version(dbg!(self.shared.private_caps.msl_version));
 
         if self.shared.private_caps.supports_preserve_invariance {
             options.set_preserve_invariance(true);

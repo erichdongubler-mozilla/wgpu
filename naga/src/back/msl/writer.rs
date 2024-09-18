@@ -450,6 +450,11 @@ fn should_pack_struct_member(
             size: crate::VectorSize::Tri,
             scalar: scalar @ crate::Scalar { width: 4, .. },
         } if is_tight => Some(scalar),
+        crate::TypeInner::Matrix {
+            columns: _,
+            rows: crate::VectorSize::Tri,
+            scalar: scalar @ crate::Scalar { width: 4, .. },
+        } => Some(scalar),
         _ => None,
     }
 }
