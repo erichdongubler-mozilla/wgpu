@@ -95,8 +95,8 @@ async fn run_test(
         var<storage, read_write> out: array<u32, 3>;
 
         @compute @workgroup_size(1)
-        fn main(@builtin(num_workgroups) num_workgroups: vec3<u32>, @builtin(workgroup_id) workgroup_id: vec3<u32>) {
-            if (all(workgroup_id == vec3<u32>())) {
+        fn main(@builtin(num_workgroups) num_workgroups: vec3u, @builtin(workgroup_id) workgroup_id: vec3u) {
+            if (all(workgroup_id == vec3u())) {
                 out[0] = num_workgroups.x + test_offset.inner;
                 out[1] = num_workgroups.y + test_offset.inner;
                 out[2] = num_workgroups.z + test_offset.inner;

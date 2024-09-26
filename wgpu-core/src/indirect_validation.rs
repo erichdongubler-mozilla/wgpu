@@ -74,7 +74,7 @@ impl IndirectValidation {
             @compute @workgroup_size(1)
             fn main() {{
                 let src = vec3(src[offset.inner], src[offset.inner + 1], src[offset.inner + 2]);
-                let res = select(src, vec3<u32>(), src > vec3({max_compute_workgroups_per_dimension}u));
+                let res = select(src, vec3u(), src > vec3({max_compute_workgroups_per_dimension}u));
                 dst[0] = res.x;
                 dst[1] = res.y;
                 dst[2] = res.z;
