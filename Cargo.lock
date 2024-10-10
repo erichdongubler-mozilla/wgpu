@@ -4842,7 +4842,6 @@ dependencies = [
  "indexmap",
  "log",
  "naga",
- "once_cell",
  "parking_lot",
  "portable-atomic",
  "profiling",
