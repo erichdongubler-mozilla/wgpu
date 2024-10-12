@@ -17,7 +17,7 @@ use naga::{
 };
 
 #[track_caller]
-fn check(input: &str, snapshot: &str) {
+fn assert_parse_err(input: &str, snapshot: &str) {
     let output = match naga::front::wgsl::parse_str(input) {
         Ok(_) => panic!("expected parser error, but parsing succeeded!"),
         Err(err) => err.emit_to_string(input),
@@ -50,7 +50,7 @@ fn check_success(input: &str) {
 #[test]
 fn very_negative_integers() {
     // wgpu#4492
-    check(
+    assert_parse_err(
         "const i32min = -0x80000000i;",
         r###"error: numeric literal not representable by target type: `0x80000000i`
   ┌─ wgsl:1:17
@@ -64,7 +64,7 @@ fn very_negative_integers() {
 
 #[test]
 fn reserved_identifier_prefix() {
-    check(
+    assert_parse_err(
         "var __bad;",
         r###"error: Identifier starts with a reserved prefix: `__bad`
   ┌─ wgsl:1:5
@@ -78,7 +78,7 @@ fn reserved_identifier_prefix() {
 
 #[test]
 fn function_without_identifier() {
-    check(
+    assert_parse_err(
         "fn () {}",
         r###"error: expected identifier, found "("
   ┌─ wgsl:1:4
@@ -92,7 +92,7 @@ fn function_without_identifier() {
 
 #[test]
 fn invalid_integer() {
-    check(
+    assert_parse_err(
         "fn foo([location(1.)] x: i32) {}",
         r###"error: expected identifier, found "["
   ┌─ wgsl:1:8
@@ -106,7 +106,7 @@ fn invalid_integer() {
 
 #[test]
 fn invalid_float() {
-    check(
+    assert_parse_err(
         "const scale: f32 = 1.1.;",
         r###"error: expected identifier, found ";"
   ┌─ wgsl:1:24
@@ -120,7 +120,7 @@ fn invalid_float() {
 
 #[test]
 fn invalid_texture_sample_type() {
-    check(
+    assert_parse_err(
         "const x: texture_2d<bool>;",
         r###"error: texture sample type must be one of f32, i32 or u32, but found bool
   ┌─ wgsl:1:21
@@ -134,7 +134,7 @@ fn invalid_texture_sample_type() {
 
 #[test]
 fn unknown_identifier() {
-    check(
+    assert_parse_err(
         r###"
               fn f(x: f32) -> f32 {
                   return x * schmoo;
@@ -152,7 +152,7 @@ fn unknown_identifier() {
 
 #[test]
 fn bad_texture() {
-    check(
+    assert_parse_err(
         r#"
             @group(0) @binding(0) var sampler1 : sampler;
 
@@ -174,7 +174,7 @@ fn bad_texture() {
 
 #[test]
 fn bad_type_cast() {
-    check(
+    assert_parse_err(
         r#"
             fn x() -> i32 {
                 return i32(vec2<f32>(0.0));
@@ -192,7 +192,7 @@ fn bad_type_cast() {
 
 #[test]
 fn cross_vec2() {
-    check(
+    assert_parse_err(
         r#"
             fn x() -> f32 {
                 return cross(vec2(0., 1.), vec2(0., 1.));
@@ -217,7 +217,7 @@ error: wrong type passed as argument #1 to `cross`
 
 #[test]
 fn cross_vec4() {
-    check(
+    assert_parse_err(
         r#"
             fn x() -> f32 {
                 return cross(vec4(0., 1., 2., 3.), vec4(0., 1., 2., 3.));
@@ -242,7 +242,7 @@ error: wrong type passed as argument #1 to `cross`
 
 #[test]
 fn type_not_constructible() {
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = atomic<i32>(0);
@@ -260,7 +260,7 @@ fn type_not_constructible() {
 
 #[test]
 fn type_not_inferable() {
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = mat2x2();
@@ -278,7 +278,7 @@ fn type_not_inferable() {
 
 #[test]
 fn unexpected_constructor_parameters() {
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = i32(0, 1);
@@ -296,7 +296,7 @@ fn unexpected_constructor_parameters() {
 
 #[test]
 fn constructor_parameter_type_mismatch() {
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = mat2x2<f32>(array(0, 1), vec2(2, 3));
@@ -317,7 +317,7 @@ fn constructor_parameter_type_mismatch() {
 #[test]
 fn vector_constructor_incorrect_component_count() {
     // Too few components
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = vec4(1, 2, 3);
@@ -333,7 +333,7 @@ fn vector_constructor_incorrect_component_count() {
     );
 
     // Too many components
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = vec4(1, 2, 3, 4, 5);
@@ -350,7 +350,7 @@ fn vector_constructor_incorrect_component_count() {
 
     // The outer constructor has the correct number of components, but only
     // because the inner constructor has too many.
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 _ = vec4(1, vec2(2, 3, 4));
@@ -368,7 +368,7 @@ fn vector_constructor_incorrect_component_count() {
 
 #[test]
 fn bad_texture_sample_type() {
-    check(
+    assert_parse_err(
         r#"
             @group(0) @binding(0) var sampler1 : sampler;
             @group(0) @binding(1) var texture : texture_2d<bool>;
@@ -390,7 +390,7 @@ fn bad_texture_sample_type() {
 
 #[test]
 fn bad_for_initializer() {
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 for ({};;) {}
@@ -408,7 +408,7 @@ fn bad_for_initializer() {
 
 #[test]
 fn unknown_storage_class() {
-    check(
+    assert_parse_err(
         r#"
             @group(0) @binding(0) var<bad> texture: texture_2d<f32>;
         "#,
@@ -424,7 +424,7 @@ fn unknown_storage_class() {
 
 #[test]
 fn unknown_attribute() {
-    check(
+    assert_parse_err(
         r#"
             @a
             fn x() {}
@@ -441,7 +441,7 @@ fn unknown_attribute() {
 
 #[test]
 fn unknown_built_in() {
-    check(
+    assert_parse_err(
         r#"
             fn x(@builtin(unknown_built_in) y: u32) {}
         "#,
@@ -457,7 +457,7 @@ fn unknown_built_in() {
 
 #[test]
 fn unknown_access() {
-    check(
+    assert_parse_err(
         r#"
             var<storage,unknown_access> x: array<u32>;
         "#,
@@ -473,7 +473,7 @@ fn unknown_access() {
 
 #[test]
 fn unknown_ident() {
-    check(
+    assert_parse_err(
         r#"
             fn main() {
                 let a = b;
@@ -491,7 +491,7 @@ fn unknown_ident() {
 
 #[test]
 fn unknown_scalar_type() {
-    check(
+    assert_parse_err(
         r#"
             const a = vec2<vec2f>();
         "#,
@@ -509,7 +509,7 @@ fn unknown_scalar_type() {
 
 #[test]
 fn unknown_type() {
-    check(
+    assert_parse_err(
         r#"
             const a: Vec = 10;
         "#,
@@ -525,7 +525,7 @@ fn unknown_type() {
 
 #[test]
 fn unknown_storage_format() {
-    check(
+    assert_parse_err(
         r#"
             const storage1: texture_storage_1d<rgba>;
         "#,
@@ -541,7 +541,7 @@ fn unknown_storage_format() {
 
 #[test]
 fn unknown_conservative_depth() {
-    check(
+    assert_parse_err(
         r#"
             @early_depth_test(abc) fn main() {}
         "#,
@@ -557,7 +557,7 @@ fn unknown_conservative_depth() {
 
 #[test]
 fn struct_member_size_too_low() {
-    check(
+    assert_parse_err(
         r#"
             struct Bar {
                 @size(0) data: array<f32>
@@ -575,7 +575,7 @@ fn struct_member_size_too_low() {
 
 #[test]
 fn struct_member_align_too_low() {
-    check(
+    assert_parse_err(
         r#"
             struct Bar {
                 @align(8) data: vec3<f32>
@@ -593,7 +593,7 @@ fn struct_member_align_too_low() {
 
 #[test]
 fn struct_member_non_po2_align() {
-    check(
+    assert_parse_err(
         r#"
             struct Bar {
                 @align(7) data: array<f32>
@@ -611,7 +611,7 @@ fn struct_member_non_po2_align() {
 
 #[test]
 fn inconsistent_binding() {
-    check(
+    assert_parse_err(
         r#"
         fn foo(@builtin(vertex_index) @location(0) x: u32) {}
         "#,
@@ -627,7 +627,7 @@ fn inconsistent_binding() {
 
 #[test]
 fn unknown_local_function() {
-    check(
+    assert_parse_err(
         r#"
             fn x() {
                 for (a();;) {}
@@ -645,7 +645,7 @@ fn unknown_local_function() {
 
 #[test]
 fn let_type_mismatch() {
-    check(
+    assert_parse_err(
         r#"
             const x: i32 = 1.0;
         "#,
@@ -658,7 +658,7 @@ fn let_type_mismatch() {
 "#,
     );
 
-    check(
+    assert_parse_err(
         r#"
             fn foo() {
                 let x: f32 = true;
@@ -676,7 +676,7 @@ fn let_type_mismatch() {
 
 #[test]
 fn var_type_mismatch() {
-    check(
+    assert_parse_err(
         r#"
             fn foo() {
                 var x: f32 = 1u;
@@ -694,7 +694,7 @@ fn var_type_mismatch() {
 
 #[test]
 fn local_var_missing_type() {
-    check(
+    assert_parse_err(
         r#"
             fn foo() {
                 var x;
@@ -713,7 +713,7 @@ fn local_var_missing_type() {
 #[test]
 fn reserved_keyword() {
     // global var
-    check(
+    assert_parse_err(
         r#"
             var bool: bool = true;
         "#,
@@ -727,7 +727,7 @@ fn reserved_keyword() {
     );
 
     // global constant
-    check(
+    assert_parse_err(
         r#"
             const break: bool = true;
             fn foo() {
@@ -744,7 +744,7 @@ fn reserved_keyword() {
     );
 
     // local let
-    check(
+    assert_parse_err(
         r#"
             fn foo() {
                 let atomic: f32 = 1.0;
@@ -760,7 +760,7 @@ fn reserved_keyword() {
     );
 
     // local var
-    check(
+    assert_parse_err(
         r#"
             fn foo() {
                 var sampler: f32 = 1.0;
@@ -776,7 +776,7 @@ fn reserved_keyword() {
     );
 
     // fn name
-    check(
+    assert_parse_err(
         r#"
             fn break() {}
         "#,
@@ -790,7 +790,7 @@ fn reserved_keyword() {
     );
 
     // struct
-    check(
+    assert_parse_err(
         r#"
             struct array {}
         "#,
@@ -804,7 +804,7 @@ fn reserved_keyword() {
     );
 
     // struct member
-    check(
+    assert_parse_err(
         r#"
             struct Foo { sampler: f32 }
         "#,
@@ -821,7 +821,7 @@ fn reserved_keyword() {
 #[test]
 fn module_scope_identifier_redefinition() {
     // const
-    check(
+    assert_parse_err(
         r#"
             const foo: bool = true;
             const foo: bool = true;
@@ -837,7 +837,7 @@ fn module_scope_identifier_redefinition() {
 "###,
     );
     // var
-    check(
+    assert_parse_err(
         r#"
             var foo: bool = true;
             var foo: bool = true;
@@ -854,7 +854,7 @@ fn module_scope_identifier_redefinition() {
     );
 
     // let and var
-    check(
+    assert_parse_err(
         r#"
             var foo: bool = true;
             const foo: bool = true;
@@ -871,7 +871,7 @@ fn module_scope_identifier_redefinition() {
     );
 
     // function
-    check(
+    assert_parse_err(
         r#"fn foo() {}
                 fn bar() {}
                 fn foo() {}"#,
@@ -888,7 +888,7 @@ fn module_scope_identifier_redefinition() {
     );
 
     // let and function
-    check(
+    assert_parse_err(
         r#"
             const foo: bool = true;
             fn foo() {}
@@ -907,7 +907,7 @@ fn module_scope_identifier_redefinition() {
 
 #[test]
 fn matrix_with_bad_type() {
-    check(
+    assert_parse_err(
         r#"
             fn main() {
                 let m = mat2x2<i32>();
@@ -922,7 +922,7 @@ fn matrix_with_bad_type() {
 "#,
     );
 
-    check(
+    assert_parse_err(
         r#"
             fn main() {
                 var m: mat3x3<i32>;
@@ -940,7 +940,7 @@ fn matrix_with_bad_type() {
 
 #[test]
 fn matrix_constructor_inferred() {
-    check(
+    assert_parse_err(
         r#"
             const m: mat2x2<f64> = mat2x2<f32>(vec2(0), vec2(1));
         "#,
@@ -1401,7 +1401,7 @@ fn invalid_arrays() {
             if name == "main"
     }
 
-    check(
+    assert_parse_err(
         "alias Bad = array<f32, true>;",
         r###"error: must be a const-expression that resolves to a concrete integer scalar (`u32` or `i32`)
   ┌─ wgsl:1:24
@@ -1412,7 +1412,7 @@ fn invalid_arrays() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         r#"
             const length: f32 = 2.718;
             alias Bad = array<f32, length>;
@@ -1426,7 +1426,7 @@ fn invalid_arrays() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "alias Bad = array<f32, 0>;",
         r###"error: array element count must be positive (> 0)
   ┌─ wgsl:1:24
@@ -1437,7 +1437,7 @@ fn invalid_arrays() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "alias Bad = array<f32, -1>;",
         r###"error: array element count must be positive (> 0)
   ┌─ wgsl:1:24
@@ -1532,7 +1532,7 @@ fn struct_type_mismatch_in_assignment() {
 
 #[test]
 fn struct_type_mismatch_in_let_decl() {
-    check(
+    assert_parse_err(
         "
         struct Foo { a: u32 };
         struct Bar { a: u32 };
@@ -1594,7 +1594,7 @@ fn struct_type_mismatch_in_argument() {
 
 #[test]
 fn struct_type_mismatch_in_global_var() {
-    check(
+    assert_parse_err(
         "
         struct Foo { a: u32 };
         struct Bar { a: u32 };
@@ -1613,7 +1613,7 @@ fn struct_type_mismatch_in_global_var() {
 
 #[test]
 fn struct_type_mismatch_in_global_const() {
-    check(
+    assert_parse_err(
         "
         struct Foo { a: u32 };
         struct Bar { a: u32 };
@@ -2500,7 +2500,7 @@ fn var_init() {
 
 #[test]
 fn misplaced_break_if() {
-    check(
+    assert_parse_err(
         "
         fn test_misplaced_break_if() {
             loop {
@@ -2541,7 +2541,7 @@ fn break_if_bad_condition() {
 
 #[test]
 fn swizzle_assignment() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             var v = vec2(0);
@@ -2563,7 +2563,7 @@ fn swizzle_assignment() {
 
 #[test]
 fn binary_statement() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             3 + 5;
@@ -2581,7 +2581,7 @@ fn binary_statement() {
 
 #[test]
 fn assign_to_expr() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             3 + 5 = 10;
@@ -2599,7 +2599,7 @@ fn assign_to_expr() {
 
 #[test]
 fn assign_to_let() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             let a = 10;
@@ -2619,7 +2619,7 @@ fn assign_to_let() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "
         fn f() {
             let a = array(1, 2);
@@ -2639,7 +2639,7 @@ fn assign_to_let() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "
         struct S { a: i32 }
 
@@ -2664,7 +2664,7 @@ fn assign_to_let() {
 
 #[test]
 fn recursive_function() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             f();
@@ -2684,7 +2684,7 @@ fn recursive_function() {
 
 #[test]
 fn cyclic_function() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             g();
@@ -2712,7 +2712,7 @@ fn cyclic_function() {
 
 #[test]
 fn switch_signed_unsigned_mismatch() {
-    check(
+    assert_parse_err(
         "
         fn x(y: u32) {
             switch y {
@@ -2729,7 +2729,7 @@ fn switch_signed_unsigned_mismatch() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "
         fn x(y: i32) {
             switch y {
@@ -2749,7 +2749,7 @@ fn switch_signed_unsigned_mismatch() {
 
 #[test]
 fn switch_invalid_type() {
-    check(
+    assert_parse_err(
         "
         fn x(y: f32) {
             switch y {
@@ -2766,7 +2766,7 @@ fn switch_invalid_type() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "
         fn x(y: vec2<i32>) {
             switch y {
@@ -2783,7 +2783,7 @@ fn switch_invalid_type() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "
         fn x() {
             switch 0 {
@@ -2803,7 +2803,7 @@ fn switch_invalid_type() {
 
 #[test]
 fn switch_non_const_case() {
-    check(
+    assert_parse_err(
         "
         fn x(y: i32) {
             switch 0 {
@@ -2823,7 +2823,7 @@ fn switch_non_const_case() {
 
 #[test]
 fn function_returns_void() {
-    check(
+    assert_parse_err(
         "
         fn x() {
 	        let a = vec2<f32>(1.0, 2.0);
@@ -2847,7 +2847,7 @@ fn function_returns_void() {
 
 #[test]
 fn function_must_use_unused() {
-    check(
+    assert_parse_err(
         r#"
 @must_use
 fn use_me(a: i32) -> i32 {
@@ -2874,7 +2874,7 @@ fn useless() -> i32 {
 
 #[test]
 fn function_must_use_returns_void() {
-    check(
+    assert_parse_err(
         r#"
 @must_use
 fn use_me(a: i32) {
@@ -2897,7 +2897,7 @@ fn use_me(a: i32) {
 
 #[test]
 fn function_must_use_repeated() {
-    check(
+    assert_parse_err(
         r#"
 @must_use
 @must_use
@@ -2917,7 +2917,7 @@ fn use_me(a: i32) -> i32 {
 
 #[test]
 fn struct_member_must_use() {
-    check(
+    assert_parse_err(
         r#"
 struct S {
   @must_use a: i32,
@@ -2935,7 +2935,7 @@ struct S {
 
 #[test]
 fn function_param_redefinition_as_param() {
-    check(
+    assert_parse_err(
         "
         fn x(a: f32, a: vec2<f32>) {}
     ",
@@ -2953,7 +2953,7 @@ fn function_param_redefinition_as_param() {
 
 #[test]
 fn function_param_redefinition_as_local() {
-    check(
+    assert_parse_err(
         "
         fn x(a: f32) {
 			let a = 0.0;
@@ -2973,7 +2973,7 @@ fn function_param_redefinition_as_local() {
 
 #[test]
 fn struct_redefinition() {
-    check(
+    assert_parse_err(
         "
         struct Foo { a: u32 };
         struct Foo { a: u32 };
@@ -2992,7 +2992,7 @@ fn struct_redefinition() {
 
 #[test]
 fn struct_member_redefinition() {
-    check(
+    assert_parse_err(
         "
         struct A {
             a: f32,
@@ -3034,7 +3034,7 @@ fn function_must_return_value() {
 
 #[test]
 fn constructor_type_error_span() {
-    check(
+    assert_parse_err(
         "
         fn unfortunate() {
             var a: array<i32, 1> = array<i32, 1>(1.0);
@@ -3054,7 +3054,7 @@ fn constructor_type_error_span() {
 
 #[test]
 fn global_initialization_type_mismatch() {
-    check(
+    assert_parse_err(
         "
         var<private> a: vec2<f32> = vec2<i32>(1i, 2i);
     ",
@@ -3160,7 +3160,7 @@ fn limit_braced_statement_nesting() {
     // stack size that works on all platforms.
     std::thread::Builder::new()
         .stack_size(1024 * 1024 * 2 /* MB */)
-        .spawn(|| check(too_many_braces, expected_diagnostic))
+        .spawn(|| assert_parse_err(too_many_braces, expected_diagnostic))
         .unwrap()
         .join()
         .unwrap()
@@ -3314,7 +3314,7 @@ fn too_many_unclosed_loops() {
     // stack size that works on all platforms.
     std::thread::Builder::new()
         .stack_size(1024 * 1024 * 2 /* MB */)
-        .spawn(|| check(too_many_braces, expected_diagnostic))
+        .spawn(|| assert_parse_err(too_many_braces, expected_diagnostic))
         .unwrap()
         .join()
         .unwrap()
@@ -3322,7 +3322,7 @@ fn too_many_unclosed_loops() {
 
 #[test]
 fn local_const_wrong_type() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             const c: i32 = 5u;
@@ -3340,7 +3340,7 @@ fn local_const_wrong_type() {
 
 #[test]
 fn local_const_from_let() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             let a = 5;
@@ -3359,7 +3359,7 @@ fn local_const_from_let() {
 
 #[test]
 fn local_const_from_var() {
-    check(
+    assert_parse_err(
         "
         fn f() {
             var a = 5;
@@ -3378,7 +3378,7 @@ fn local_const_from_var() {
 
 #[test]
 fn local_const_from_override() {
-    check(
+    assert_parse_err(
         "
         override o: i32;
         fn f() {
@@ -3397,7 +3397,7 @@ fn local_const_from_override() {
 
 #[test]
 fn local_const_from_global_var() {
-    check(
+    assert_parse_err(
         "
         var v: i32;
         fn f() {
@@ -3416,7 +3416,7 @@ fn local_const_from_global_var() {
 
 #[test]
 fn only_one_swizzle_type() {
-    check(
+    assert_parse_err(
         "
         const ok1 = vec2(0.0, 0.0).xy;
         const ok2 = vec2(0.0, 0.0).rg;
@@ -3434,7 +3434,7 @@ fn only_one_swizzle_type() {
 
 #[test]
 fn const_assert_must_be_const() {
-    check(
+    assert_parse_err(
         "
         fn foo() {
             let a = 5;
@@ -3453,7 +3453,7 @@ fn const_assert_must_be_const() {
 
 #[test]
 fn const_assert_must_be_bool() {
-    check(
+    assert_parse_err(
         "
             const_assert(5); // 5 is not bool
         ",
@@ -3469,7 +3469,7 @@ fn const_assert_must_be_bool() {
 
 #[test]
 fn const_assert_failed() {
-    check(
+    assert_parse_err(
         "
             const_assert(false);
         ",
@@ -3485,7 +3485,7 @@ fn const_assert_failed() {
 
 #[test]
 fn reject_utf8_bom() {
-    check(
+    assert_parse_err(
         "\u{FEFF}fn main() {}",
         r#"error: expected global item (`struct`, `const`, `var`, `alias`, `fn`, `diagnostic`, `enable`, `requires`, `;`) or the end of the file, found "\u{feff}"
   ┌─ wgsl:1:1
@@ -3499,7 +3499,7 @@ fn reject_utf8_bom() {
 
 #[test]
 fn matrix_vector_pointers() {
-    check(
+    assert_parse_err(
         "fn foo() {
             var v: vec2<f32>;
             let p = &v[0];
@@ -3513,7 +3513,7 @@ fn matrix_vector_pointers() {
 "#,
     );
 
-    check(
+    assert_parse_err(
         "fn foo() {
             var v: vec2<f32>;
             let p = &v.x;
@@ -3527,7 +3527,7 @@ fn matrix_vector_pointers() {
 "#,
     );
 
-    check(
+    assert_parse_err(
         "fn foo() {
             var m: mat2x2<f32>;
             let p = &m[0][0];
@@ -3545,7 +3545,7 @@ fn matrix_vector_pointers() {
 #[test]
 fn vector_logical_ops() {
     // Const context
-    check(
+    assert_parse_err(
         "const and = vec2(true, false) && vec2(false, false);",
         r###"error: Cannot apply the binary op to the arguments
   ┌─ wgsl:1:13
@@ -3556,7 +3556,7 @@ fn vector_logical_ops() {
 "###,
     );
 
-    check(
+    assert_parse_err(
         "const or = vec2(true, false) || vec2(false, false);",
         r###"error: Cannot apply the binary op to the arguments
   ┌─ wgsl:1:12
@@ -3568,7 +3568,7 @@ fn vector_logical_ops() {
     );
 
     // Runtime context
-    check(
+    assert_parse_err(
         "fn foo(a: vec2<bool>, b: vec2<bool>) {
             let y = a && b;
         }",
@@ -3577,7 +3577,7 @@ fn vector_logical_ops() {
 "#,
     );
 
-    check(
+    assert_parse_err(
         "fn foo(a: vec2<bool>, b: vec2<bool>) {
             let y = a || b;
         }",
@@ -3622,7 +3622,7 @@ fn issue7165() {
 
 #[test]
 fn wrong_argument_count() {
-    check(
+    assert_parse_err(
         "fn foo() -> f32 {
             return sin();
         }",
@@ -3638,7 +3638,7 @@ fn wrong_argument_count() {
 
 #[test]
 fn too_many_arguments() {
-    check(
+    assert_parse_err(
         "fn foo() -> f32 {
             return sin(1.0, 2.0);
         }",
@@ -3656,7 +3656,7 @@ fn too_many_arguments() {
 
 #[test]
 fn too_many_arguments_2() {
-    check(
+    assert_parse_err(
         "fn foo() -> f32 {
             return distance(vec2<f32>(), 0i);
         }",
@@ -3686,7 +3686,7 @@ fn too_many_arguments_2() {
 
 #[test]
 fn inconsistent_type() {
-    check(
+    assert_parse_err(
         "fn foo() -> f32 {
             return dot(vec4<f32>(), vec3<f32>());
         }",
