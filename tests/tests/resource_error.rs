@@ -36,20 +36,20 @@ static BAD_TEXTURE: GpuTestConfiguration = GpuTestConfiguration::new().run_sync(
     let texture = fail(
         &ctx.device,
         || {
-            ctx.device.create_texture(&wgpu::TextureDescriptor {
-                label: None,
-                size: wgpu::Extent3d {
-                    width: 0,
-                    height: 12345678,
-                    depth_or_array_layers: 9001,
-                },
-                mip_level_count: 2000,
-                sample_count: 27,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                usage: wgpu::TextureUsages::all(),
-                view_formats: &[],
-            })
+            ctx.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .size(wgpu::Extent3d {
+                        width: 0,
+                        height: 12345678,
+                        depth_or_array_layers: 9001,
+                    })
+                    .mip_level_count(2000)
+                    .sample_count(27)
+                    .dimension(wgpu::TextureDimension::D2)
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::all())
+                    .build(),
+            )
         },
         Some("dimension x is zero"),
     );

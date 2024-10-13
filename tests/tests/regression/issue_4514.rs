@@ -18,20 +18,18 @@ async fn test_impl(ctx: &TestingContext) {
     const TEXTURE_WIDTH: u32 = 2;
     const BUFFER_SIZE: usize = (TEXTURE_WIDTH * TEXTURE_HEIGHT * 4) as usize;
 
-    let texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("Offscreen texture"),
-        size: wgpu::Extent3d {
-            width: TEXTURE_WIDTH,
-            height: TEXTURE_HEIGHT,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[],
-    });
+    let texture = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label(Some("Offscreen texture"))
+            .size(wgpu::Extent3d {
+                width: TEXTURE_WIDTH,
+                height: TEXTURE_HEIGHT,
+                depth_or_array_layers: 1,
+            })
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .build(),
+    );
     let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
 
     let shader = ctx
@@ -43,25 +41,22 @@ async fn test_impl(ctx: &TestingContext) {
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Pipeline"),
             layout: None,
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            primitive: wgpu::PrimitiveState::default(),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .build(),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
+            multisample: Default::default(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(wgpu::TextureFormat::Rgba8Unorm)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             multiview: None,
             cache: None,
         });

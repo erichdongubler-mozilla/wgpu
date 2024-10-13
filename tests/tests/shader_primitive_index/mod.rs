@@ -119,33 +119,30 @@ async fn pulling_common(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: None,
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: 8,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &[wgpu::VertexAttribute {
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .buffers(&[wgpu::VertexBufferLayout::builder()
+                    .array_stride(8)
+                    .attributes(&[wgpu::VertexAttribute {
                         format: wgpu::VertexFormat::Float32x2,
                         offset: 0,
                         shader_location: 0,
-                    }],
-                }],
-            },
-            primitive: wgpu::PrimitiveState::default(),
+                    }])
+                    .build()])
+                .build(),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
+            multisample: Default::default(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(wgpu::TextureFormat::Rgba8Unorm)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             multiview: None,
             cache: None,
         });
@@ -157,16 +154,13 @@ async fn pulling_common(
         height,
         depth_or_array_layers: 1,
     };
-    let color_texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size: texture_size,
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[],
-    });
+    let color_texture = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .size(texture_size)
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC)
+            .build(),
+    );
     let color_view = color_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
     let readback_buffer = wgpu_test::image::ReadbackBuffers::new(&ctx.device, &color_texture);

@@ -22,19 +22,18 @@ static PARTIALLY_BOUNDED_ARRAY: GpuTestConfiguration = GpuTestConfiguration::new
             height: 1,
             depth_or_array_layers: 1,
         };
-        let storage_texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba32Float,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::COPY_DST
-                | wgpu::TextureUsages::STORAGE_BINDING
-                | wgpu::TextureUsages::COPY_SRC,
-            view_formats: &[],
-        });
+        let storage_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(texture_extent)
+                .format(wgpu::TextureFormat::Rgba32Float)
+                .usage(
+                    wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::COPY_DST
+                        | wgpu::TextureUsages::STORAGE_BINDING
+                        | wgpu::TextureUsages::COPY_SRC,
+                )
+                .build(),
+        );
 
         let texture_view = storage_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
@@ -55,11 +54,12 @@ static PARTIALLY_BOUNDED_ARRAY: GpuTestConfiguration = GpuTestConfiguration::new
 
         let cs_module = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("main"),
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .label("main")
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         let compute_pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             label: None,

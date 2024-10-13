@@ -51,27 +51,23 @@ impl Example {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x4],
-                }],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::LineList,
-                front_face: wgpu::FrontFace::Ccw,
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(shader)
+                .entry_point("vs_main")
+                .buffers(&[wgpu::VertexBufferLayout::builder()
+                    .array_stride(size_of::<Vertex>() as wgpu::BufferAddress)
+                    .attributes(&wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x4])
+                    .build()])
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::LineList)
+                .front_face(wgpu::FrontFace::Ccw)
+                .build(),
             depth_stencil: None,
             multisample: wgpu::MultisampleState {
                 count: sample_count,
@@ -106,16 +102,12 @@ impl Example {
             height: config.height,
             depth_or_array_layers: 1,
         };
-        let multisampled_frame_descriptor = &wgpu::TextureDescriptor {
-            size: multisampled_texture_extent,
-            mip_level_count: 1,
-            sample_count,
-            dimension: wgpu::TextureDimension::D2,
-            format: config.view_formats[0],
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        };
+        let multisampled_frame_descriptor = &wgpu::TextureDescriptor::builder()
+            .size(multisampled_texture_extent)
+            .sample_count(sample_count)
+            .format(config.view_formats[0])
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .build();
 
         device
             .create_texture(multisampled_frame_descriptor)
@@ -158,11 +150,11 @@ impl crate::framework::Example for Example {
 
         let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[])
+                .build(),
+        );
 
         let multisampled_framebuffer =
             Example::create_multisampled_framebuffer(device, config, sample_count);

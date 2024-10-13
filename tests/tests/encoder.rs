@@ -33,20 +33,17 @@ static DROP_ENCODER_AFTER_ERROR: GpuTestConfiguration = GpuTestConfiguration::ne
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
-        let target_tex = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: wgpu::Extent3d {
-                width: 100,
-                height: 100,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::R8Unorm,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
+        let target_tex = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(wgpu::Extent3d {
+                    width: 100,
+                    height: 100,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::R8Unorm)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
         let target_view = target_tex.create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut renderpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -102,20 +99,11 @@ fn encoder_operations_fail_while_pass_alive(ctx: TestingContext) {
             usage: wgpu::BufferUsages::COPY_DST,
         });
 
-    let texture_desc = wgpu::TextureDescriptor {
-        label: None,
-        size: wgpu::Extent3d {
-            width: 1,
-            height: 1,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::COPY_DST,
-        view_formats: &[],
-    };
+    let texture_desc = wgpu::TextureDescriptor::builder()
+        .size(Default::default())
+        .format(wgpu::TextureFormat::Rgba8Unorm)
+        .usage(wgpu::TextureUsages::COPY_DST)
+        .build();
     let texture_dst = ctx.device.create_texture(&texture_desc);
     let texture_src = ctx.device.create_texture(&wgpu::TextureDescriptor {
         usage: wgpu::TextureUsages::COPY_SRC,

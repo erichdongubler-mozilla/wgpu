@@ -45,11 +45,11 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("shader.wgsl"))),
     });
 
-    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[],
-        push_constant_ranges: &[],
-    });
+    let pipeline_layout = device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[])
+            .build(),
+    );
 
     let swapchain_capabilities = surface.get_capabilities(&adapter);
     let swapchain_format = swapchain_capabilities.formats[0];
@@ -57,21 +57,18 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&pipeline_layout),
-        vertex: wgpu::VertexState {
-            module: &shader,
-            entry_point: Some("vs_main"),
-            buffers: &[],
-            compilation_options: Default::default(),
-        },
-        fragment: Some(wgpu::FragmentState {
-            module: &shader,
-            entry_point: Some("fs_main"),
-            compilation_options: Default::default(),
-            targets: &[Some(swapchain_format.into())],
-        }),
-        primitive: wgpu::PrimitiveState::default(),
+        vertex: wgpu::VertexState::from_module(&shader)
+            .entry_point("vs_main")
+            .build(),
+        fragment: Some(
+            wgpu::FragmentState::from_module(&shader)
+                .entry_point("fs_main")
+                .targets(&[Some(swapchain_format.into())])
+                .build(),
+        ),
+        primitive: Default::default(),
         depth_stencil: None,
-        multisample: wgpu::MultisampleState::default(),
+        multisample: Default::default(),
         multiview: None,
         cache: None,
     });

@@ -211,11 +211,10 @@ static MINIMUM_BUFFER_BINDING_SIZE_LAYOUT: GpuTestConfiguration = GpuTestConfigu
 
         let pipeline_layout = ctx
             .device
-            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor ::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build()
+            );
 
         wgpu_test::fail(
             &ctx.device,
@@ -285,11 +284,10 @@ static MINIMUM_BUFFER_BINDING_SIZE_DISPATCH: GpuTestConfiguration = GpuTestConfi
 
         let pipeline_layout = ctx
             .device
-            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor ::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build()
+            );
 
         let pipeline = ctx
             .device

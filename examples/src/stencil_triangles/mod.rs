@@ -46,61 +46,58 @@ impl crate::framework::Example for Example {
             usage: wgpu::BufferUsages::VERTEX,
         });
 
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[])
+                .build(),
+        );
 
         let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let vertex_buffers = [wgpu::VertexBufferLayout {
-            array_stride: vertex_size as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[wgpu::VertexAttribute {
+        let vertex_buffers = [wgpu::VertexBufferLayout::builder()
+            .array_stride(vertex_size as wgpu::BufferAddress)
+            .attributes(&[wgpu::VertexAttribute {
                 format: wgpu::VertexFormat::Float32x4,
                 offset: 0,
                 shader_location: 0,
-            }],
-        }];
+            }])
+            .build()];
 
         let mask_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &vertex_buffers,
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::empty(),
-                })],
-            }),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .buffers(&vertex_buffers)
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(config.view_formats[0])
+                            .write_mask(wgpu::ColorWrites::empty())
+                            .build(),
+                    )])
+                    .build(),
+            ),
             primitive: Default::default(),
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Stencil8,
-                depth_write_enabled: false,
-                depth_compare: wgpu::CompareFunction::Always,
-                stencil: wgpu::StencilState {
-                    front: wgpu::StencilFaceState {
-                        compare: wgpu::CompareFunction::Always,
-                        pass_op: wgpu::StencilOperation::Replace,
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(wgpu::TextureFormat::Stencil8)
+                    .depth_compare(wgpu::CompareFunction::Always)
+                    .stencil(wgpu::StencilState {
+                        front: wgpu::StencilFaceState {
+                            compare: wgpu::CompareFunction::Always,
+                            pass_op: wgpu::StencilOperation::Replace,
+                            ..Default::default()
+                        },
+                        back: wgpu::StencilFaceState::IGNORE,
                         ..Default::default()
-                    },
-                    back: wgpu::StencilFaceState::IGNORE,
-                    read_mask: !0,
-                    write_mask: !0,
-                },
-                bias: Default::default(),
-            }),
-            multisample: wgpu::MultisampleState::default(),
+                    })
+                    .build(),
+            ),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -108,53 +105,48 @@ impl crate::framework::Example for Example {
         let outer_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &vertex_buffers,
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .buffers(&vertex_buffers)
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
             primitive: Default::default(),
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Stencil8,
-                depth_write_enabled: false,
-                depth_compare: wgpu::CompareFunction::Always,
-                stencil: wgpu::StencilState {
-                    front: wgpu::StencilFaceState {
-                        compare: wgpu::CompareFunction::Greater,
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(wgpu::TextureFormat::Stencil8)
+                    .depth_compare(wgpu::CompareFunction::Always)
+                    .stencil(wgpu::StencilState {
+                        front: wgpu::StencilFaceState {
+                            compare: wgpu::CompareFunction::Greater,
+                            ..Default::default()
+                        },
+                        back: wgpu::StencilFaceState::IGNORE,
                         ..Default::default()
-                    },
-                    back: wgpu::StencilFaceState::IGNORE,
-                    read_mask: !0,
-                    write_mask: !0,
-                },
-                bias: Default::default(),
-            }),
-            multisample: wgpu::MultisampleState::default(),
+                    })
+                    .build(),
+            ),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
 
-        let stencil_buffer = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Stencil buffer"),
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Stencil8,
-            view_formats: &[],
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        });
+        let stencil_buffer = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Stencil buffer")
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::Stencil8)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
 
         // Done
         Example {
@@ -176,20 +168,18 @@ impl crate::framework::Example for Example {
         device: &wgpu::Device,
         _queue: &wgpu::Queue,
     ) {
-        self.stencil_buffer = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Stencil buffer"),
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Stencil8,
-            view_formats: &[],
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        });
+        self.stencil_buffer = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .label("Stencil buffer")
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::Stencil8)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
     }
 
     fn render(&mut self, view: &wgpu::TextureView, device: &wgpu::Device, queue: &wgpu::Queue) {

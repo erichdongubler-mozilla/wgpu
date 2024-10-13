@@ -126,22 +126,14 @@ impl ComputepassState {
 
         let mut texture_views = Vec::with_capacity(texture_count);
         for i in 0..texture_count {
-            let texture = device_state
-                .device
-                .create_texture(&wgpu::TextureDescriptor {
-                    label: Some(&format!("Texture {i}")),
-                    size: wgpu::Extent3d {
-                        width: 1,
-                        height: 1,
-                        depth_or_array_layers: 1,
-                    },
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                    usage: wgpu::TextureUsages::TEXTURE_BINDING,
-                    view_formats: &[],
-                });
+            let texture = device_state.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label(&*format!("Texture {i}"))
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::TEXTURE_BINDING)
+                    .build(),
+            );
             texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {
                 label: Some(&format!("Texture View {i}")),
                 ..Default::default()
@@ -152,22 +144,14 @@ impl ComputepassState {
 
         let mut storage_texture_views = Vec::with_capacity(storage_texture_count);
         for i in 0..storage_texture_count {
-            let texture = device_state
-                .device
-                .create_texture(&wgpu::TextureDescriptor {
-                    label: Some(&format!("StorageTexture {i}")),
-                    size: wgpu::Extent3d {
-                        width: 1,
-                        height: 1,
-                        depth_or_array_layers: 1,
-                    },
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::R32Float,
-                    usage: wgpu::TextureUsages::STORAGE_BINDING,
-                    view_formats: &[],
-                });
+            let texture = device_state.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label(&*format!("StorageTexture {i}"))
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::R32Float)
+                    .usage(wgpu::TextureUsages::STORAGE_BINDING)
+                    .build(),
+            );
             storage_texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {
                 label: Some(&format!("StorageTexture View {i}")),
                 ..Default::default()
@@ -238,14 +222,11 @@ impl ComputepassState {
             .device
             .create_shader_module(wgpu::include_wgsl!("computepass.wgsl"));
 
-        let pipeline_layout =
-            device_state
-                .device
-                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                    label: None,
-                    bind_group_layouts: &[&bind_group_layout],
-                    push_constant_ranges: &[],
-                });
+        let pipeline_layout = device_state.device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         let pipeline =
             device_state
@@ -333,14 +314,11 @@ impl ComputepassState {
                 .device
                 .create_shader_module(wgpu::include_wgsl!("computepass-bindless.wgsl"));
 
-            let bindless_pipeline_layout =
-                device_state
-                    .device
-                    .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                        label: None,
-                        bind_group_layouts: &[&bindless_bind_group_layout],
-                        push_constant_ranges: &[],
-                    });
+            let bindless_pipeline_layout = device_state.device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .bind_group_layouts(&[&bindless_bind_group_layout])
+                    .build(),
+            );
 
             let bindless_pipeline =
                 device_state

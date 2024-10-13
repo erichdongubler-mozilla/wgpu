@@ -267,17 +267,17 @@ impl<A: hal::Api> Example<A> {
                 constants: &constants,
                 zero_initialize_workgroup_memory: true,
             }),
-            primitive: wgt::PrimitiveState {
-                topology: wgt::PrimitiveTopology::TriangleStrip,
-                ..wgt::PrimitiveState::default()
-            },
+            primitive: wgt::PrimitiveState::builder()
+                .topology(wgt::PrimitiveTopology::TriangleStrip)
+                .build(),
             depth_stencil: None,
-            multisample: wgt::MultisampleState::default(),
-            color_targets: &[Some(wgt::ColorTargetState {
-                format: surface_config.format,
-                blend: Some(wgt::BlendState::ALPHA_BLENDING),
-                write_mask: wgt::ColorWrites::default(),
-            })],
+            multisample: Default::default(),
+            color_targets: &[Some(
+                wgt::ColorTargetState::builder()
+                    .format(surface_config.format)
+                    .blend(wgt::BlendState::ALPHA_BLENDING)
+                    .build(),
+            )],
             multiview: None,
             cache: None,
         };

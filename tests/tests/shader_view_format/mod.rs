@@ -68,16 +68,12 @@ async fn reinterpret(
 ) {
     let tex = ctx.device.create_texture_with_data(
         &ctx.queue,
-        &wgpu::TextureDescriptor {
-            label: None,
-            dimension: wgpu::TextureDimension::D2,
-            size,
-            format: src_format,
-            usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
-            mip_level_count: 1,
-            sample_count: 1,
-            view_formats: &[reinterpret_to],
-        },
+        &wgpu::TextureDescriptor::builder()
+            .size(size)
+            .format(src_format)
+            .usage(wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING)
+            .view_formats(&[reinterpret_to])
+            .build(),
         wgpu::util::TextureDataOrder::LayerMajor,
         bytemuck::cast_slice(src_data),
     );
@@ -90,25 +86,20 @@ async fn reinterpret(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("reinterpret pipeline"),
             layout: None,
-            vertex: wgpu::VertexState {
-                module: shader,
-                entry_point: Some("vs_main"),
-
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(src_format.into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(shader)
+                .entry_point("vs_main")
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(src_format.into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -121,16 +112,13 @@ async fn reinterpret(
         label: None,
     });
 
-    let target_tex = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size,
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: src_format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[],
-    });
+    let target_tex = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .size(size)
+            .format(src_format)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC)
+            .build(),
+    );
     let target_view = target_tex.create_view(&wgpu::TextureViewDescriptor::default());
 
     let mut encoder = ctx

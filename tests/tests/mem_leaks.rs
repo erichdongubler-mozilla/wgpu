@@ -73,13 +73,11 @@ async fn draw_test_with_reports(
     assert_eq!(report.bind_groups.num_allocated, 1);
     assert_eq!(report.bind_group_layouts.num_allocated, 1);
 
-    let ppl = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+    let ppl = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bgl])
+            .build(),
+    );
 
     let global_report = ctx.instance.generate_report().unwrap();
     let report = global_report.hub_report();
@@ -93,25 +91,22 @@ async fn draw_test_with_reports(
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&ppl),
-            vertex: wgpu::VertexState {
-                buffers: &[],
-                module: &shader,
-                entry_point: Some("vs_main_builtin"),
-                compilation_options: Default::default(),
-            },
-            primitive: wgpu::PrimitiveState::default(),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main_builtin")
+                .build(),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
+            multisample: Default::default(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(wgpu::TextureFormat::Rgba8Unorm)
+                            .build(),
+                    )])
+                    .build(),
+            ),
             multiview: None,
             cache: None,
         });
@@ -137,20 +132,12 @@ async fn draw_test_with_reports(
 
     let texture = ctx.device.create_texture_with_data(
         &ctx.queue,
-        &wgpu::TextureDescriptor {
-            label: Some("dummy"),
-            size: wgpu::Extent3d {
-                width: 1,
-                height: 1,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8Unorm,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_DST,
-            view_formats: &[],
-        },
+        &wgpu::TextureDescriptor::builder()
+            .label("dummy")
+            .size(Default::default())
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_DST)
+            .build(),
         wgpu::util::TextureDataOrder::LayerMajor,
         &[0, 0, 0, 1],
     );

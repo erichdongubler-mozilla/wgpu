@@ -190,14 +190,11 @@ static NO_TARGETLESS_RENDER: GpuTestConfiguration = GpuTestConfiguration::new()
                         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                             label: None,
                             layout: None,
-                            vertex: wgpu::VertexState {
-                                module: &ctx
-                                    .device
-                                    .create_shader_module(TRIVIAL_VERTEX_SHADER_DESC),
-                                entry_point: Some("main"),
-                                compilation_options: Default::default(),
-                                buffers: &[],
-                            },
+                            vertex: wgpu::VertexState::from_module(
+                                &ctx.device.create_shader_module(TRIVIAL_VERTEX_SHADER_DESC),
+                            )
+                            .entry_point("main")
+                            .build(),
                             primitive: Default::default(),
                             depth_stencil: None,
                             multisample: wgpu::MultisampleState {

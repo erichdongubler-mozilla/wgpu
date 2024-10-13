@@ -59,13 +59,11 @@ async fn bgl_dedupe(ctx: TestingContext) {
         entries: &[],
     });
 
-    let pipeline_layout = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl_1b],
-            push_constant_ranges: &[],
-        });
+    let pipeline_layout = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bgl_1b])
+            .build(),
+    );
 
     let module = ctx
         .device
@@ -119,13 +117,11 @@ fn bgl_dedupe_with_dropped_user_handle(ctx: TestingContext) {
             entries: &[ENTRY],
         });
 
-    let pipeline_layout = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl_1],
-            push_constant_ranges: &[],
-        });
+    let pipeline_layout = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bgl_1])
+            .build(),
+    );
 
     // We drop bgl_1 here. As bgl_1 is still alive, referenced by the pipeline layout,
     // the deduplication should work as expected. Previously this did not work.

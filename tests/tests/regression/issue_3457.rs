@@ -36,49 +36,44 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
             mapped_at_creation: false,
         });
 
-        let pipeline_layout = ctx
-            .device
-            .create_pipeline_layout(&PipelineLayoutDescriptor {
-                label: Some("Pipeline Layout"),
-                bind_group_layouts: &[],
-                push_constant_ranges: &[],
-            });
+        let pipeline_layout = ctx.device.create_pipeline_layout(
+            &PipelineLayoutDescriptor::builder()
+                .label("Pipeline Layout")
+                .bind_group_layouts(&[])
+                .build(),
+        );
 
         let double_pipeline = ctx
             .device
             .create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("Double Pipeline"),
                 layout: Some(&pipeline_layout),
-                vertex: VertexState {
-                    module: &module,
-                    entry_point: Some("double_buffer_vert"),
-                    compilation_options: Default::default(),
-                    buffers: &[
-                        VertexBufferLayout {
-                            array_stride: 16,
-                            step_mode: VertexStepMode::Vertex,
-                            attributes: &vertex_attr_array![0 => Float32x4],
-                        },
-                        VertexBufferLayout {
-                            array_stride: 4,
-                            step_mode: VertexStepMode::Vertex,
-                            attributes: &vertex_attr_array![5 => Float32],
-                        },
-                    ],
-                },
-                primitive: PrimitiveState::default(),
+                vertex: VertexState::from_module(&module)
+                    .entry_point("double_buffer_vert")
+                    .buffers(&[
+                        VertexBufferLayout::builder()
+                            .array_stride(16)
+                            .attributes(&vertex_attr_array![0 => Float32x4])
+                            .build(),
+                        VertexBufferLayout::builder()
+                            .array_stride(4)
+                            .attributes(&vertex_attr_array![5 => Float32])
+                            .build(),
+                    ])
+                    .build(),
+                primitive: Default::default(),
                 depth_stencil: None,
-                multisample: MultisampleState::default(),
-                fragment: Some(FragmentState {
-                    module: &module,
-                    entry_point: Some("double_buffer_frag"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(ColorTargetState {
-                        format: TextureFormat::Rgba8Unorm,
-                        blend: None,
-                        write_mask: ColorWrites::all(),
-                    })],
-                }),
+                multisample: Default::default(),
+                fragment: Some(
+                    FragmentState::from_module(&module)
+                        .entry_point("double_buffer_frag")
+                        .targets(&[Some(
+                            ColorTargetState::builder()
+                                .format(TextureFormat::Rgba8Unorm)
+                                .build(),
+                        )])
+                        .build(),
+                ),
                 multiview: None,
                 cache: None,
             });
@@ -88,29 +83,26 @@ static PASS_RESET_VERTEX_BUFFER: GpuTestConfiguration =
             .create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("Single Pipeline"),
                 layout: Some(&pipeline_layout),
-                vertex: VertexState {
-                    module: &module,
-                    entry_point: Some("single_buffer_vert"),
-                    compilation_options: Default::default(),
-                    buffers: &[VertexBufferLayout {
-                        array_stride: 16,
-                        step_mode: VertexStepMode::Vertex,
-                        attributes: &vertex_attr_array![0 => Float32x4],
-                    }],
-                },
-                primitive: PrimitiveState::default(),
+                vertex: VertexState::from_module(&module)
+                    .entry_point("single_buffer_vert")
+                    .buffers(&[VertexBufferLayout::builder()
+                        .array_stride(16)
+                        .attributes(&vertex_attr_array![0 => Float32x4])
+                        .build()])
+                    .build(),
+                primitive: Default::default(),
                 depth_stencil: None,
-                multisample: MultisampleState::default(),
-                fragment: Some(FragmentState {
-                    module: &module,
-                    entry_point: Some("single_buffer_frag"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(ColorTargetState {
-                        format: TextureFormat::Rgba8Unorm,
-                        blend: None,
-                        write_mask: ColorWrites::all(),
-                    })],
-                }),
+                multisample: Default::default(),
+                fragment: Some(
+                    FragmentState::from_module(&module)
+                        .entry_point("single_buffer_frag")
+                        .targets(&[Some(
+                            ColorTargetState::builder()
+                                .format(TextureFormat::Rgba8Unorm)
+                                .build(),
+                        )])
+                        .build(),
+                ),
                 multiview: None,
                 cache: None,
             });

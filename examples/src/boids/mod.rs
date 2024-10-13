@@ -104,51 +104,48 @@ impl crate::framework::Example for Example {
                 ],
                 label: None,
             });
-        let compute_pipeline_layout =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("compute"),
-                bind_group_layouts: &[&compute_bind_group_layout],
-                push_constant_ranges: &[],
-            });
+        let compute_pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .label("compute")
+                .bind_group_layouts(&[&compute_bind_group_layout])
+                .build(),
+        );
 
         // create render pipeline with empty bind group layout
 
-        let render_pipeline_layout =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("render"),
-                bind_group_layouts: &[],
-                push_constant_ranges: &[],
-            });
+        let render_pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .label("render")
+                .bind_group_layouts(&[])
+                .build(),
+        );
 
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&render_pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &draw_shader,
-                entry_point: Some("main_vs"),
-                compilation_options: Default::default(),
-                buffers: &[
-                    wgpu::VertexBufferLayout {
-                        array_stride: 4 * 4,
-                        step_mode: wgpu::VertexStepMode::Instance,
-                        attributes: &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2],
-                    },
-                    wgpu::VertexBufferLayout {
-                        array_stride: 2 * 4,
-                        step_mode: wgpu::VertexStepMode::Vertex,
-                        attributes: &wgpu::vertex_attr_array![2 => Float32x2],
-                    },
-                ],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &draw_shader,
-                entry_point: Some("main_fs"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState::default(),
+            vertex: wgpu::VertexState::from_module(&draw_shader)
+                .entry_point("main_vs")
+                .buffers(&[
+                    wgpu::VertexBufferLayout::builder()
+                        .array_stride(4 * 4)
+                        .step_mode(wgpu::VertexStepMode::Instance)
+                        .attributes(&wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2])
+                        .build(),
+                    wgpu::VertexBufferLayout::builder()
+                        .array_stride(2 * 4)
+                        .attributes(&wgpu::vertex_attr_array![2 => Float32x2])
+                        .build(),
+                ])
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&draw_shader)
+                    .entry_point("main_fs")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });

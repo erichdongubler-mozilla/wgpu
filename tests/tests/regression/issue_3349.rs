@@ -83,60 +83,55 @@ async fn multi_stage_data_binding_test(ctx: TestingContext) {
         }],
     });
 
-    let pll = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pll"),
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[wgpu::PushConstantRange {
+    let pll = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label("pll")
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(&[wgpu::PushConstantRange {
                 stages: wgpu::ShaderStages::VERTEX_FRAGMENT,
                 range: 0..16,
-            }],
-        });
+            }])
+            .build(),
+    );
 
     let pipeline = ctx
         .device
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("pipeline"),
             layout: Some(&pll),
-            vertex: wgpu::VertexState {
-                module: &vs_sm,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &fs_sm,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: wgpu::PrimitiveState::default(),
+            vertex: wgpu::VertexState::from_module(&vs_sm)
+                .entry_point("vs_main")
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&fs_sm)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(wgpu::TextureFormat::Rgba8Unorm)
+                            .build(),
+                    )])
+                    .build(),
+            ),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
 
-    let texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("texture"),
-        size: wgpu::Extent3d {
-            width: 2,
-            height: 2,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        // Important: NOT srgb.
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[],
-    });
+    let texture = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label(Some("texture"))
+            .size(wgpu::Extent3d {
+                width: 2,
+                height: 2,
+                depth_or_array_layers: 1,
+            })
+            // Important: NOT srgb.
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .build(),
+    );
 
     let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
 

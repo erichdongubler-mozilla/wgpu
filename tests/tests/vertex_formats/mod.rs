@@ -201,32 +201,22 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             }],
         });
 
-    let ppl = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+    let ppl = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bgl])
+            .build(),
+    );
 
     let dummy = ctx
         .device
         .create_texture_with_data(
             &ctx.queue,
-            &wgpu::TextureDescriptor {
-                label: Some("dummy"),
-                size: wgpu::Extent3d {
-                    width: 1,
-                    height: 1,
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Rgba8Unorm,
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_DST,
-                view_formats: &[],
-            },
+            &wgpu::TextureDescriptor::builder()
+                .label("dummy")
+                .size(Default::default())
+                .format(wgpu::TextureFormat::Rgba8Unorm)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_DST)
+                .build(),
             wgpu::util::TextureDataOrder::LayerMajor,
             &[0, 0, 0, 1],
         )
@@ -240,32 +230,31 @@ async fn vertex_formats_common(ctx: TestingContext, tests: &[Test<'_>]) {
             usage: wgpu::BufferUsages::VERTEX,
         });
 
+        let buffers = &[wgpu::VertexBufferLayout::builder()
+            .array_stride(0) // Calculate, please!
+            .attributes(test.attributes)
+            .build()];
+        let targets = &[Some(
+            wgpu::ColorTargetState::builder()
+                .format(wgpu::TextureFormat::Rgba8Unorm)
+                .build(),
+        )];
         let pipeline_desc = wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&ppl),
-            vertex: wgpu::VertexState {
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: 0, // Calculate, please!
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: test.attributes,
-                }],
-                module: &shader,
-                entry_point: Some(test.entry_point),
-                compilation_options: Default::default(),
-            },
-            primitive: wgpu::PrimitiveState::default(),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .buffers(buffers)
+                .entry_point(test.entry_point)
+                .build(),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fragment_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
+            multisample: Default::default(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fragment_main")
+                    .targets(targets)
+                    .build(),
+            ),
             multiview: None,
             cache: None,
         };

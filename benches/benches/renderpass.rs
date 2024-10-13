@@ -85,22 +85,14 @@ impl RenderpassState {
 
         let mut texture_views = Vec::with_capacity(texture_count);
         for i in 0..texture_count {
-            let texture = device_state
-                .device
-                .create_texture(&wgpu::TextureDescriptor {
-                    label: Some(&format!("Texture {i}")),
-                    size: wgpu::Extent3d {
-                        width: 1,
-                        height: 1,
-                        depth_or_array_layers: 1,
-                    },
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                    usage: wgpu::TextureUsages::TEXTURE_BINDING,
-                    view_formats: &[],
-                });
+            let texture = device_state.device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label(&*format!("Texture {i}"))
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::TEXTURE_BINDING)
+                    .build(),
+            );
             texture_views.push(texture.create_view(&wgpu::TextureViewDescriptor {
                 label: Some(&format!("Texture View {i}")),
                 ..Default::default()
@@ -138,14 +130,11 @@ impl RenderpassState {
             .device
             .create_shader_module(wgpu::include_wgsl!("renderpass.wgsl"));
 
-        let pipeline_layout =
-            device_state
-                .device
-                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                    label: None,
-                    bind_group_layouts: &[&bind_group_layout],
-                    push_constant_ranges: &[],
-                });
+        let pipeline_layout = device_state.device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         let mut vertex_buffers = Vec::with_capacity(vertex_buffer_count);
         for _ in 0..vertex_buffer_count {
@@ -183,59 +172,44 @@ impl RenderpassState {
             });
         }
 
-        let pipeline =
-            device_state
-                .device
-                .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                    label: None,
-                    layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &sm,
-                        entry_point: Some("vs_main"),
-                        buffers: &vertex_buffer_layouts,
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    },
-                    primitive: wgpu::PrimitiveState {
-                        topology: wgpu::PrimitiveTopology::TriangleList,
-                        strip_index_format: None,
-                        front_face: wgpu::FrontFace::Cw,
-                        cull_mode: Some(wgpu::Face::Back),
-                        polygon_mode: wgpu::PolygonMode::Fill,
-                        unclipped_depth: false,
-                        conservative: false,
-                    },
-                    depth_stencil: None,
-                    multisample: wgpu::MultisampleState::default(),
-                    fragment: Some(wgpu::FragmentState {
-                        module: &sm,
-                        entry_point: Some("fs_main"),
-                        targets: &[Some(wgpu::ColorTargetState {
-                            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                            blend: None,
-                            write_mask: wgpu::ColorWrites::ALL,
-                        })],
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    }),
-                    multiview: None,
-                    cache: None,
-                });
+        let pipeline = device_state.device.create_render_pipeline(
+            &wgpu::RenderPipelineDescriptor::builder()
+                .layout(&pipeline_layout)
+                .vertex(
+                    wgpu::VertexState::from_module(&sm)
+                        .entry_point("vs_main")
+                        .buffers(&vertex_buffer_layouts)
+                        .build(),
+                )
+                .primitive(
+                    wgpu::PrimitiveState::builder()
+                        .front_face(wgpu::FrontFace::Cw)
+                        .cull_mode(wgpu::Face::Back)
+                        .build(),
+                )
+                .fragment(
+                    wgpu::FragmentState::from_module(&sm)
+                        .entry_point("fs_main")
+                        .targets(&[Some(
+                            wgpu::ColorTargetState::builder()
+                                .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                .build(),
+                        )])
+                        .build(),
+                )
+                .build(),
+        );
 
         let render_target = device_state
             .device
-            .create_texture(&wgpu::TextureDescriptor {
-                label: Some("Render Target"),
-                size: wgpu::Extent3d {
-                    width: 1,
-                    height: 1,
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-                view_formats: &[],
-            })
+            .create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label("Render Target")
+                    .size(Default::default())
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                    .build(),
+            )
             .create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut bindless_bind_group = None;
@@ -274,50 +248,41 @@ impl RenderpassState {
                 .device
                 .create_shader_module(wgpu::include_wgsl!("renderpass-bindless.wgsl"));
 
-            let bindless_pipeline_layout =
-                device_state
-                    .device
-                    .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                        label: None,
-                        bind_group_layouts: &[&bindless_bind_group_layout],
-                        push_constant_ranges: &[],
-                    });
+            let bindless_pipeline_layout = device_state.device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .bind_group_layouts(&[&bindless_bind_group_layout])
+                    .build(),
+            );
 
-            bindless_pipeline = Some(device_state.device.create_render_pipeline(
-                &wgpu::RenderPipelineDescriptor {
-                    label: None,
-                    layout: Some(&bindless_pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &bindless_shader_module,
-                        entry_point: Some("vs_main"),
-                        buffers: &vertex_buffer_layouts,
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    },
-                    primitive: wgpu::PrimitiveState {
-                        topology: wgpu::PrimitiveTopology::TriangleList,
-                        strip_index_format: None,
-                        front_face: wgpu::FrontFace::Cw,
-                        cull_mode: Some(wgpu::Face::Back),
-                        polygon_mode: wgpu::PolygonMode::Fill,
-                        unclipped_depth: false,
-                        conservative: false,
-                    },
-                    depth_stencil: None,
-                    multisample: wgpu::MultisampleState::default(),
-                    fragment: Some(wgpu::FragmentState {
-                        module: &bindless_shader_module,
-                        entry_point: Some("fs_main"),
-                        targets: &[Some(wgpu::ColorTargetState {
-                            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                            blend: None,
-                            write_mask: wgpu::ColorWrites::ALL,
-                        })],
-                        compilation_options: wgpu::PipelineCompilationOptions::default(),
-                    }),
-                    multiview: None,
-                    cache: None,
-                },
-            ));
+            bindless_pipeline = Some(
+                device_state.device.create_render_pipeline(
+                    &wgpu::RenderPipelineDescriptor::builder()
+                        .layout(&bindless_pipeline_layout)
+                        .vertex(
+                            wgpu::VertexState::from_module(&bindless_shader_module)
+                                .entry_point("vs_main")
+                                .buffers(&vertex_buffer_layouts)
+                                .build(),
+                        )
+                        .primitive(
+                            wgpu::PrimitiveState::builder()
+                                .front_face(wgpu::FrontFace::Cw)
+                                .cull_mode(wgpu::Face::Back)
+                                .build(),
+                        )
+                        .fragment(
+                            wgpu::FragmentState::from_module(&bindless_shader_module)
+                                .entry_point("fs_main")
+                                .targets(&[Some(
+                                    wgpu::ColorTargetState::builder()
+                                        .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                                        .build(),
+                                )])
+                                .build(),
+                        )
+                        .build(),
+                ),
+            );
         }
 
         Self {

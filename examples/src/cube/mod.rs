@@ -155,11 +155,11 @@ impl crate::framework::Example for Example {
                 },
             ],
         });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         // Create the texture
         let size = 256u32;
@@ -169,16 +169,13 @@ impl crate::framework::Example for Example {
             height: size,
             depth_or_array_layers: 1,
         };
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::R8Uint,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-            view_formats: &[],
-        });
+        let texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(texture_extent)
+                .format(wgpu::TextureFormat::R8Uint)
+                .usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+                .build(),
+        );
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         queue.write_texture(
             texture.as_image_copy(),
@@ -218,10 +215,9 @@ impl crate::framework::Example for Example {
 
         let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let vertex_buffers = [wgpu::VertexBufferLayout {
-            array_stride: vertex_size as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
+        let vertex_buffers = [wgpu::VertexBufferLayout::builder()
+            .array_stride(vertex_size as wgpu::BufferAddress)
+            .attributes(&[
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x4,
                     offset: 0,
@@ -232,30 +228,27 @@ impl crate::framework::Example for Example {
                     offset: 4 * 4,
                     shader_location: 1,
                 },
-            ],
-        }];
+            ])
+            .build()];
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &vertex_buffers,
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .buffers(&vertex_buffers)
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .cull_mode(wgpu::Face::Back)
+                .build(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -267,37 +260,33 @@ impl crate::framework::Example for Example {
             let pipeline_wire = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: None,
                 layout: Some(&pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &vertex_buffers,
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some("fs_wire"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState {
-                        format: config.view_formats[0],
-                        blend: Some(wgpu::BlendState {
-                            color: wgpu::BlendComponent {
-                                operation: wgpu::BlendOperation::Add,
-                                src_factor: wgpu::BlendFactor::SrcAlpha,
-                                dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
-                            },
-                            alpha: wgpu::BlendComponent::REPLACE,
-                        }),
-                        write_mask: wgpu::ColorWrites::ALL,
-                    })],
-                }),
-                primitive: wgpu::PrimitiveState {
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    polygon_mode: wgpu::PolygonMode::Line,
-                    ..Default::default()
-                },
+                vertex: wgpu::VertexState::from_module(&shader)
+                    .entry_point("vs_main")
+                    .buffers(&vertex_buffers)
+                    .build(),
+                fragment: Some(
+                    wgpu::FragmentState::from_module(&shader)
+                        .entry_point("fs_wire")
+                        .targets(&[Some(
+                            wgpu::ColorTargetState::builder()
+                                .format(config.view_formats[0])
+                                .blend(wgpu::BlendState {
+                                    color: wgpu::BlendComponent::builder()
+                                        .src_factor(wgpu::BlendFactor::SrcAlpha)
+                                        .dst_factor(wgpu::BlendFactor::OneMinusSrcAlpha)
+                                        .build(),
+                                    alpha: wgpu::BlendComponent::REPLACE,
+                                })
+                                .build(),
+                        )])
+                        .build(),
+                ),
+                primitive: wgpu::PrimitiveState::builder()
+                    .cull_mode(wgpu::Face::Back)
+                    .polygon_mode(wgpu::PolygonMode::Line)
+                    .build(),
                 depth_stencil: None,
-                multisample: wgpu::MultisampleState::default(),
+                multisample: Default::default(),
                 multiview: None,
                 cache: None,
             });
