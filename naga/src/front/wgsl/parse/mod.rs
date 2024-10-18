@@ -1,4 +1,5 @@
 use crate::front::wgsl::error::{Error, ExpectedToken};
+use crate::front::wgsl::parse::directive::language_extension::LanguageExtension;
 use crate::front::wgsl::parse::directive::DirectiveKind;
 use crate::front::wgsl::parse::lexer::{Lexer, Token};
 use crate::front::wgsl::parse::number::Number;
@@ -2258,7 +2259,6 @@ impl Parser {
         Ok(fun)
     }
 
-    #[allow(unused)]
     fn directive_ident_list<'a>(
         &self,
         lexer: &mut Lexer<'a>,
@@ -2511,12 +2511,28 @@ impl Parser {
         let mut tu = ast::TranslationUnit::default();
 
         // Parse directives.
-        #[allow(clippy::never_loop, unreachable_code)]
         while let Ok((ident, span)) = lexer.peek_ident_with_span() {
             if let Some(kind) = DirectiveKind::from_ident(ident) {
                 self.push_rule_span(Rule::Directive, &mut lexer);
                 let _ = lexer.next_ident_with_span().unwrap();
                 match kind {
+                    DirectiveKind::Requires => {
+                        self.directive_ident_list(&mut lexer, |ident, span| {
+                            match LanguageExtension::from_ident(ident) {
+                                Some(LanguageExtension::Implemented(_kind)) => {
+                                    // NOTE: No further validation is needed for an extension, so
+                                    // just throw parsed information away. If we ever want to apply
+                                    // what we've parsed to diagnostics, maybe we'll want to refer
+                                    // to enabled extensions later?
+                                    Ok(())
+                                }
+                                Some(LanguageExtension::Unimplemented(kind)) => {
+                                    Err(Error::LanguageExtensionNotYetImplemented { kind, span })
+                                }
+                                None => Err(Error::UnknownLanguageExtension(span, ident)),
+                            }
+                        })?;
+                    }
                     DirectiveKind::Unimplemented(kind) => {
                         return Err(Error::DirectiveNotYetImplemented { kind, span })
                     }

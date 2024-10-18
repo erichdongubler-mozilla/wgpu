@@ -2,9 +2,12 @@
 //!
 //! See also <https://www.w3.org/TR/WGSL/#directives>.
 
+pub(crate) mod language_extension;
+
 /// A parsed sentinel word indicating the type of directive to be parsed next.
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 pub enum DirectiveKind {
+    Requires,
     Unimplemented(UnimplementedDirectiveKind),
 }
 
@@ -18,7 +21,7 @@ impl DirectiveKind {
         Some(match s {
             Self::DIAGNOSTIC => Self::Unimplemented(UnimplementedDirectiveKind::Diagnostic),
             Self::ENABLE => Self::Unimplemented(UnimplementedDirectiveKind::Enable),
-            Self::REQUIRES => Self::Unimplemented(UnimplementedDirectiveKind::Requires),
+            Self::REQUIRES => Self::Requires,
             _ => return None,
         })
     }
@@ -26,10 +29,10 @@ impl DirectiveKind {
     /// Maps this [`DirectiveKind`] into the sentinel word associated with it in WGSL.
     pub const fn to_ident(self) -> &'static str {
         match self {
+            Self::Requires => Self::REQUIRES,
             Self::Unimplemented(kind) => match kind {
                 UnimplementedDirectiveKind::Diagnostic => Self::DIAGNOSTIC,
                 UnimplementedDirectiveKind::Enable => Self::ENABLE,
-                UnimplementedDirectiveKind::Requires => Self::REQUIRES,
             },
         }
     }
@@ -48,14 +51,12 @@ impl DirectiveKind {
 pub enum UnimplementedDirectiveKind {
     Diagnostic,
     Enable,
-    Requires,
 }
 
 impl UnimplementedDirectiveKind {
     pub const fn tracking_issue_num(self) -> u16 {
         match self {
             Self::Diagnostic => 5320,
-            Self::Requires => 6350,
             Self::Enable => 5476,
         }
     }
@@ -101,19 +102,6 @@ error: `enable` is not yet implemented
 
 ";
                 }
-                UnimplementedDirectiveKind::Requires => {
-                    shader = "requires readonly_and_readwrite_storage_textures";
-                    expected_msg = "\
-error: `requires` is not yet implemented
-  ┌─ wgsl:1:1
-  │
-1 │ requires readonly_and_readwrite_storage_textures
-  │ ^^^^^^^^ this global directive is standard, but not yet implemented
-  │
-  = note: Let Naga maintainers know that you ran into this at <https://github.com/gfx-rs/wgpu/issues/6350>, so they can prioritize it!
-
-";
-                }
             };
 
             assert_parse_err(shader, expected_msg);
@@ -152,7 +140,7 @@ error: expected global declaration, but found a global directive
 
 ";
                 }
-                DirectiveKind::Unimplemented(UnimplementedDirectiveKind::Requires) => {
+                DirectiveKind::Requires => {
                     directive = "requires readonly_and_readwrite_storage_textures";
                     expected_msg = "\
 error: expected global declaration, but found a global directive
