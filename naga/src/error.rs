@@ -14,6 +14,7 @@ impl fmt::Display for ShaderError<crate::front::wgsl::ParseError> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let label = self.label.as_deref().unwrap_or_default();
         let string = self.inner.emit_to_string(&self.source);
+        // TODO: remove this silly newline, make applications provide it
         write!(f, "\nShader '{label}' parsing {string}")
     }
 }
@@ -23,6 +24,7 @@ impl fmt::Display for ShaderError<crate::front::glsl::ParseErrors> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let label = self.label.as_deref().unwrap_or_default();
         let string = self.inner.emit_to_string(&self.source);
+        // TODO: remove this silly newline, make applications provide it
         write!(f, "\nShader '{label}' parsing {string}")
     }
 }
@@ -32,6 +34,7 @@ impl fmt::Display for ShaderError<crate::front::spv::Error> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let label = self.label.as_deref().unwrap_or_default();
         let string = self.inner.emit_to_string(&self.source);
+        // TODO: remove this silly newline, make applications provide it
         write!(f, "\nShader '{label}' parsing {string}")
     }
 }
@@ -56,6 +59,7 @@ impl fmt::Display for ShaderError<crate::WithSpan<crate::valid::ValidationError>
             writer.into_string()
         };
 
+        // TODO: remove this silly newline, make applications provide it
         write!(f, "\nShader validation {writer}")
     }
 }
