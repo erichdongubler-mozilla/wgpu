@@ -5,24 +5,36 @@ use crate::{front::wgsl::error::Error, Span};
 
 /// Tracks the status of every enable extension known to Naga.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct EnableExtensions {}
+pub struct EnableExtensions {
+    #[cfg(test)]
+    definitely_not_standard: bool,
+}
 
 impl EnableExtensions {
     pub(crate) const fn empty() -> Self {
-        Self {}
+        Self {
+            #[cfg(test)]
+            definitely_not_standard: false,
+        }
     }
 
     /// Add an enable extension to the set requested by a module.
     #[allow(unreachable_code)]
     pub(crate) fn add(&mut self, ext: ImplementedEnableExtension) {
-        let _field: &mut bool = match ext {};
+        let _field: &mut bool = match ext {
+            #[cfg(test)]
+            ImplementedEnableExtension::DefinitelyNotStandard => &mut self.definitely_not_standard,
+        };
         *_field = true;
     }
 
     /// Query whether an enable extension tracked here has been requested.
     #[allow(unused)]
     pub(crate) const fn contains(&self, ext: ImplementedEnableExtension) -> bool {
-        match ext {}
+        match ext {
+            #[cfg(test)]
+            ImplementedEnableExtension::DefinitelyNotStandard => self.definitely_not_standard,
+        }
     }
 }
 
@@ -37,12 +49,14 @@ impl Default for EnableExtensions {
 /// WGSL spec.: <https://www.w3.org/TR/WGSL/#enable-extensions-sec>
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 pub enum EnableExtension {
-    #[allow(unused)]
+    #[cfg_attr(not(test), allow(unused))]
     Implemented(ImplementedEnableExtension),
     Unimplemented(UnimplementedEnableExtension),
 }
 
 impl EnableExtension {
+    #[cfg(test)]
+    const DEFINITELY_NOT_STANDARD: &'static str = "definitely_not_standard";
     const F16: &'static str = "f16";
     const CLIP_DISTANCES: &'static str = "clip_distances";
     const DUAL_SOURCE_BLENDING: &'static str = "dual_source_blending";
@@ -64,7 +78,10 @@ impl EnableExtension {
     /// Maps this [`EnableExtension`] into the sentinel word associated with it in WGSL.
     pub const fn to_ident(self) -> &'static str {
         match self {
-            Self::Implemented(kind) => match kind {},
+            Self::Implemented(kind) => match kind {
+                #[cfg(test)]
+                ImplementedEnableExtension::DefinitelyNotStandard => Self::DEFINITELY_NOT_STANDARD,
+            },
             Self::Unimplemented(kind) => match kind {
                 UnimplementedEnableExtension::F16 => Self::F16,
                 UnimplementedEnableExtension::ClipDistances => Self::CLIP_DISTANCES,
@@ -77,7 +94,10 @@ impl EnableExtension {
 /// A variant of [`EnableExtension::Implemented`].
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 #[cfg_attr(test, derive(strum::EnumIter))]
-pub enum ImplementedEnableExtension {}
+pub enum ImplementedEnableExtension {
+    #[cfg(test)]
+    DefinitelyNotStandard,
+}
 
 /// A variant of [`EnableExtension::Unimplemented`].
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
