@@ -153,3 +153,15 @@ impl UnimplementedEnableExtension {
         }
     }
 }
+#[cfg(test)]
+mod test {
+    use strum::IntoEnumIterator as _;
+
+    use super::ImplementedEnableExtension;
+
+    fn valid() {
+        for extension in ImplementedEnableExtension::iter() {}
+    }
+
+    fn unimplemented() {}
+}
