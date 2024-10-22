@@ -365,11 +365,11 @@ fn calculate_src_buffer_binding_size(buffer_size: u64, limits: &wgt::Limits) -> 
     // We need to choose a binding size that can address all possible sets of 12 contiguous bytes in the buffer taking
     // into account that the dynamic offset needs to be a multiple of `min_storage_buffer_offset_alignment`.
 
-    // Given the know variables: `offset`, `buffer_size`, `alignment` and the rule `offset + 12 <= buffer_size`.
+    // Given the known variables `offset`, `buffer_size`, `alignment` and the rule `offset + 12 <= buffer_size`:
 
     // Let `chunks = floor(buffer_size / alignment)`.
     // Let `chunk` be the interval `[0, chunks]`.
-    // Let `offset = alignment * chunk + r` where `r` is the interval [0, alignment - 4].
+    // Let `offset = alignment * chunk + r` where `r` is the interval `[0, alignment - 4]`.
     // Let `binding` be the interval `[offset, offset + 12]`.
     // Let `aligned_offset = alignment * chunk`.
     // Let `aligned_binding` be the interval `[aligned_offset, aligned_offset + r + 12]`.
@@ -381,8 +381,8 @@ fn calculate_src_buffer_binding_size(buffer_size: u64, limits: &wgt::Limits) -> 
     // pick a larger `binding_size` that satisfies: `last_aligned_offset + binding_size = buffer_size` and
     // `binding_size >= min_aligned_binding_size`.
 
-    // Let `buffer_size = alignment * chunks + sr` where `sr` is the interval [0, alignment - 4].
-    // Let `last_aligned_offset = alignment * (chunks - u)` where `u` is the interval [0, chunks].
+    // Let `buffer_size = alignment * chunks + sr` where `sr` is the interval `[0, alignment - 4]`.
+    // Let `last_aligned_offset = alignment * (chunks - u)` where `u` is the interval `[0, chunks]`.
     // => `binding_size = buffer_size - last_aligned_offset`
     // => `binding_size = alignment * chunks + sr - alignment * (chunks - u)`
     // => `binding_size = alignment * chunks + sr - alignment * chunks + alignment * u`
