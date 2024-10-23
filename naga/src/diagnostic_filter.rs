@@ -22,6 +22,7 @@ use serde::Serialize;
 #[cfg_attr(feature = "serialize", derive(Serialize))]
 #[cfg_attr(feature = "deserialize", derive(Deserialize))]
 #[cfg_attr(feature = "arbitrary", derive(Arbitrary))]
+#[cfg_attr(test, derive(strum::EnumIter))]
 pub enum Severity {
     Off,
     Info,
@@ -30,6 +31,17 @@ pub enum Severity {
 }
 
 impl Severity {
+    /// Maps this [`Severity`] into the sentinel word associated with it in WGSL.
+    #[cfg(test)]
+    pub const fn to_wgsl_ident(self) -> &'static str {
+        match self {
+            Self::Error => Self::ERROR,
+            Self::Warning => Self::WARNING,
+            Self::Info => Self::INFO,
+            Self::Off => Self::OFF,
+        }
+    }
+
     /// Checks whether this severity is [`Self::Error`].
     ///
     /// Naga does not yet support diagnostic items at lesser severities than
@@ -74,6 +86,7 @@ pub enum FilterableTriggeringRule {
 #[cfg_attr(feature = "serialize", derive(Serialize))]
 #[cfg_attr(feature = "deserialize", derive(Deserialize))]
 #[cfg_attr(feature = "arbitrary", derive(Arbitrary))]
+#[cfg_attr(test, derive(strum::EnumIter))]
 pub enum StandardFilterableTriggeringRule {
     DerivativeUniformity,
 }
