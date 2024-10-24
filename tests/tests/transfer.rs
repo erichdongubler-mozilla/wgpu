@@ -6,34 +6,28 @@ static COPY_OVERFLOW_Z: GpuTestConfiguration = GpuTestConfiguration::new().run_s
         .device
         .create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
-    let t1 = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        dimension: wgpu::TextureDimension::D2,
-        size: wgpu::Extent3d {
-            width: 256,
-            height: 256,
-            depth_or_array_layers: 1,
-        },
-        format: wgpu::TextureFormat::Rgba8Uint,
-        usage: wgpu::TextureUsages::COPY_DST,
-        mip_level_count: 1,
-        sample_count: 1,
-        view_formats: &[],
-    });
-    let t2 = ctx.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        dimension: wgpu::TextureDimension::D2,
-        size: wgpu::Extent3d {
-            width: 256,
-            height: 256,
-            depth_or_array_layers: 1,
-        },
-        format: wgpu::TextureFormat::Rgba8Uint,
-        usage: wgpu::TextureUsages::COPY_DST,
-        mip_level_count: 1,
-        sample_count: 1,
-        view_formats: &[],
-    });
+    let t1 = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .size(wgpu::Extent3d {
+                width: 256,
+                height: 256,
+                depth_or_array_layers: 1,
+            })
+            .format(wgpu::TextureFormat::Rgba8Uint)
+            .usage(wgpu::TextureUsages::COPY_DST)
+            .build(),
+    );
+    let t2 = ctx.device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .size(wgpu::Extent3d {
+                width: 256,
+                height: 256,
+                depth_or_array_layers: 1,
+            })
+            .format(wgpu::TextureFormat::Rgba8Uint)
+            .usage(wgpu::TextureUsages::COPY_DST)
+            .build(),
+    );
 
     fail(
         &ctx.device,

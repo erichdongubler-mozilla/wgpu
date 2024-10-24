@@ -61,13 +61,11 @@ static ZERO_INIT_WORKGROUP_MEMORY: GpuTestConfiguration = GpuTestConfiguration::
             }],
         });
 
-        let pll = ctx
-            .device
-            .create_pipeline_layout(&PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&bgl],
-                push_constant_ranges: &[],
-            });
+        let pll = ctx.device.create_pipeline_layout(
+            &PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bgl])
+                .build(),
+        );
 
         let sm = ctx
             .device

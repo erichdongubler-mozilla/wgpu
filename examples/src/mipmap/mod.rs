@@ -86,24 +86,18 @@ impl Example {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("blit"),
             layout: None,
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(TEXTURE_FORMAT.into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(TEXTURE_FORMAT.into())])
+                    .build(),
+            ),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -225,18 +219,18 @@ impl crate::framework::Example for Example {
             height: size,
             depth_or_array_layers: 1,
         };
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: texture_extent,
-            mip_level_count: MIP_LEVEL_COUNT,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: TEXTURE_FORMAT,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::RENDER_ATTACHMENT
-                | wgpu::TextureUsages::COPY_DST,
-            label: None,
-            view_formats: &[],
-        });
+        let texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(texture_extent)
+                .mip_level_count(MIP_LEVEL_COUNT)
+                .format(TEXTURE_FORMAT)
+                .usage(
+                    wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::RENDER_ATTACHMENT
+                        | wgpu::TextureUsages::COPY_DST,
+                )
+                .build(),
+        );
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         //Note: we could use queue.write_texture instead, and this is what other
         // examples do, but here we want to show another way to do this.
@@ -283,26 +277,21 @@ impl crate::framework::Example for Example {
         let draw_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("draw"),
             layout: None,
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleStrip,
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::TriangleStrip)
+                .cull_mode(wgpu::Face::Back)
+                .build(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });

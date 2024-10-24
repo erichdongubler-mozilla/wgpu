@@ -263,19 +263,18 @@ async fn shader_input_output_test(
         ],
     });
 
-    let pll = ctx
-        .device
-        .create_pipeline_layout(&PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: match storage_type {
+    let pll = ctx.device.create_pipeline_layout(
+        &PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bgl])
+            .push_constant_ranges(match storage_type {
                 InputStorageType::PushConstant => &[PushConstantRange {
                     stages: ShaderStages::COMPUTE,
                     range: 0..MAX_BUFFER_SIZE as u32,
                 }],
                 _ => &[],
-            },
-        });
+            })
+            .build(),
+    );
 
     let mut fail = false;
     for test in tests {

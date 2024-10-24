@@ -220,11 +220,10 @@ pub fn op_webgpu_create_pipeline_layout(
         })
         .collect::<Result<Vec<_>, AnyError>>()?;
 
-    let descriptor = wgpu_core::binding_model::PipelineLayoutDescriptor {
-        label: Some(label),
-        bind_group_layouts: Cow::from(bind_group_layouts),
-        push_constant_ranges: Default::default(),
-    };
+    let descriptor = wgpu_core::binding_model::PipelineLayoutDescriptor::builder()
+        .label(label)
+        .bind_group_layouts(Cow::from(bind_group_layouts))
+        .build();
 
     gfx_put!(instance.device_create_pipeline_layout(
     device,

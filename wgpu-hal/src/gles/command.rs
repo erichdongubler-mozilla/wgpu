@@ -698,7 +698,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
                 .push(C::UnsetVertexAttribute(vat.location));
         }
         self.state.vertex_attributes.clear();
-        self.state.primitive = super::PrimitiveState::default();
+        self.state.primitive = Default::default();
 
         if let Some(query) = self.state.end_of_pass_timestamp.take() {
             self.cmd_buffer.commands.push(C::TimestampQuery(query));

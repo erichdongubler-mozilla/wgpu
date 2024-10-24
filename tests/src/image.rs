@@ -341,11 +341,11 @@ fn copy_via_compute(
         ],
     });
 
-    let pll = device.create_pipeline_layout(&PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[&bgl],
-        push_constant_ranges: &[],
-    });
+    let pll = device.create_pipeline_layout(
+        &PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bgl])
+            .build(),
+    );
 
     let source = String::from(include_str!("copy_texture_to_buffer.wgsl"));
 

@@ -113,6 +113,7 @@ dx12 = ["hal/dx12"]
 arrayvec.workspace = true
 bit-vec.workspace = true
 bitflags.workspace = true
+bon.workspace = true
 bytemuck = { workspace = true, optional = true }
 document-features.workspace = true
 indexmap.workspace = true

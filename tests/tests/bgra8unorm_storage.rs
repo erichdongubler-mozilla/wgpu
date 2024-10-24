@@ -25,20 +25,17 @@ static BGRA8_UNORM_STORAGE: GpuTestConfiguration = GpuTestConfiguration::new()
     )
     .run_async(|ctx| async move {
         let device = &ctx.device;
-        let texture = ctx.device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: wgpu::Extent3d {
-                width: 256,
-                height: 256,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Bgra8Unorm,
-            usage: wgpu::TextureUsages::STORAGE_BINDING | wgpu::TextureUsages::COPY_SRC,
-            view_formats: &[],
-        });
+        let texture = ctx.device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(wgpu::Extent3d {
+                    width: 256,
+                    height: 256,
+                    depth_or_array_layers: 1,
+                })
+                .format(wgpu::TextureFormat::Bgra8Unorm)
+                .usage(wgpu::TextureUsages::STORAGE_BINDING | wgpu::TextureUsages::COPY_SRC)
+                .build(),
+        );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor {
             label: None,
@@ -81,11 +78,11 @@ static BGRA8_UNORM_STORAGE: GpuTestConfiguration = GpuTestConfiguration::new()
             }],
         });
 
-        let pl = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+        let pl = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bgl])
+                .build(),
+        );
 
         let module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,

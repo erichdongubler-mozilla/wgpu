@@ -16,39 +16,38 @@ static ALLOW_INPUT_NOT_CONSUMED: GpuTestConfiguration =
             .device
             .create_shader_module(include_wgsl!("issue_5553.wgsl"));
 
-        let pipeline_layout = ctx
-            .device
-            .create_pipeline_layout(&PipelineLayoutDescriptor {
-                label: Some("Pipeline Layout"),
-                bind_group_layouts: &[],
-                push_constant_ranges: &[],
-            });
+        let pipeline_layout = ctx.device.create_pipeline_layout(
+            &PipelineLayoutDescriptor::builder()
+                .label("Pipeline Layout")
+                .bind_group_layouts(&[])
+                .build(),
+        );
 
-        let _ = ctx
-            .device
-            .create_render_pipeline(&RenderPipelineDescriptor {
-                label: Some("Pipeline"),
-                layout: Some(&pipeline_layout),
-                vertex: VertexState {
-                    module: &module,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[],
-                },
-                primitive: PrimitiveState::default(),
-                depth_stencil: None,
-                multisample: MultisampleState::default(),
-                fragment: Some(FragmentState {
-                    module: &module,
-                    entry_point: Some("fs_main"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(ColorTargetState {
-                        format: TextureFormat::Rgba8Unorm,
-                        blend: None,
-                        write_mask: ColorWrites::all(),
-                    })],
-                }),
-                multiview: None,
-                cache: None,
-            });
+        let targets = &[Some(
+            ColorTargetState::builder()
+                .format(TextureFormat::Rgba8Unorm)
+                .build(),
+        )];
+        let _ = ctx.device.create_render_pipeline(
+            &RenderPipelineDescriptor::builder()
+                .label("Pipeline")
+                .layout(&pipeline_layout)
+                .vertex(
+                    VertexState::from_module(&module)
+                        .entry_point("vs_main")
+                        .build(),
+                )
+                .primitive(Default::default())
+                .maybe_depth_stencil(None)
+                .multisample(Default::default())
+                .fragment(
+                    FragmentState::from_module(&module)
+                        .entry_point("fs_main")
+                        .targets(targets)
+                        .build(),
+                )
+                .maybe_multiview(None)
+                .maybe_cache(None)
+                .build(),
+        );
     });

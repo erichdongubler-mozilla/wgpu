@@ -30,20 +30,18 @@ async fn run(_path: Option<String>) {
 
     let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-    let render_target = device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size: wgpu::Extent3d {
-            width: TEXTURE_DIMS.0 as u32,
-            height: TEXTURE_DIMS.1 as u32,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[wgpu::TextureFormat::Rgba8UnormSrgb],
-    });
+    let render_target = device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .size(wgpu::Extent3d {
+                width: TEXTURE_DIMS.0 as u32,
+                height: TEXTURE_DIMS.1 as u32,
+                depth_or_array_layers: 1,
+            })
+            .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC)
+            .view_formats(&[wgpu::TextureFormat::Rgba8UnormSrgb])
+            .build(),
+    );
     let output_staging_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         label: None,
         size: texture_data.capacity() as u64,
@@ -54,21 +52,18 @@ async fn run(_path: Option<String>) {
     let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: None,
-        vertex: wgpu::VertexState {
-            module: &shader,
-            entry_point: Some("vs_main"),
-            compilation_options: Default::default(),
-            buffers: &[],
-        },
-        fragment: Some(wgpu::FragmentState {
-            module: &shader,
-            entry_point: Some("fs_main"),
-            compilation_options: Default::default(),
-            targets: &[Some(wgpu::TextureFormat::Rgba8UnormSrgb.into())],
-        }),
-        primitive: wgpu::PrimitiveState::default(),
+        vertex: wgpu::VertexState::from_module(&shader)
+            .entry_point("vs_main")
+            .build(),
+        fragment: Some(
+            wgpu::FragmentState::from_module(&shader)
+                .entry_point("fs_main")
+                .targets(&[Some(wgpu::TextureFormat::Rgba8UnormSrgb.into())])
+                .build(),
+        ),
+        primitive: Default::default(),
         depth_stencil: None,
-        multisample: wgpu::MultisampleState::default(),
+        multisample: Default::default(),
         multiview: None,
         cache: None,
     });

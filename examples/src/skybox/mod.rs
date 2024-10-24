@@ -70,20 +70,17 @@ impl Example {
         config: &wgpu::SurfaceConfiguration,
         device: &wgpu::Device,
     ) -> wgpu::TextureView {
-        let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: Self::DEPTH_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        });
+        let depth_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(Self::DEPTH_FORMAT)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
 
         depth_texture.create_view(&wgpu::TextureViewDescriptor::default())
     }
@@ -183,74 +180,67 @@ impl crate::framework::Example for Example {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         // Create the render pipelines
         let sky_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Sky"),
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_sky"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_sky"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: Self::DEPTH_FORMAT,
-                depth_write_enabled: false,
-                depth_compare: wgpu::CompareFunction::LessEqual,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
-            multisample: wgpu::MultisampleState::default(),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_sky")
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_sky")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(Self::DEPTH_FORMAT)
+                    .depth_write_enabled(false)
+                    .depth_compare(wgpu::CompareFunction::LessEqual)
+                    .build(),
+            ),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
         let entity_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Entity"),
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_entity"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3],
-                }],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_entity"),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Cw,
-                ..Default::default()
-            },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: Self::DEPTH_FORMAT,
-                depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::LessEqual,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
-            multisample: wgpu::MultisampleState::default(),
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_entity")
+                .buffers(&[wgpu::VertexBufferLayout::builder()
+                    .array_stride(size_of::<Vertex>() as wgpu::BufferAddress)
+                    .step_mode(wgpu::VertexStepMode::Vertex)
+                    .attributes(&wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3])
+                    .build()])
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_entity")
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .front_face(wgpu::FrontFace::Cw)
+                .build(),
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(Self::DEPTH_FORMAT)
+                    .depth_write_enabled(true)
+                    .depth_compare(wgpu::CompareFunction::LessEqual)
+                    .build(),
+            ),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -326,16 +316,12 @@ impl crate::framework::Example for Example {
 
         let texture = device.create_texture_with_data(
             queue,
-            &wgpu::TextureDescriptor {
-                size,
-                mip_level_count: header.level_count,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: skybox_format,
-                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-                label: None,
-                view_formats: &[],
-            },
+            &wgpu::TextureDescriptor::builder()
+                .size(size)
+                .mip_level_count(header.level_count)
+                .format(skybox_format)
+                .usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+                .build(),
             // KTX2 stores mip levels in mip major order.
             wgpu::util::TextureDataOrder::MipMajor,
             &image,

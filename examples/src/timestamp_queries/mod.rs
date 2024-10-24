@@ -342,47 +342,43 @@ fn render_pass(
 ) {
     let format = wgpu::TextureFormat::Rgba8Unorm;
 
-    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[],
-        push_constant_ranges: &[],
-    });
+    let pipeline_layout = device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[])
+            .build(),
+    );
 
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&pipeline_layout),
-        vertex: wgpu::VertexState {
-            module,
-            entry_point: Some("vs_main"),
-            compilation_options: Default::default(),
-            buffers: &[],
-        },
-        fragment: Some(wgpu::FragmentState {
-            module,
-            entry_point: Some("fs_main"),
-            compilation_options: Default::default(),
-            targets: &[Some(format.into())],
-        }),
-        primitive: wgpu::PrimitiveState::default(),
+        vertex: wgpu::VertexState::from_module(module)
+            .entry_point("vs_main")
+            .build(),
+        fragment: Some(
+            wgpu::FragmentState::from_module(module)
+                .entry_point("fs_main")
+                .targets(&[Some(format.into())])
+                .build(),
+        ),
+        primitive: Default::default(),
         depth_stencil: None,
-        multisample: wgpu::MultisampleState::default(),
+        multisample: Default::default(),
         multiview: None,
         cache: None,
     });
-    let render_target = device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("rendertarget"),
-        size: wgpu::Extent3d {
-            width: 512,
-            height: 512,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[format],
-    });
+    let render_target = device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .label("rendertarget")
+            .size(wgpu::Extent3d {
+                width: 512,
+                height: 512,
+                depth_or_array_layers: 1,
+            })
+            .format(format)
+            .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+            .view_formats(&[format])
+            .build(),
+    );
     let render_target_view = render_target.create_view(&wgpu::TextureViewDescriptor::default());
 
     let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {

@@ -156,41 +156,32 @@ impl crate::framework::Example for Example {
         let blue_texture_data = create_texture_data(Color::Blue);
         let white_texture_data = create_texture_data(Color::White);
 
-        let texture_descriptor = wgpu::TextureDescriptor {
-            size: wgpu::Extent3d::default(),
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-            label: None,
-            view_formats: &[],
-        };
+        let texture_descriptor = wgpu::TextureDescriptor::builder()
+            .size(Default::default())
+            .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+            .usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+            .build();
         let red_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("red"),
-            view_formats: &[],
             ..texture_descriptor
         });
         let green_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("green"),
-            view_formats: &[],
             ..texture_descriptor
         });
         let blue_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("blue"),
-            view_formats: &[],
             ..texture_descriptor
         });
         let white_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("white"),
-            view_formats: &[],
             ..texture_descriptor
         });
 
-        let red_texture_view = red_texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let green_texture_view = green_texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let blue_texture_view = blue_texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let white_texture_view = white_texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let red_texture_view = red_texture.create_view(&Default::default());
+        let green_texture_view = green_texture.create_view(&Default::default());
+        let blue_texture_view = blue_texture.create_view(&Default::default());
+        let white_texture_view = white_texture.create_view(&Default::default());
 
         queue.write_texture(
             red_texture.as_image_copy(),
@@ -310,41 +301,38 @@ impl crate::framework::Example for Example {
             label: Some("bind group"),
         });
 
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("main"),
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .label("main")
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         let index_format = wgpu::IndexFormat::Uint16;
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &base_shader_module,
-                entry_point: Some("vert_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: vertex_size as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2, 2 => Sint32],
-                }],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: fragment_shader_module,
-                entry_point: Some(fragment_entry_point),
-                compilation_options: Default::default(),
-                targets: &[Some(config.view_formats[0].into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                front_face: wgpu::FrontFace::Ccw,
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(&base_shader_module)
+                .entry_point("vert_main")
+                .buffers(&[wgpu::VertexBufferLayout::builder()
+                    .array_stride(vertex_size as wgpu::BufferAddress)
+                    .attributes(
+                        &wgpu::vertex_attr_array![0 => Float32x2, 1 => Float32x2, 2 => Sint32],
+                    )
+                    .build()])
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(fragment_shader_module)
+                    .entry_point(fragment_entry_point)
+                    .targets(&[Some(config.view_formats[0].into())])
+                    .build(),
+            ),
+            primitive: Default::default(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
-            cache: None
+            cache: None,
         });
 
         Self {

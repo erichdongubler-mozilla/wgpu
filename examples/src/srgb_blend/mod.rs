@@ -90,11 +90,11 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
             label: None,
             entries: &[],
         });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&bind_group_layout])
+                .build(),
+        );
 
         // Create bind group
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -105,10 +105,9 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
 
         let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let vertex_buffers = [wgpu::VertexBufferLayout {
-            array_stride: vertex_size as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
+        let vertex_buffers = [wgpu::VertexBufferLayout::builder()
+            .array_stride(vertex_size as wgpu::BufferAddress)
+            .attributes(&[
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x4,
                     offset: 0,
@@ -119,34 +118,32 @@ impl<const SRGB: bool> crate::framework::Example for Example<SRGB> {
                     offset: 4 * 4,
                     shader_location: 1,
                 },
-            ],
-        }];
+            ])
+            .build()];
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &vertex_buffers,
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: wgpu::PrimitiveState {
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .buffers(&vertex_buffers)
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(config.view_formats[0])
+                            .blend(wgpu::BlendState::ALPHA_BLENDING)
+                            .build(),
+                    )])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .cull_mode(wgpu::Face::Back)
+                .build(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });

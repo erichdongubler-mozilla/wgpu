@@ -182,20 +182,17 @@ impl Example {
         config: &wgpu::SurfaceConfiguration,
         device: &wgpu::Device,
     ) -> wgpu::TextureView {
-        let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: Self::DEPTH_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        });
+        let depth_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                })
+                .format(Self::DEPTH_FORMAT)
+                .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+                .build(),
+        );
 
         depth_texture.create_view(&wgpu::TextureViewDescriptor::default())
     }
@@ -375,16 +372,15 @@ impl crate::framework::Example for Example {
             ..Default::default()
         });
 
-        let shadow_texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: Self::SHADOW_SIZE,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: Self::SHADOW_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-            label: None,
-            view_formats: &[],
-        });
+        let shadow_texture = device.create_texture(
+            &wgpu::TextureDescriptor::builder()
+                .size(Self::SHADOW_SIZE)
+                .format(Self::SHADOW_FORMAT)
+                .usage(
+                    wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+                )
+                .build(),
+        );
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut shadow_target_views = (0..2)
@@ -466,11 +462,12 @@ impl crate::framework::Example for Example {
                         count: None,
                     }],
                 });
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("shadow"),
-                bind_group_layouts: &[&bind_group_layout, &local_bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            let pipeline_layout = device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .label("shadow")
+                    .bind_group_layouts(&[&bind_group_layout, &local_bind_group_layout])
+                    .build(),
+            );
 
             let uniform_buf = device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
@@ -493,34 +490,31 @@ impl crate::framework::Example for Example {
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("shadow"),
                 layout: Some(&pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_bake"),
-                    compilation_options: Default::default(),
-                    buffers: &[vb_desc.clone()],
-                },
+                vertex: wgpu::VertexState::from_module(&shader)
+                    .entry_point("vs_bake")
+                    .build(),
                 fragment: None,
-                primitive: wgpu::PrimitiveState {
-                    topology: wgpu::PrimitiveTopology::TriangleList,
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    unclipped_depth: device
-                        .features()
-                        .contains(wgpu::Features::DEPTH_CLIP_CONTROL),
-                    ..Default::default()
-                },
-                depth_stencil: Some(wgpu::DepthStencilState {
-                    format: Self::SHADOW_FORMAT,
-                    depth_write_enabled: true,
-                    depth_compare: wgpu::CompareFunction::LessEqual,
-                    stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState {
-                        constant: 2, // corresponds to bilinear filtering
-                        slope_scale: 2.0,
-                        clamp: 0.0,
-                    },
-                }),
-                multisample: wgpu::MultisampleState::default(),
+                primitive: wgpu::PrimitiveState::builder()
+                    .cull_mode(wgpu::Face::Back)
+                    .unclipped_depth(
+                        device
+                            .features()
+                            .contains(wgpu::Features::DEPTH_CLIP_CONTROL),
+                    )
+                    .build(),
+                depth_stencil: Some(
+                    wgpu::DepthStencilState::builder()
+                        .format(Self::SHADOW_FORMAT)
+                        .depth_write_enabled(true)
+                        .depth_compare(wgpu::CompareFunction::LessEqual)
+                        .bias(wgpu::DepthBiasState {
+                            constant: 2, // corresponds to bilinear filtering
+                            slope_scale: 2.0,
+                            clamp: 0.0,
+                        })
+                        .build(),
+                ),
+                multisample: Default::default(),
                 multiview: None,
                 cache: None,
             });
@@ -582,11 +576,12 @@ impl crate::framework::Example for Example {
                     ],
                     label: None,
                 });
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("main"),
-                bind_group_layouts: &[&bind_group_layout, &local_bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            let pipeline_layout = device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .label("main")
+                    .bind_group_layouts(&[&bind_group_layout, &local_bind_group_layout])
+                    .build(),
+            );
 
             let mx_total = Self::generate_matrix(config.width as f32 / config.height as f32);
             let forward_uniforms = GlobalUniforms {
@@ -627,35 +622,31 @@ impl crate::framework::Example for Example {
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("main"),
                 layout: Some(&pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[vb_desc],
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some(if supports_storage_resources {
-                        "fs_main"
-                    } else {
-                        "fs_main_without_storage"
-                    }),
-                    compilation_options: Default::default(),
-                    targets: &[Some(config.view_formats[0].into())],
-                }),
-                primitive: wgpu::PrimitiveState {
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    ..Default::default()
-                },
-                depth_stencil: Some(wgpu::DepthStencilState {
-                    format: Self::DEPTH_FORMAT,
-                    depth_write_enabled: true,
-                    depth_compare: wgpu::CompareFunction::Less,
-                    stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState::default(),
-                }),
-                multisample: wgpu::MultisampleState::default(),
+                vertex: wgpu::VertexState::from_module(&shader)
+                    .entry_point("vs_main")
+                    .buffers(&[vb_desc])
+                    .build(),
+                fragment: Some(
+                    wgpu::FragmentState::from_module(&shader)
+                        .entry_point(if supports_storage_resources {
+                            "fs_main"
+                        } else {
+                            "fs_main_without_storage"
+                        })
+                        .targets(&[Some(config.view_formats[0].into())])
+                        .build(),
+                ),
+                primitive: wgpu::PrimitiveState::builder()
+                    .cull_mode(wgpu::Face::Back)
+                    .build(),
+                depth_stencil: Some(
+                    wgpu::DepthStencilState::builder()
+                        .format(Self::DEPTH_FORMAT)
+                        .depth_write_enabled(true)
+                        .depth_compare(wgpu::CompareFunction::Less)
+                        .build(),
+                ),
+                multisample: Default::default(),
                 multiview: None,
                 cache: None,
             });

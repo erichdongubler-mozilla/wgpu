@@ -46,20 +46,17 @@ async fn run(_path: Option<String>) {
 
     let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-    let storage_texture = device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size: wgpu::Extent3d {
-            width: TEXTURE_DIMS.0 as u32,
-            height: TEXTURE_DIMS.1 as u32,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::STORAGE_BINDING | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[],
-    });
+    let storage_texture = device.create_texture(
+        &wgpu::TextureDescriptor::builder()
+            .size(wgpu::Extent3d {
+                width: TEXTURE_DIMS.0 as u32,
+                height: TEXTURE_DIMS.1 as u32,
+                depth_or_array_layers: 1,
+            })
+            .format(wgpu::TextureFormat::Rgba8Unorm)
+            .usage(wgpu::TextureUsages::STORAGE_BINDING | wgpu::TextureUsages::COPY_SRC)
+            .build(),
+    );
     let storage_texture_view = storage_texture.create_view(&wgpu::TextureViewDescriptor::default());
     let output_staging_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         label: None,
@@ -90,11 +87,11 @@ async fn run(_path: Option<String>) {
         }],
     });
 
-    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        label: None,
-        bind_group_layouts: &[&bind_group_layout],
-        push_constant_ranges: &[],
-    });
+    let pipeline_layout = device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .bind_group_layouts(&[&bind_group_layout])
+            .build(),
+    );
     let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
         label: None,
         layout: Some(&pipeline_layout),

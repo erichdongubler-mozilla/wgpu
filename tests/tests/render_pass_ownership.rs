@@ -439,13 +439,12 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
         }],
     });
 
-    let pipeline_layout = ctx
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pipeline_layout"),
-            bind_group_layouts: &[&bgl],
-            push_constant_ranges: &[],
-        });
+    let pipeline_layout = ctx.device.create_pipeline_layout(
+        &wgpu::PipelineLayoutDescriptor::builder()
+            .label("pipeline_layout")
+            .bind_group_layouts(&[&bgl])
+            .build(),
+    );
 
     let target_size = wgpu::Extent3d {
         width: 4,
@@ -454,17 +453,16 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
     };
     let target_msaa = 4;
     let target_format = wgpu::TextureFormat::Bgra8UnormSrgb;
+    let target_formats = [target_format];
 
-    let target_desc = wgpu::TextureDescriptor {
-        label: Some("target_tex"),
-        size: target_size,
-        mip_level_count: 1,
-        sample_count: target_msaa,
-        dimension: wgpu::TextureDimension::D2,
-        format: target_format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        view_formats: &[target_format],
-    };
+    let target_desc = wgpu::TextureDescriptor::builder()
+        .label("target_tex")
+        .size(target_size)
+        .sample_count(target_msaa)
+        .format(target_format)
+        .usage(wgpu::TextureUsages::RENDER_ATTACHMENT)
+        .view_formats(&target_formats)
+        .build();
     let target_tex = ctx.device.create_texture(&target_desc);
     let target_tex_resolve = ctx.device.create_texture(&wgpu::TextureDescriptor {
         label: Some("target_resolve"),
@@ -496,38 +494,34 @@ fn resource_setup(ctx: &TestingContext) -> ResourceSetup {
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("pipeline"),
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &sm,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout {
+            vertex: wgpu::VertexState::from_module(&sm)
+                .entry_point("vs_main")
+                .buffers(&[wgpu::VertexBufferLayout {
                     array_stride: 4,
                     step_mode: wgpu::VertexStepMode::Vertex,
                     attributes: &wgpu::vertex_attr_array![0 => Uint32],
-                }],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &sm,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(target_format.into())],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleStrip,
-                strip_index_format: Some(wgpu::IndexFormat::Uint32),
-                ..Default::default()
-            },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: depth_stencil_format,
-                depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::LessEqual,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
+                }])
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&sm)
+                    .entry_point("fs_main")
+                    .targets(&[Some(target_format.into())])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::TriangleStrip)
+                .strip_index_format(wgpu::IndexFormat::Uint32)
+                .build(),
+            depth_stencil: Some(
+                wgpu::DepthStencilState::builder()
+                    .format(depth_stencil_format)
+                    .depth_write_enabled(true)
+                    .depth_compare(wgpu::CompareFunction::LessEqual)
+                    .build(),
+            ),
             multisample: wgpu::MultisampleState {
                 count: target_msaa,
-                mask: !0,
-                alpha_to_coverage_enabled: false,
+                ..Default::default()
             },
             multiview: None,
             cache: None,

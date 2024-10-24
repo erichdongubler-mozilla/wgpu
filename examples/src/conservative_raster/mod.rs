@@ -18,21 +18,21 @@ impl Example {
         bind_group_layout_upscale: &wgpu::BindGroupLayout,
     ) -> (wgpu::TextureView, wgpu::BindGroup) {
         let texture_view = device
-            .create_texture(&wgpu::TextureDescriptor {
-                label: Some("Low Resolution Target"),
-                size: wgpu::Extent3d {
-                    width: (config.width / 16).max(1),
-                    height: (config.height / 16).max(1),
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: RENDER_TARGET_FORMAT,
-                usage: wgpu::TextureUsages::TEXTURE_BINDING
-                    | wgpu::TextureUsages::RENDER_ATTACHMENT,
-                view_formats: &[],
-            })
+            .create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .label("Low Resolution Target")
+                    .size(wgpu::Extent3d {
+                        width: (config.width / 16).max(1),
+                        height: (config.height / 16).max(1),
+                        depth_or_array_layers: 1,
+                    })
+                    .format(RENDER_TARGET_FORMAT)
+                    .usage(
+                        wgpu::TextureUsages::TEXTURE_BINDING
+                            | wgpu::TextureUsages::RENDER_ATTACHMENT,
+                    )
+                    .build(),
+            )
             .create_view(&Default::default());
 
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
@@ -74,12 +74,11 @@ impl crate::framework::Example for Example {
         device: &wgpu::Device,
         _queue: &wgpu::Queue,
     ) -> Self {
-        let pipeline_layout_empty =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[],
-                push_constant_ranges: &[],
-            });
+        let pipeline_layout_empty = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[])
+                .build(),
+        );
 
         let shader_triangle_and_lines =
             device.create_shader_module(wgpu::include_wgsl!("triangle_and_lines.wgsl"));
@@ -88,24 +87,18 @@ impl crate::framework::Example for Example {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("Conservative Rasterization"),
                 layout: Some(&pipeline_layout_empty),
-                vertex: wgpu::VertexState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[],
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("fs_main_red"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(RENDER_TARGET_FORMAT.into())],
-                }),
-                primitive: wgpu::PrimitiveState {
-                    conservative: true,
-                    ..Default::default()
-                },
+                vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
+                    .entry_point("vs_main")
+                    .build(),
+                fragment: Some(
+                    wgpu::FragmentState::from_module(&shader_triangle_and_lines)
+                        .entry_point("fs_main_red")
+                        .targets(&[Some(RENDER_TARGET_FORMAT.into())])
+                        .build(),
+                ),
+                primitive: wgpu::PrimitiveState::builder().conservative(true).build(),
                 depth_stencil: None,
-                multisample: wgpu::MultisampleState::default(),
+                multisample: Default::default(),
                 multiview: None,
                 cache: None,
             });
@@ -114,21 +107,18 @@ impl crate::framework::Example for Example {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("Regular Rasterization"),
                 layout: Some(&pipeline_layout_empty),
-                vertex: wgpu::VertexState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[],
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader_triangle_and_lines,
-                    entry_point: Some("fs_main_blue"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(RENDER_TARGET_FORMAT.into())],
-                }),
-                primitive: wgpu::PrimitiveState::default(),
+                vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
+                    .entry_point("vs_main")
+                    .build(),
+                fragment: Some(
+                    wgpu::FragmentState::from_module(&shader_triangle_and_lines)
+                        .entry_point("fs_main_blue")
+                        .targets(&[Some(RENDER_TARGET_FORMAT.into())])
+                        .build(),
+                ),
+                primitive: Default::default(),
                 depth_stencil: None,
-                multisample: wgpu::MultisampleState::default(),
+                multisample: Default::default(),
                 multiview: None,
                 cache: None,
             });
@@ -141,25 +131,22 @@ impl crate::framework::Example for Example {
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: Some("Lines"),
                     layout: Some(&pipeline_layout_empty),
-                    vertex: wgpu::VertexState {
-                        module: &shader_triangle_and_lines,
-                        entry_point: Some("vs_main"),
-                        compilation_options: Default::default(),
-                        buffers: &[],
-                    },
-                    fragment: Some(wgpu::FragmentState {
-                        module: &shader_triangle_and_lines,
-                        entry_point: Some("fs_main_white"),
-                        compilation_options: Default::default(),
-                        targets: &[Some(config.view_formats[0].into())],
-                    }),
-                    primitive: wgpu::PrimitiveState {
-                        polygon_mode: wgpu::PolygonMode::Line,
-                        topology: wgpu::PrimitiveTopology::LineStrip,
-                        ..Default::default()
-                    },
+                    vertex: wgpu::VertexState::from_module(&shader_triangle_and_lines)
+                        .entry_point("vs_main")
+                        .build(),
+                    fragment: Some(
+                        wgpu::FragmentState::from_module(&shader_triangle_and_lines)
+                            .entry_point("fs_main_white")
+                            .compilation_options(Default::default())
+                            .targets(&[Some(config.view_formats[0].into())])
+                            .build(),
+                    ),
+                    primitive: wgpu::PrimitiveState::builder()
+                        .polygon_mode(wgpu::PolygonMode::Line)
+                        .topology(wgpu::PrimitiveTopology::LineStrip)
+                        .build(),
                     depth_stencil: None,
-                    multisample: wgpu::MultisampleState::default(),
+                    multisample: Default::default(),
                     multiview: None,
                     cache: None,
                 }),
@@ -192,31 +179,29 @@ impl crate::framework::Example for Example {
                     ],
                 });
 
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&bind_group_layout],
-                push_constant_ranges: &[],
-            });
+            let pipeline_layout = device.create_pipeline_layout(
+                &wgpu::PipelineLayoutDescriptor::builder()
+                    .bind_group_layouts(&[&bind_group_layout])
+                    .build(),
+            );
             let shader = device.create_shader_module(wgpu::include_wgsl!("upscale.wgsl"));
             (
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                     label: Some("Upscale"),
                     layout: Some(&pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &shader,
-                        entry_point: Some("vs_main"),
-                        compilation_options: Default::default(),
-                        buffers: &[],
-                    },
-                    fragment: Some(wgpu::FragmentState {
-                        module: &shader,
-                        entry_point: Some("fs_main"),
-                        compilation_options: Default::default(),
-                        targets: &[Some(config.view_formats[0].into())],
-                    }),
-                    primitive: wgpu::PrimitiveState::default(),
+                    vertex: wgpu::VertexState::from_module(&shader)
+                        .entry_point("vs_main")
+                        .build(),
+                    fragment: Some(
+                        wgpu::FragmentState::from_module(&shader)
+                            .entry_point("fs_main")
+                            .compilation_options(Default::default())
+                            .targets(&[Some(config.view_formats[0].into())])
+                            .build(),
+                    ),
+                    primitive: Default::default(),
                     depth_stencil: None,
-                    multisample: wgpu::MultisampleState::default(),
+                    multisample: Default::default(),
                     multiview: None,
                     cache: None,
                 }),

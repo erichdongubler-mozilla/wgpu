@@ -201,38 +201,35 @@ impl crate::framework::Example for Example {
                 }],
                 label: None,
             });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&global_bind_group_layout, &local_bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let pipeline_layout = device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor::builder()
+                .bind_group_layouts(&[&global_bind_group_layout, &local_bind_group_layout])
+                .build(),
+        );
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.view_formats[0],
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::default(),
-                })],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleStrip,
-                strip_index_format: Some(wgpu::IndexFormat::Uint16),
-                ..wgpu::PrimitiveState::default()
-            },
+            vertex: wgpu::VertexState::from_module(&shader)
+                .entry_point("vs_main")
+                .build(),
+            fragment: Some(
+                wgpu::FragmentState::from_module(&shader)
+                    .entry_point("fs_main")
+                    .targets(&[Some(
+                        wgpu::ColorTargetState::builder()
+                            .format(config.view_formats[0])
+                            .blend(wgpu::BlendState::ALPHA_BLENDING)
+                            .build(),
+                    )])
+                    .build(),
+            ),
+            primitive: wgpu::PrimitiveState::builder()
+                .topology(wgpu::PrimitiveTopology::TriangleStrip)
+                .strip_index_format(wgpu::IndexFormat::Uint16)
+                .build(),
             depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: Default::default(),
             multiview: None,
             cache: None,
         });
@@ -249,16 +246,13 @@ impl crate::framework::Example for Example {
                 height: info.height,
                 depth_or_array_layers: 1,
             };
-            let texture = device.create_texture(&wgpu::TextureDescriptor {
-                label: None,
-                size,
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
-                view_formats: &[],
-            });
+            let texture = device.create_texture(
+                &wgpu::TextureDescriptor::builder()
+                    .size(size)
+                    .format(wgpu::TextureFormat::Rgba8UnormSrgb)
+                    .usage(wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING)
+                    .build(),
+            );
             queue.write_texture(
                 texture.as_image_copy(),
                 &buf,

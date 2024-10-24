@@ -48,11 +48,12 @@ impl RenderPipeline {
 ///
 /// Corresponds to [WebGPU `GPUVertexBufferLayout`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpuvertexbufferlayout).
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(bon::Builder, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct VertexBufferLayout<'a> {
     /// The stride, in bytes, between elements of this buffer.
     pub array_stride: BufferAddress,
     /// How often this vertex buffer is "stepped" forward.
+    #[builder(default)]
     pub step_mode: VertexStepMode,
     /// The list of attributes which comprise a single vertex.
     pub attributes: &'a [VertexAttribute],
@@ -65,9 +66,11 @@ static_assertions::assert_impl_all!(VertexBufferLayout<'_>: Send, Sync);
 ///
 /// Corresponds to [WebGPU `GPUVertexState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpuvertexstate).
-#[derive(Clone, Debug)]
+#[derive(bon::Builder, Clone, Debug)]
+#[builder(start_fn = from_module)]
 pub struct VertexState<'a> {
     /// The compiled shader module for this stage.
+    #[builder(start_fn)]
     pub module: &'a ShaderModule,
     /// The name of the entry point in the compiled shader to use.
     ///
@@ -80,8 +83,10 @@ pub struct VertexState<'a> {
     /// Advanced options for when this pipeline is compiled
     ///
     /// This implements `Default`, and for most users can be set to `Default::default()`
+    #[builder(default)]
     pub compilation_options: PipelineCompilationOptions<'a>,
     /// The format of any vertex buffers used with this pipeline.
+    #[builder(default)]
     pub buffers: &'a [VertexBufferLayout<'a>],
 }
 #[cfg(send_sync)]
@@ -93,9 +98,11 @@ static_assertions::assert_impl_all!(VertexState<'_>: Send, Sync);
 ///
 /// Corresponds to [WebGPU `GPUFragmentState`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpufragmentstate).
-#[derive(Clone, Debug)]
+#[derive(bon::Builder, Clone, Debug)]
+#[builder(start_fn = from_module)]
 pub struct FragmentState<'a> {
     /// The compiled shader module for this stage.
+    #[builder(start_fn)]
     pub module: &'a ShaderModule,
     /// The name of the entry point in the compiled shader to use.
     ///
@@ -108,6 +115,7 @@ pub struct FragmentState<'a> {
     /// Advanced options for when this pipeline is compiled
     ///
     /// This implements `Default`, and for most users can be set to `Default::default()`
+    #[builder(default)]
     pub compilation_options: PipelineCompilationOptions<'a>,
     /// The color state of the render targets.
     pub targets: &'a [Option<ColorTargetState>],
@@ -121,9 +129,10 @@ static_assertions::assert_impl_all!(FragmentState<'_>: Send, Sync);
 ///
 /// Corresponds to [WebGPU `GPURenderPipelineDescriptor`](
 /// https://gpuweb.github.io/gpuweb/#dictdef-gpurenderpipelinedescriptor).
-#[derive(Clone, Debug)]
+#[derive(bon::Builder, Clone, Debug)]
 pub struct RenderPipelineDescriptor<'a> {
     /// Debug label of the pipeline. This will show up in graphics debuggers for easy identification.
+    #[builder(default, into)]
     pub label: Label<'a>,
     /// The layout of bind groups for this pipeline.
     ///
@@ -148,10 +157,12 @@ pub struct RenderPipelineDescriptor<'a> {
     /// The compiled vertex stage, its entry point, and the input buffers layout.
     pub vertex: VertexState<'a>,
     /// The properties of the pipeline at the primitive assembly and rasterization level.
+    #[builder(default)]
     pub primitive: PrimitiveState,
     /// The effect of draw calls on the depth and stencil aspects of the output target, if any.
     pub depth_stencil: Option<DepthStencilState>,
     /// The multi-sampling properties of the pipeline.
+    #[builder(default)]
     pub multisample: MultisampleState,
     /// The compiled fragment stage, its entry point, and the color targets.
     pub fragment: Option<FragmentState<'a>>,
