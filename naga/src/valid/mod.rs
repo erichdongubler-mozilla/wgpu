@@ -1,6 +1,4 @@
-/*!
-Shader validator.
-*/
+//! [`Validator`] functionality for shaders.
 
 mod analyzer;
 mod compose;
