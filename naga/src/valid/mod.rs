@@ -246,6 +246,7 @@ impl ops::Index<Handle<crate::Expression>> for ModuleInfo {
     }
 }
 
+/// Validates a [`Module`](crate::Module) via [`Self::validate`].
 #[derive(Debug)]
 pub struct Validator {
     flags: ValidationFlags,
