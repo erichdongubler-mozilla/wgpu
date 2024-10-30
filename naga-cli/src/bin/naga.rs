@@ -89,7 +89,7 @@ struct Args {
 
     /// specify file path to process STDIN as
     #[argh(option)]
-    stdin_file_path: Option<String>,
+    stdin: Option<String>,
 
     /// generate debug symbols, only works for spv-out for now
     #[argh(switch, short = 'g')]
@@ -127,8 +127,8 @@ struct Args {
     /// the input and output files.
     ///
     /// First positional argument is the input file. If not specified, the
-    /// input will be read from stdin. In the case, --stdin-file-path must also
-    /// be specified.
+    /// input will be read from stdin. In the case, --stdin must also be
+    /// specified.
     ///
     /// The rest arguments are the output files. If not specified, only
     /// validation will be performed.
@@ -487,7 +487,7 @@ fn run() -> anyhow::Result<()> {
 
     let mut files = args.files.iter();
 
-    let (input_path, input) = if let Some(path) = args.stdin_file_path.as_ref() {
+    let (input_path, input) = if let Some(path) = args.stdin.as_ref() {
         let mut input = vec![];
         std::io::stdin().lock().read_to_end(&mut input)?;
         (Path::new(path), input)
