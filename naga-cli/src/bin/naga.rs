@@ -87,9 +87,11 @@ struct Args {
     #[argh(switch)]
     dot_cfg_only: bool,
 
-    /// specify file path to process STDIN as
+    /// use `stdin` for input, using the input file path only for format detection and diagnostics.
+    ///
+    /// This option is ignored when `--bulk-validate` is set.
     #[argh(option)]
-    stdin: Option<String>,
+    stdin: bool,
 
     /// generate debug symbols, only works for spv-out for now
     #[argh(switch, short = 'g')]
@@ -126,12 +128,9 @@ struct Args {
 
     /// the input and output files.
     ///
-    /// First positional argument is the input file. If not specified, the
-    /// input will be read from stdin. In the case, --stdin must also be
-    /// specified.
-    ///
-    /// The rest arguments are the output files. If not specified, only
-    /// validation will be performed.
+    /// The first argument is the input file path. The remaining arguments are
+    /// the output files. If not specified, only validation will be
+    /// performed.
     ///
     /// In bulk validation mode, these are all input files to be validated.
     #[argh(positional)]
@@ -487,13 +486,15 @@ fn run() -> anyhow::Result<()> {
 
     let mut files = args.files.iter();
 
-    let (input_path, input) = if let Some(path) = args.stdin.as_ref() {
-        let mut input = vec![];
-        std::io::stdin().lock().read_to_end(&mut input)?;
-        (Path::new(path), input)
-    } else if let Some(path) = files.next() {
-        let path = Path::new(path);
-        (path, fs::read(path)?)
+    let (input_path, input) = if let Some(path) = files.next() {
+        if args.stdin {
+            let mut input = vec![];
+            std::io::stdin().lock().read_to_end(&mut input)?;
+            (Path::new(path), input)
+        } else {
+            let path = Path::new(path);
+            (path, fs::read(path)?)
+        }
     } else {
         return Err(CliError("Input file path is not specified").into());
     };
