@@ -2072,6 +2072,55 @@ impl QuerySet {
     pub(crate) fn raw(&self) -> &dyn hal::DynQuerySet {
         self.raw.as_ref()
     }
+
+    pub(crate) fn destroy(self: &Arc<Self>) -> Result<(), DestroyError> {
+        let device = &self.device;
+
+        let temp = {
+            let mut snatch_guard = device.snatchable_lock.write();
+
+            let raw = match self.raw.snatch(&mut snatch_guard) {
+                Some(raw) => raw,
+                None => {
+                    return Err(DestroyError::AlreadyDestroyed);
+                }
+            };
+
+            #[cfg(feature = "indirect-validation")]
+            let raw_indirect_validation_bind_group = self
+                .raw_indirect_validation_bind_group
+                .snatch(&mut snatch_guard);
+
+            drop(snatch_guard);
+
+            let bind_groups = {
+                let mut guard = self.bind_groups.lock();
+                mem::take(&mut *guard)
+            };
+
+            queue::TempResource::DestroyedBuffer(DestroyedBuffer {
+                raw: ManuallyDrop::new(raw),
+                device: Arc::clone(&self.device),
+                label: self.label().to_owned(),
+                bind_groups,
+                #[cfg(feature = "indirect-validation")]
+                raw_indirect_validation_bind_group,
+            })
+        };
+
+        let mut pending_writes = device.pending_writes.lock();
+        if pending_writes.contains_query_set(self) {
+            pending_writes.consume_temp(temp);
+        } else {
+            let mut life_lock = device.lock_life();
+            let last_submit_index = life_lock.get_query_set_last_index(self);
+            if let Some(last_submit_index) = last_submit_index {
+                life_lock.schedule_resource_destruction(temp, last_submit_index);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 pub type BlasDescriptor<'a> = wgt::CreateBlasDescriptor<Label<'a>>;
