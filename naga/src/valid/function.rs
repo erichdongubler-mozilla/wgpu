@@ -155,7 +155,9 @@ pub enum FunctionError {
     #[error("The type of {value:?} doesn't match the type stored in {pointer:?}")]
     InvalidStoreTypes {
         pointer: Handle<crate::Expression>,
+        pointer_ty: crate::TypeInner,
         value: Handle<crate::Expression>,
+        value_ty: crate::TypeInner,
     },
     #[error("Image store parameters are invalid")]
     InvalidImageStore(#[source] ExpressionError),
@@ -1063,7 +1065,6 @@ impl super::Validator {
                         _ => {}
                     }
 
-                    let pointer_ty = context.resolve_pointer_type(pointer);
                     let pointer_base_tr = pointer_ty.pointer_base_type();
                     let pointer_base_ty = pointer_base_tr
                         .as_ref()
@@ -1078,10 +1079,15 @@ impl super::Validator {
                     };
 
                     if !good {
-                        return Err(FunctionError::InvalidStoreTypes { pointer, value }
-                            .with_span()
-                            .with_handle(pointer, context.expressions)
-                            .with_handle(value, context.expressions));
+                        return Err(FunctionError::InvalidStoreTypes {
+                            pointer,
+                            pointer_ty: value_ty.clone(),
+                            value,
+                            value_ty: value_ty.clone(),
+                        }
+                        .with_span()
+                        .with_handle(pointer, context.expressions)
+                        .with_handle(value, context.expressions));
                     }
 
                     if let Some(space) = pointer_ty.pointer_space() {
