@@ -1089,11 +1089,11 @@ impl<'a> Error<'a> {
                     labels: vec![
                         (
                             dest_span,
-                            format!("a value of type {dest_type} is required here").into(),
+                            format!("a value of type `{dest_type}` is required here").into(),
                         ),
                         (
                             source_span,
-                            format!("this expression has type {source_type}").into(),
+                            format!("this expression has type `{source_type}`").into(),
                         ),
                     ],
                     notes: vec![],
@@ -1114,13 +1114,13 @@ impl<'a> Error<'a> {
                         (
                             dest_span,
                             format!(
-                                "a value with elements of type {dest_scalar} is required here"
+                                "a value with elements of type `{dest_scalar}` is required here"
                             )
                             .into(),
                         ),
                         (
                             source_span,
-                            format!("this expression has type {source_type}").into(),
+                            format!("this expression has type `{source_type}`").into(),
                         ),
                     ],
                     notes: vec![],
