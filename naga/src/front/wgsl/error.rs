@@ -593,7 +593,7 @@ impl<'a> Error<'a> {
                     "expected an image, but found `{}` which is not an image",
                     &source[bad_span]
                 ),
-                labels: vec![(bad_span, "not an image".into())],
+                labels: vec![(bad_span, "".into())],
                 notes: vec![],
             },
             Error::BadTypeCast {
@@ -916,7 +916,7 @@ impl<'a> Error<'a> {
             },
             Error::CalledEntryPoint(span) => ParseError {
                 message: "entry point cannot be called".to_string(),
-                labels: vec![(span, "entry point cannot be called".into())],
+                labels: vec![(span, "".into())],
                 notes: vec![],
             },
             Error::WrongArgumentCount {
@@ -1048,22 +1048,22 @@ impl<'a> Error<'a> {
                     "resolves to a concrete integer scalar (`u32` or `i32`)"
                 )
                 .to_string(),
-                labels: vec![(span, "must resolve to `u32` or `i32`".into())],
+                labels: vec![(span, "".into())],
                 notes: vec![],
             },
             Error::ExpectedNonNegative(span) => ParseError {
                 message: "must be non-negative (>= 0)".to_string(),
-                labels: vec![(span, "must be non-negative".into())],
+                labels: vec![(span, "".into())],
                 notes: vec![],
             },
             Error::ExpectedPositiveArrayLength(span) => ParseError {
                 message: "array element count must be positive (> 0)".to_string(),
-                labels: vec![(span, "must be positive".into())],
+                labels: vec![(span, "".into())],
                 notes: vec![],
             },
             Error::ConstantEvaluatorError(ref e, span) => ParseError {
                 message: e.to_string(),
-                labels: vec![(span, "see msg".into())],
+                labels: vec![(span, "".into())],
                 notes: vec![],
             },
             Error::MissingWorkgroupSize(span) => ParseError {
