@@ -778,6 +778,16 @@ mod diagnostic_filter {
     }
 
     #[test]
+    fn invalid_attr_positions() {
+        #[derive(strum::EnumIter)]
+        enum Case {}
+
+        for case in Case::iter() {
+            assert_parse_err(&shader, &expected_msg);
+        }
+    }
+
+    #[test]
     fn intended_global_directive() {
         let shader = "@diagnostic(off, my.lint);";
         assert_parse_err(
