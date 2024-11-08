@@ -67,6 +67,8 @@ impl From<ImplementedEnableExtension> for EnableExtension {
 }
 
 impl EnableExtension {
+    #[cfg(test)]
+    const DEFINITELY_NOT_STANDARD: &'static str = "definitely_not_standard";
     const F16: &'static str = "f16";
     const CLIP_DISTANCES: &'static str = "clip_distances";
     const DUAL_SOURCE_BLENDING: &'static str = "dual_source_blending";
@@ -152,4 +154,16 @@ impl UnimplementedEnableExtension {
             Self::PrimitiveIndex => 8236,
         }
     }
+}
+#[cfg(test)]
+mod test {
+    use strum::IntoEnumIterator as _;
+
+    use super::ImplementedEnableExtension;
+
+    fn valid() {
+        for extension in ImplementedEnableExtension::iter() {}
+    }
+
+    fn unimplemented() {}
 }
