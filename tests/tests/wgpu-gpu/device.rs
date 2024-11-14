@@ -81,6 +81,7 @@ static DEVICE_LIFETIME_CHECK: GpuTestConfiguration = GpuTestConfiguration::new()
         );
     });
 
+// TODO: dis bad
 #[cfg(not(all(target_arch = "wasm32", not(target_os = "emscripten"))))]
 #[gpu_test]
 static MULTIPLE_DEVICES: GpuTestConfiguration = GpuTestConfiguration::new()
