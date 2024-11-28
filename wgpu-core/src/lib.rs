@@ -39,6 +39,7 @@
     rustdoc::private_intra_doc_links,
 )]
 #![warn(
+    clippy::allow_attributes,
     clippy::alloc_instead_of_core,
     clippy::ptr_as_ptr,
     clippy::std_instead_of_alloc,

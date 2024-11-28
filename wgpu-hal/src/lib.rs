@@ -230,6 +230,7 @@
 )]
 #![warn(
     clippy::alloc_instead_of_core,
+    clippy::allow_attributes,
     clippy::ptr_as_ptr,
     clippy::std_instead_of_alloc,
     clippy::std_instead_of_core,

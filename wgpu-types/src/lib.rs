@@ -7,6 +7,7 @@
     clippy::match_like_matches_macro,
 )]
 #![warn(
+    clippy::allow_attributes,
     clippy::ptr_as_ptr,
     missing_docs,
     unsafe_op_in_unsafe_fn,
