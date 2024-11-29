@@ -12,11 +12,11 @@ use crate::{
 pub struct Alignment(NonZeroU32);
 
 impl Alignment {
-    pub const ONE: Self = Self(unsafe { NonZeroU32::new_unchecked(1) });
-    pub const TWO: Self = Self(unsafe { NonZeroU32::new_unchecked(2) });
-    pub const FOUR: Self = Self(unsafe { NonZeroU32::new_unchecked(4) });
-    pub const EIGHT: Self = Self(unsafe { NonZeroU32::new_unchecked(8) });
-    pub const SIXTEEN: Self = Self(unsafe { NonZeroU32::new_unchecked(16) });
+    pub const ONE: Self = Self(NonZeroU32::new(1).unwrap());
+    pub const TWO: Self = Self(NonZeroU32::new(2).unwrap());
+    pub const FOUR: Self = Self(NonZeroU32::new(4).unwrap());
+    pub const EIGHT: Self = Self(NonZeroU32::new(8).unwrap());
+    pub const SIXTEEN: Self = Self(NonZeroU32::new(16).unwrap());
 
     pub const MIN_UNIFORM: Self = Self::SIXTEEN;
 
