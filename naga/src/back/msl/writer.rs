@@ -4776,6 +4776,9 @@ template <typename A>
         Ok(())
     }
 
+    /// Given `format`, write an unpacking function for a vertex attribute of that `format`
+    /// immediately, and return (1) the function's identifier, (2) the size of the vertex attribute,
+    /// and (3) the number of components in vertex attribute.
     fn write_unpacking_function(
         &mut self,
         format: back::msl::VertexFormat,
