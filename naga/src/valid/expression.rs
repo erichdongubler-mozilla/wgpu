@@ -54,13 +54,18 @@ pub enum ExpressionError {
         rhs_expr: Handle<crate::Expression>,
         rhs_type: crate::TypeInner,
     },
-    #[error("Expected selection argument types to match, but reject value of type {reject:?} does not match accept value of value {accept:?}")]
+    #[error("Expected selection reject and accept values ({accept:?} and {reject:?}, respectively) to match, but they have different types")]
     SelectValuesTypeMismatch {
-        accept: crate::TypeInner,
-        reject: crate::TypeInner,
+        accept: Handle<crate::Expression>,
+        accept_ty: crate::TypeInner,
+        reject: Handle<crate::Expression>,
+        reject_ty: crate::TypeInner,
     },
-    #[error("Expected selection condition to be a boolean value, got {actual:?}")]
-    SelectConditionNotABool { actual: crate::TypeInner },
+    #[error("Expected selection condition {actual:?} to be a boolean value")]
+    SelectConditionNotABool {
+        actual: Handle<crate::Expression>,
+        actual_ty: crate::TypeInner,
+    },
     #[error("Relational argument {0:?} is not a boolean vector")]
     InvalidBooleanVector(Handle<crate::Expression>),
     #[error("Relational argument {0:?} is not a float")]
@@ -162,8 +167,21 @@ impl ExpressionError {
             Self::IndexableLength(..) => Vec::new(),
             Self::InvalidUnaryOperandType(..) => Vec::new(),
             Self::InvalidBinaryOperandTypes { .. } => Vec::new(),
-            Self::SelectValuesTypeMismatch { .. } => Vec::new(),
-            Self::SelectConditionNotABool { .. } => Vec::new(),
+            Self::SelectValuesTypeMismatch {
+                accept,
+                ref accept_ty,
+                reject,
+                ref reject_ty,
+            } => vec![
+                (accept, format!("accept value of type {accept_ty:?}")),
+                (reject, format!("reject value of type {reject_ty:?}")),
+            ],
+            Self::SelectConditionNotABool {
+                actual,
+                ref actual_ty,
+            } => {
+                vec![(actual, format!("this is of type {actual_ty:?}"))]
+            }
             Self::InvalidBooleanVector(..) => Vec::new(),
             Self::InvalidFloatArgument(..) => Vec::new(),
             Self::Type(..) => Vec::new(),
@@ -1056,13 +1074,16 @@ impl super::Validator {
                 };
                 if accept_inner != reject_inner {
                     return Err(ExpressionError::SelectValuesTypeMismatch {
-                        accept: accept_inner.clone(),
-                        reject: reject_inner.clone(),
+                        accept,
+                        accept_ty: accept_inner.clone(),
+                        reject,
+                        reject_ty: reject_inner.clone(),
                     });
                 }
                 if !condition_good {
                     return Err(ExpressionError::SelectConditionNotABool {
-                        actual: condition_ty.clone(),
+                        actual: condition,
+                        actual_ty: condition_ty.clone(),
                     });
                 }
                 ShaderStages::all()
