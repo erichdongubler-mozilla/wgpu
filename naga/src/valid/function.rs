@@ -1763,8 +1763,17 @@ impl super::Validator {
                 ) {
                     Ok(stages) => info.available_stages &= stages,
                     Err(source) => {
-                        return Err(FunctionError::Expression { handle, source }
-                            .with_span_handle(handle, &fun.expressions))
+                        let expr_handles = source.expr_handles().collect::<Vec<_>>();
+                        let mut err = FunctionError::Expression { handle, source }.with_span();
+                        if expr_handles.is_empty() {
+                            err = err.with_handle(handle, &fun.expressions);
+                        } else {
+                            for (handle, context) in expr_handles {
+                                let span = fun.expressions.get_span(handle);
+                                err = err.with_context((span, context));
+                            }
+                        }
+                        return Err(err);
                     }
                 }
             }

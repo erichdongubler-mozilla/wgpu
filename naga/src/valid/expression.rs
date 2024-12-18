@@ -143,6 +143,66 @@ pub enum ExpressionError {
     UnsupportedWidth(crate::MathFunction, crate::ScalarKind, crate::Bytes),
 }
 
+impl ExpressionError {
+    pub(crate) fn expr_handles(&self) -> impl Iterator<Item = (Handle<crate::Expression>, String)> {
+        match *self {
+            Self::NotInScope => Vec::new(),
+            Self::InvalidBaseType(..) => Vec::new(),
+            Self::InvalidIndexType(..) => Vec::new(),
+            Self::NegativeIndex(..) => Vec::new(),
+            Self::IndexOutOfBounds(..) => Vec::new(),
+            Self::FunctionArgumentDoesntExist(..) => Vec::new(),
+            Self::InvalidPointerType(..) => Vec::new(),
+            Self::InvalidArrayType(..) => Vec::new(),
+            Self::InvalidRayQueryType(..) => Vec::new(),
+            Self::InvalidSplatType(..) => Vec::new(),
+            Self::InvalidVectorType(..) => Vec::new(),
+            Self::InvalidSwizzleComponent(..) => Vec::new(),
+            Self::Compose(..) => Vec::new(),
+            Self::IndexableLength(..) => Vec::new(),
+            Self::InvalidUnaryOperandType(..) => Vec::new(),
+            Self::InvalidBinaryOperandTypes { .. } => Vec::new(),
+            Self::SelectValuesTypeMismatch { .. } => Vec::new(),
+            Self::SelectConditionNotABool { .. } => Vec::new(),
+            Self::InvalidBooleanVector(..) => Vec::new(),
+            Self::InvalidFloatArgument(..) => Vec::new(),
+            Self::Type(..) => Vec::new(),
+            Self::ExpectedGlobalVariable => Vec::new(),
+            Self::ExpectedGlobalOrArgument => Vec::new(),
+            Self::ExpectedBindingArrayType(..) => Vec::new(),
+            Self::ExpectedImageType(..) => Vec::new(),
+            Self::ExpectedSamplerType(..) => Vec::new(),
+            Self::InvalidImageClass(..) => Vec::new(),
+            Self::InvalidDerivative => Vec::new(),
+            Self::InvalidImageArrayIndex => Vec::new(),
+            Self::InvalidImageOtherIndex => Vec::new(),
+            Self::InvalidImageArrayIndexType(..) => Vec::new(),
+            Self::InvalidImageOtherIndexType(..) => Vec::new(),
+            Self::InvalidImageCoordinateType(..) => Vec::new(),
+            Self::ComparisonSamplingMismatch { .. } => Vec::new(),
+            Self::InvalidSampleOffsetExprType => Vec::new(),
+            Self::InvalidSampleOffset(..) => Vec::new(),
+            Self::InvalidDepthReference(..) => Vec::new(),
+            Self::InvalidDepthSampleLevel => Vec::new(),
+            Self::InvalidGatherLevel => Vec::new(),
+            Self::InvalidGatherComponent(..) => Vec::new(),
+            Self::InvalidGatherDimension(..) => Vec::new(),
+            Self::InvalidSampleLevelExactType(..) => Vec::new(),
+            Self::InvalidSampleLevelBiasType(..) => Vec::new(),
+            Self::InvalidSampleLevelBiasDimension(..) => Vec::new(),
+            Self::InvalidSampleLevelGradientType(..) => Vec::new(),
+            Self::InvalidCastArgument => Vec::new(),
+            Self::WrongArgumentCount(..) => Vec::new(),
+            Self::InvalidArgumentType(..) => Vec::new(),
+            Self::InvalidWorkGroupUniformLoadResultType(..) => Vec::new(),
+            Self::MissingCapabilities(..) => Vec::new(),
+            Self::Literal(..) => Vec::new(),
+            Self::UnsupportedWidth(..) => Vec::new(),
+        }
+        .into_iter()
+    }
+}
+
 #[derive(Clone, Debug, thiserror::Error)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum ConstExpressionError {
