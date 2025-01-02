@@ -518,6 +518,11 @@ pub enum ConstantEvaluatorError {
     InvalidBinaryOpArgs,
     #[error("Cannot apply math function to type")]
     InvalidMathArg,
+    #[error("Expected ")]
+    ArgumentTypeMismatch {
+        expected_ty: crate::TypeInner,
+        actual_ty: crate::TypeInner,
+    },
     #[error("{0:?} built-in function expects {1:?} arguments but {2:?} were supplied")]
     InvalidMathArgCount(crate::MathFunction, usize, usize),
     #[error("Cannot apply relational function to type")]
