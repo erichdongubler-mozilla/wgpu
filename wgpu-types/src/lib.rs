@@ -4729,6 +4729,18 @@ pub enum LoadOp<V> {
 }
 
 impl<V> LoadOp<V> {
+    /// Map this operation's type to another, migrating the [`Self::Clear`] value via `f`, if
+    /// necessary.
+    pub fn map_clear_value<T, F>(self, f: F) -> LoadOp<T>
+    where
+        F: FnOnce(V) -> T,
+    {
+        match self {
+            Self::Clear(value) => LoadOp::Clear(f(value)),
+            Self::Load => LoadOp::Load,
+        }
+    }
+
     /// Returns true if variants are same (ignoring clear value)
     pub fn eq_variant<T>(&self, other: LoadOp<T>) -> bool {
         matches!(
@@ -4789,6 +4801,21 @@ impl<V: Default> Default for Operations<V> {
         Self {
             load: LoadOp::<V>::default(),
             store: StoreOp::default(),
+        }
+    }
+}
+
+impl<V> Operations<V> {
+    /// Map these operations' type to another, migrating the clear value of [`Self::load`], if
+    /// necessary, using `f`.
+    pub fn map_clear_value<T, F>(self, f: F) -> Operations<T>
+    where
+        F: FnOnce(V) -> T,
+    {
+        let Self { load, store } = self;
+        Operations {
+            load: load.map_clear_value(f),
+            store,
         }
     }
 }
