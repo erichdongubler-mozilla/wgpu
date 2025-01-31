@@ -665,7 +665,7 @@ pub struct Swapchain {
 
     format: wgt::TextureFormat,
     format_desc: super::TextureFormatDesc,
-    #[allow(unused)]
+    #[expect(unused)]
     sample_type: wgt::TextureSampleType,
 }
 

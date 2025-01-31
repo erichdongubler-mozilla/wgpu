@@ -34,13 +34,13 @@
 pub mod rank;
 
 #[cfg(feature = "std")] // requires thread-locals to work
-#[cfg_attr(not(wgpu_validate_locks), allow(dead_code))]
+#[cfg_attr(not(wgpu_validate_locks), expect(dead_code))]
 mod ranked;
 
 #[cfg(feature = "observe_locks")]
 mod observing;
 
-#[cfg_attr(any(wgpu_validate_locks, feature = "observe_locks"), allow(dead_code))]
+#[cfg_attr(any(wgpu_validate_locks, feature = "observe_locks"), expect(dead_code))]
 mod vanilla;
 
 #[cfg(wgpu_validate_locks)]

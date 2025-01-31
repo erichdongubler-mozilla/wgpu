@@ -29,7 +29,7 @@ type EglInstance = khronos_egl::Instance<khronos_egl::Static>;
 
 type EglLabel = *const ffi::c_void;
 
-#[allow(clippy::upper_case_acronyms)]
+#[expect(clippy::upper_case_acronyms)]
 type EGLDEBUGPROCKHR = Option<
     unsafe extern "system" fn(
         error: khronos_egl::Enum,
@@ -817,7 +817,7 @@ impl crate::Instance for Instance {
                 log::debug!(
                     "No (or unknown) windowing system ({x:?}) present. Using surfaceless platform"
                 );
-                #[allow(clippy::unnecessary_literal_unwrap)]
+                #[cfg_attr(Emscripten, expect(clippy::unnecessary_literal_unwrap))]
                 // This is only a literal on Emscripten
                 // TODO: This extension is also supported on EGL 1.4 with EGL_EXT_platform_base: https://registry.khronos.org/EGL/extensions/MESA/EGL_MESA_platform_surfaceless.txt
                 let egl = egl1_5.expect("Failed to get EGL 1.5 for surfaceless");
@@ -1058,7 +1058,7 @@ pub struct Swapchain {
     extent: wgt::Extent3d,
     format: wgt::TextureFormat,
     format_desc: super::TextureFormatDesc,
-    #[allow(unused)]
+    #[expect(unused)]
     sample_type: wgt::TextureSampleType,
 }
 

@@ -397,7 +397,7 @@ pub struct Color {
     pub a: f64,
 }
 
-#[allow(missing_docs)]
+#[expect(missing_docs)]
 impl Color {
     pub const TRANSPARENT: Self = Self {
         r: 0.0,

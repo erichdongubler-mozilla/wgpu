@@ -1819,7 +1819,7 @@ impl<W: Write> Writer<W> {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     fn put_possibly_const_expression<C, I, E>(
         &mut self,
         expr_handle: Handle<crate::Expression>,

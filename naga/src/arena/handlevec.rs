@@ -34,7 +34,6 @@ impl<T, U> Default for HandleVec<T, U> {
     }
 }
 
-#[allow(dead_code)]
 impl<T, U> HandleVec<T, U> {
     pub(crate) const fn new() -> Self {
         Self {
@@ -66,7 +65,10 @@ impl<T, U> HandleVec<T, U> {
         assert_eq!(handle.index(), self.inner.len());
         self.inner.push(value);
     }
+}
 
+#[cfg_attr(not(any(glsl_out, spv_out, msl_out)), expect(dead_code))]
+impl<T, U> HandleVec<T, U> {
     pub(crate) fn get(&self, handle: Handle<T>) -> Option<&U> {
         self.inner.get(handle.index())
     }

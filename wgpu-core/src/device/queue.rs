@@ -975,7 +975,7 @@ impl Queue {
         needs_flag |= matches!(source.source, wgt::ExternalImageSource::OffscreenCanvas(_));
         needs_flag |= source.origin != wgt::Origin2d::ZERO;
         needs_flag |= destination.color_space != wgt::PredefinedColorSpace::Srgb;
-        #[allow(clippy::bool_comparison)]
+        #[expect(clippy::bool_comparison)]
         if matches!(source.source, wgt::ExternalImageSource::ImageBitmap(_)) {
             needs_flag |= source.flip_y != false;
             needs_flag |= destination.premultiplied_alpha != false;
@@ -1237,7 +1237,7 @@ impl Queue {
 
                         // Note that we are required to invalidate all command buffers in both the success and failure paths.
                         // This is why we `continue` and don't early return via `?`.
-                        #[allow(unused_mut)]
+                        #[cfg_attr(not(feature = "trace"), expect(unused_mut))]
                         let mut cmd_buf_data = command_buffer.take_finished();
 
                         if first_error.is_some() {

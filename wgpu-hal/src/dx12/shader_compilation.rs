@@ -328,7 +328,7 @@ unsafe fn dxc_create_instance<T: DxcObj>(
 }
 
 /// Owned PCWSTR
-#[allow(clippy::upper_case_acronyms)]
+#[expect(clippy::upper_case_acronyms)]
 struct OPCWSTR {
     inner: Vec<u16>,
 }

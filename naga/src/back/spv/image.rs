@@ -719,7 +719,7 @@ impl BlockContext<'_> {
     /// Generate code for an `ImageLoad` expression.
     ///
     /// The arguments are the components of an `Expression::ImageLoad` variant.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub(super) fn write_image_load(
         &mut self,
         result_type_id: Word,
@@ -799,7 +799,7 @@ impl BlockContext<'_> {
     /// Generate code for an `ImageSample` expression.
     ///
     /// The arguments are the components of an `Expression::ImageSample` variant.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub(super) fn write_image_sample(
         &mut self,
         result_type_id: Word,

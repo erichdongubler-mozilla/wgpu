@@ -29,7 +29,7 @@ pub(super) fn str_bytes_to_words(bytes: &[u8]) -> Vec<Word> {
 }
 
 /// split a string into chunks and keep utf8 valid
-#[allow(unstable_name_collisions)]
+#[expect(unstable_name_collisions)]
 pub(super) fn string_to_byte_chunks(input: &str, limit: usize) -> Vec<&[u8]> {
     let mut offset: usize = 0;
     let mut start: usize = 0;

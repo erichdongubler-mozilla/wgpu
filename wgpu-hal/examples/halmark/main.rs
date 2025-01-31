@@ -63,7 +63,7 @@ impl<A: hal::Api> ExecutionContext<A> {
     }
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "Some fields are kept for `Drop`ping later.")]
 struct Example<A: hal::Api> {
     instance: A::Instance,
     adapter: A::Adapter,

@@ -46,7 +46,7 @@ impl std::fmt::Debug for AccelerationStructureInstance {
     }
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "Some fields are kept for `Drop`ping later.")]
 impl AccelerationStructureInstance {
     const LOW_24_MASK: u32 = 0x00ff_ffff;
     const MAX_U24: u32 = (1u32 << 24u32) - 1u32;
@@ -190,7 +190,7 @@ impl<A: hal::Api> ExecutionContext<A> {
     }
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "Some fields are kept for `Drop`ping later.")]
 struct Example<A: hal::Api> {
     instance: A::Instance,
     adapter: A::Adapter,
@@ -315,7 +315,7 @@ impl<A: hal::Api> Example<A> {
             surface.configure(&device, &surface_config).unwrap();
         };
 
-        #[allow(dead_code)]
+        #[expect(dead_code)]
         struct Uniforms {
             view_inverse: glam::Mat4,
             proj_inverse: glam::Mat4,

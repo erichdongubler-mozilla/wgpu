@@ -319,7 +319,7 @@ impl FailureReason {
     };
 
     /// Match a validation error.
-    #[allow(dead_code)] // Not constructed on wasm
+    #[cfg_attr(target_arch = "wasm32", expect(dead_code))]
     pub fn validation_error() -> Self {
         Self {
             kind: Some(FailureResultKind::ValidationError),
@@ -364,7 +364,7 @@ pub enum FailureBehavior {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum FailureResultKind {
-    #[allow(dead_code)] // Not constructed on wasm
+    #[cfg_attr(target_arch = "wasm32", expect(dead_code))]
     ValidationError,
     Panic,
 }
@@ -394,7 +394,7 @@ impl FailureResult {
     }
 
     /// Failure result is a validation error.
-    #[allow(dead_code)] // Not constructed on wasm
+    #[cfg_attr(target_arch = "wasm32", expect(dead_code))]
     pub(super) fn validation_error() -> Self {
         Self {
             kind: FailureResultKind::ValidationError,

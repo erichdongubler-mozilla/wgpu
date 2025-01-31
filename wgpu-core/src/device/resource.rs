@@ -2393,7 +2393,7 @@ impl Device {
     }
 
     /// Not a public API. For use by `player` only.
-    #[allow(unused_unsafe)]
+    #[expect(unused_unsafe)]
     #[doc(hidden)]
     pub unsafe fn create_shader_module_passthrough<'a>(
         self: &Arc<Self>,

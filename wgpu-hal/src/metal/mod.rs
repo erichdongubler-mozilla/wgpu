@@ -17,7 +17,7 @@ end of the VS buffer table.
 // However, `MTLGpuFamily` is only supported starting MacOS 10.15, whereas our minimum target is MacOS 10.13,
 // See https://github.com/gpuweb/gpuweb/issues/1069 for minimum spec.
 // TODO: Eventually all deprecated features should be abstracted and use new api when available.
-#[allow(deprecated)]
+#[expect(deprecated)]
 mod adapter;
 mod command;
 mod conv;
@@ -214,7 +214,8 @@ bitflags!(
     }
 );
 
-#[allow(dead_code)]
+
+#[expect(dead_code)]
 struct CapabilitiesQuery {
     msl_version: MTLLanguageVersion,
     fragment_rw_storage: bool,
@@ -361,7 +362,7 @@ struct PrivateDisabilities {
     /// Near depth is not respected properly on some Intel GPUs.
     broken_viewport_near_depth: bool,
     /// Multi-target clears don't appear to work properly on Intel GPUs.
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     broken_layered_clear_image: bool,
 }
 

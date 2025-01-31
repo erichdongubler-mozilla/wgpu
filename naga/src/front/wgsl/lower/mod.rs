@@ -434,7 +434,7 @@ impl<'source, 'temp, 'out> ExpressionContext<'source, 'temp, 'out> {
         }
     }
 
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     const fn as_const(&mut self) -> ExpressionContext<'source, '_, '_> {
         ExpressionContext {
             enable_extensions: self.enable_extensions,

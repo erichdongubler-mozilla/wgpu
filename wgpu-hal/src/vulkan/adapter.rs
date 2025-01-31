@@ -2412,7 +2412,7 @@ impl super::Adapter {
     /// - `enabled_extensions` must be a superset of `required_device_extensions()`.
     /// - If `drop_callback` is [`None`], wgpu-hal will take ownership of `raw_device`. If
     ///   `drop_callback` is [`Some`], `raw_device` must be valid until the callback is called.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub unsafe fn device_from_raw(
         &self,
         raw_device: ash::Device,

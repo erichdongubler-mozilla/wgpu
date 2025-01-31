@@ -34,7 +34,7 @@ pub(crate) struct LateSizedBufferGroup {
     pub(crate) shader_sizes: Vec<wgt::BufferAddress>,
 }
 
-#[allow(clippy::large_enum_variant)]
+#[expect(clippy::large_enum_variant)]
 pub enum ShaderModuleSource<'a> {
     #[cfg(feature = "wgsl")]
     Wgsl(Cow<'a, str>),

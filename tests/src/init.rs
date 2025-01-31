@@ -101,11 +101,11 @@ pub async fn initialize_adapter(
         .unwrap_or_default();
 
     let instance = initialize_instance(backends, params);
-    #[allow(unused_variables)]
+    #[expect(unused_variables)]
     let surface: Option<wgpu::Surface>;
     let surface_guard: Option<SurfaceGuard>;
 
-    #[allow(unused_assignments)]
+    #[expect(unused_assignments)]
     // Create a canvas if we need a WebGL2RenderingContext to have a working device.
     #[cfg(not(all(
         target_arch = "wasm32",
@@ -203,7 +203,7 @@ pub fn initialize_html_canvas() -> web_sys::HtmlCanvasElement {
 
 pub struct SurfaceGuard {
     #[cfg(target_arch = "wasm32")]
-    #[allow(unused)]
+    #[expect(unused)]
     canvas: web_sys::HtmlCanvasElement,
 }
 

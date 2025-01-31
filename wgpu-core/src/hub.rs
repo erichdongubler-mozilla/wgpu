@@ -161,7 +161,7 @@ impl HubReport {
     }
 }
 
-#[allow(rustdoc::private_intra_doc_links)]
+#[expect(rustdoc::private_intra_doc_links)]
 /// All the resources tracked by a [`crate::global::Global`].
 ///
 /// ## Locking

@@ -503,7 +503,7 @@ impl GlobalCtx<'_> {
             msl_out,
             wgsl_out
         )),
-        allow(dead_code)
+        expect(dead_code)
     )]
     pub(super) fn get_const_val<T, E>(
         &self,

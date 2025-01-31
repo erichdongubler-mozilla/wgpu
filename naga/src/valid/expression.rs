@@ -197,7 +197,7 @@ struct ExpressionTypeResolver<'a> {
 impl core::ops::Index<Handle<crate::Expression>> for ExpressionTypeResolver<'_> {
     type Output = crate::TypeInner;
 
-    #[allow(clippy::panic)]
+    #[expect(clippy::panic)]
     fn index(&self, handle: Handle<crate::Expression>) -> &Self::Output {
         if handle < self.root {
             self.info[handle].ty.inner_with(self.types)
@@ -319,7 +319,7 @@ impl super::Validator {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub(super) fn validate_expression(
         &self,
         root: Handle<crate::Expression>,
