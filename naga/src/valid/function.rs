@@ -82,8 +82,15 @@ pub enum SubgroupError {
 pub enum LocalVariableError {
     #[error("Local variable has a type {0:?} that can't be stored in a local variable.")]
     InvalidType(Handle<crate::Type>),
-    #[error("Initializer doesn't match the variable type")]
-    InitializerType,
+    #[error(
+        "Initializer of type {:?} doesn't match the variable type {:?}",
+        initializer_ty,
+        variable_ty
+    )]
+    InitializerType {
+        variable_ty: crate::TypeInner,
+        initializer_ty: crate::TypeInner,
+    },
     #[error("Initializer is not a const or override expression")]
     NonConstOrOverrideInitializer,
 }
@@ -1654,7 +1661,10 @@ impl super::Validator {
 
         if let Some(init) = var.init {
             if !gctx.compare_types(&TypeResolution::Handle(var.ty), &fun_info[init].ty) {
-                return Err(LocalVariableError::InitializerType);
+                return Err(LocalVariableError::InitializerType {
+                    initializer_ty: init_ty.clone(),
+                    variable_ty: decl_ty.clone(),
+                });
             }
 
             if !local_expr_kind.is_const_or_override(init) {
