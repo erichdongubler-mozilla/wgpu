@@ -4,6 +4,8 @@ There exist a large variety of tests within the `wgpu` repository to make sure
 we can easily test all the aspects of our libraries. This document serves as
 a guide to each class of test, and what they are used for.
 
+## Testing against your own application(s)
+
 When testing your own code against your patch, we recommend [using a `path`
 dependency][path-deps] in Cargo for local testing of changes, and a [`git`
 dependency][git-deps] pointing to your own fork to share changes with other
