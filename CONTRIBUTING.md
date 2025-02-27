@@ -71,7 +71,6 @@ The wgpu project has multiple official platforms for community engagement:
 [GitHub pull requests]: https://github.com/gfx-rs/wgpu/pulls
 [Meeting Notes]: https://docs.google.com/document/d/1Z3qjy3m7eAYaTsh2n-iKxLV4Hjc6wZxgukzdQOgVH1c/edit?usp=sharing
 [Meeting Link]: https://meet.google.com/ubo-ztcw-gwf
-[`CODE_OF_CONDUCT.md`]: ./CODE_OF_CONDUCT.md
 
 ## Contributing to wgpu
 
