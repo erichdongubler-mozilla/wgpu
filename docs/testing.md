@@ -1,9 +1,8 @@
 # Testing in `wgpu` and `naga`
 
-There exist a large variety of tests within the `wgpu` repository
-to make sure we can easily test all the aspects of our libraries.
-This document serves as a guide to each class of test, and what
-they are used for.
+There exist a large variety of tests within the `wgpu` repository to make sure
+we can easily test all the aspects of our libraries. This document serves as
+a guide to each class of test, and what they are used for.
 
 ## Requirements
 
