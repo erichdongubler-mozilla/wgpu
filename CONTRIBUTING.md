@@ -100,24 +100,20 @@ We use the following components in a wgpu development environment:
 - [Vulkan SDK](https://vulkan.lunarg.com/) to provide Vulkan validation layers
   and other Vulkan/SPIR-V tools for testing.
 
-Once these are done, you should be ready to hack on wgpu! Drop into your
-favorite editor, make some changes to the repository's code, and test that wgpu
-has been changed the way you expect. Take a look at [`docs/testing.md`] for more
-info on testing.
+Once these are done, you should be ready to hack on wgpu!
 
-When testing your own code against your patch, we recommend
-[using a `path` dependency][path-deps] in Cargo for local testing of changes,
-and a [`git` dependency][git-deps] pointing to your own fork to share changes
-with other contributors.
+[install-rust]: https://www.rust-lang.org/tools/install
+
+### Testing your changes
+
+See [`docs/testing.md`].
+
+### Contributing changes back
 
 Once you are ready to request a review of your changes so they become part of
 wgpu public history, create a pull request with your changes committed to a
 branch in your own fork of wgpu in GitHub. See documentation for that
 [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
-
-[install-rust]: https://www.rust-lang.org/tools/install
-[path-deps]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies
-[git-deps]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories
 
 ### What to expect when you file an issue
 

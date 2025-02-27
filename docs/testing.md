@@ -4,6 +4,14 @@ There exist a large variety of tests within the `wgpu` repository to make sure
 we can easily test all the aspects of our libraries. This document serves as
 a guide to each class of test, and what they are used for.
 
+When testing your own code against your patch, we recommend [using a `path`
+dependency][path-deps] in Cargo for local testing of changes, and a [`git`
+dependency][git-deps] pointing to your own fork to share changes with other
+contributors.
+
+[path-deps]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies
+[git-deps]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories
+
 ## Requirements
 
 The tests require that the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
