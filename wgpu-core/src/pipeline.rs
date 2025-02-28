@@ -8,7 +8,6 @@ use alloc::{
 use core::{marker::PhantomData, mem::ManuallyDrop, num::NonZeroU32};
 
 use arrayvec::ArrayVec;
-use naga::error::ShaderError;
 use thiserror::Error;
 use wgt::error::{ErrorType, WebGpuError};
 
@@ -101,7 +100,41 @@ impl ShaderModule {
     }
 }
 
-//Note: `Clone` would require `WithSpan: Clone`.
+#[derive(Clone, Debug)]
+pub struct ShaderError<E> {
+    /// The source code of the shader.
+    pub source: String,
+    pub label: Option<String>,
+    pub inner: Box<E>,
+}
+
+impl<E> core::error::Error for ShaderError<E>
+where
+    ShaderError<E>: core::fmt::Display,
+    E: core::error::Error + 'static,
+{
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
+        Some(&self.inner)
+    }
+}
+
+impl<E> core::fmt::Display for ShaderError<E>
+where
+    E: naga::error::RenderableError,
+    E: core::error::Error + 'static,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let label = self.label.as_deref().unwrap_or_default();
+        let string = self
+            .inner
+            .emit_to_string(&naga::error::ErrorRenderingContext {
+                source: &self.source,
+                path: None,
+            });
+        write!(f, "\nShader '{label}' parsing {string}")
+    }
+}
+
 #[derive(Clone, Debug, Error)]
 #[non_exhaustive]
 pub enum CreateShaderModuleError {

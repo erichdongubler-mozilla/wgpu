@@ -31,7 +31,6 @@ pub trait RenderableError: sealed::Sealed {
 pub struct ErrorRenderingContext<'a> {
     /// The source code of the shader.
     pub source: &'a str,
-    pub label: Option<&'a str>,
     pub path: Option<&'a std::path::Path>,
 }
 
