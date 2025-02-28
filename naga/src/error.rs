@@ -1,63 +1,38 @@
 use alloc::{borrow::Cow, boxed::Box, string::String};
 use core::{error::Error, fmt};
 
+mod sealed {
+    pub trait Sealed {}
+}
+
+/// An error returned by [Naga](crate)'s compilation or validation.
+///
+/// Most standard error handling in Rust centers around the [`Error`](core::error::Error) trait.
+/// This model exposes a stack of error layers that can each serialize as human-readable strings
+/// with no further context. This model fits many types of error reporting well. However, Naga is
+/// a _compiler of human-writable languages_; its compiler diagnostics need more than just error
+/// information to render properly.
+///
+/// Errors implementing this trait can be rendered and all necessary context for rendering it as a diagnostic
+pub trait RenderableError: sealed::Sealed {
+    /// Emits a summary of the error to standard error stream, possibly colorizing the output with
+    /// [SGR control
+    /// sequences](https://en.wikipedia.org/wiki/ANSI_escape_code#Select_Graphic_Rendition_parameters)
+    /// if it is detected to be rendering to a terminal.
+    fn emit_to_stderr(&self, ctx: &ErrorRenderingContext<'_>);
+
+    /// Emits a summary of the error to a string.
+    fn emit_to_string(&self, ctx: &ErrorRenderingContext<'_>) -> String;
+
+}
+
+/// All information needed to render a [`RenderableError`].
 #[derive(Clone, Debug)]
-pub struct ShaderError<E> {
+pub struct ErrorRenderingContext<'a> {
     /// The source code of the shader.
-    pub source: String,
-    pub label: Option<String>,
-    pub inner: Box<E>,
-}
-
-#[cfg(feature = "wgsl-in")]
-impl fmt::Display for ShaderError<crate::front::wgsl::ParseError> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let label = self.label.as_deref().unwrap_or_default();
-        let string = self.inner.emit_to_string(&self.source);
-        write!(f, "\nShader '{label}' parsing {string}")
-    }
-}
-
-#[cfg(feature = "glsl-in")]
-impl fmt::Display for ShaderError<crate::front::glsl::ParseErrors> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let label = self.label.as_deref().unwrap_or_default();
-        let string = self.inner.emit_to_string(&self.source);
-        write!(f, "\nShader '{label}' parsing {string}")
-    }
-}
-
-#[cfg(feature = "spv-in")]
-impl fmt::Display for ShaderError<crate::front::spv::Error> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let label = self.label.as_deref().unwrap_or_default();
-        let string = self.inner.emit_to_string(&self.source);
-        write!(f, "\nShader '{label}' parsing {string}")
-    }
-}
-
-impl fmt::Display for ShaderError<crate::WithSpan<crate::valid::ValidationError>> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use codespan_reporting::{files::SimpleFile, term};
-
-        let label = self.label.as_deref().unwrap_or_default();
-        let files = SimpleFile::new(label, replace_control_chars(&self.source));
-        let config = term::Config::default();
-
-        let writer = {
-            let mut writer = DiagnosticBuffer::new();
-            term::emit(
-                writer.inner_mut(),
-                &config,
-                &files,
-                &self.inner.diagnostic(),
-            )
-            .expect("cannot write error");
-            writer.into_string()
-        };
-
-        write!(f, "\nShader validation {writer}")
-    }
+    pub source: &'a str,
+    pub label: Option<&'a str>,
+    pub path: Option<&'a std::path::Path>,
 }
 
 cfg_if::cfg_if! {
@@ -126,43 +101,4 @@ impl DiagnosticBuffer {
             }
         }
     }
-}
-
-impl<E> Error for ShaderError<E>
-where
-    ShaderError<E>: fmt::Display,
-    E: Error + 'static,
-{
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.inner.source()
-    }
-}
-
-pub(crate) fn replace_control_chars(s: &str) -> Cow<'_, str> {
-    const REPLACEMENT_CHAR: &str = "\u{FFFD}";
-    debug_assert_eq!(
-        REPLACEMENT_CHAR.chars().next().unwrap(),
-        char::REPLACEMENT_CHARACTER
-    );
-
-    let mut res = Cow::Borrowed(s);
-    let mut offset = 0;
-
-    while let Some(found_pos) = res[offset..].find(|c: char| c.is_control() && !c.is_whitespace()) {
-        offset += found_pos;
-        let found_len = res[offset..].chars().next().unwrap().len_utf8();
-        res.to_mut()
-            .replace_range(offset..offset + found_len, REPLACEMENT_CHAR);
-        offset += REPLACEMENT_CHAR.len();
-    }
-
-    res
-}
-
-#[test]
-fn test_replace_control_chars() {
-    // The UTF-8 encoding of \u{0080} is multiple bytes.
-    let input = "Foo\u{0080}Bar\u{0001}Baz\n";
-    let expected = "Foo\u{FFFD}Bar\u{FFFD}Baz\n";
-    assert_eq!(replace_control_chars(input), expected);
 }

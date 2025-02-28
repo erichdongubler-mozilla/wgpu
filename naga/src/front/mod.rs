@@ -23,6 +23,21 @@ use crate::{
     FastHashMap,
 };
 
+/// Discriminant for the different front ends supported by Naga.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) enum FrontEnd {
+    // Note: alphabetic order
+    #[cfg(feature = "glsl-in")]
+    /// The [`glsl`] front end.
+    Glsl,
+    #[cfg(feature = "spv-in")]
+    /// The [`spv`] front end.
+    SpirV,
+    /// The [`wgsl`] front end.
+    #[cfg(feature = "wgsl-in")]
+    Wgsl,
+}
+
 /// A table of types for an `Arena<Expression>`.
 ///
 /// A front end can use a `Typifier` to get types for an arena's expressions
