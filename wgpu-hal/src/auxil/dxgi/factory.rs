@@ -92,6 +92,14 @@ pub fn enumerate_adapters(factory: DxgiFactory) -> Vec<DxgiAdapter> {
         }
     };
 
+    match unsafe { factory.EnumWarpAdapter::<Dxgi::IDXGIAdapter1>() } {
+        Ok(ok) => push_if_adapter_4_or_3(ok),
+        Err(e) if e.code() == Dxgi::DXGI_ERROR_NOT_FOUND => (),
+        Err(e) => {
+            log::warn!("Failed to enumerate WARP adapter: {}", e);
+        }
+    }
+
     for cur_index in 0.. {
         profiling::scope!("IDXGIFactory1::EnumAdapters1");
         let adapter1: Dxgi::IDXGIAdapter1 = match unsafe { factory.EnumAdapters1(cur_index) } {
