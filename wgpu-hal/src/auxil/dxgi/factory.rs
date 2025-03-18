@@ -93,7 +93,10 @@ pub fn enumerate_adapters(factory: DxgiFactory) -> Vec<DxgiAdapter> {
     };
 
     match unsafe { factory.EnumWarpAdapter::<Dxgi::IDXGIAdapter1>() } {
-        Ok(ok) => push_if_adapter_4_or_3(ok),
+        Ok(ok) => {
+            eprintln!("woot");
+            push_if_adapter_4_or_3(ok)
+        },
         Err(e) if e.code() == Dxgi::DXGI_ERROR_NOT_FOUND => (),
         Err(e) => {
             log::warn!("Failed to enumerate WARP adapter: {}", e);
