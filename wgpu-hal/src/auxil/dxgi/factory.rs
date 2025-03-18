@@ -83,6 +83,15 @@ impl Deref for DxgiAdapter {
 pub fn enumerate_adapters(factory: DxgiFactory) -> Vec<DxgiAdapter> {
     let mut adapters = Vec::with_capacity(8);
 
+    let mut push_if_adapter_4_or_3 = |adapter1: Dxgi::IDXGIAdapter1| {
+        if let Ok(adapter4) = adapter1.cast::<Dxgi::IDXGIAdapter4>() {
+            adapters.push(DxgiAdapter::Adapter4(adapter4));
+        } else {
+            let adapter3 = adapter1.cast::<Dxgi::IDXGIAdapter3>().unwrap();
+            adapters.push(DxgiAdapter::Adapter3(adapter3));
+        }
+    };
+
     for cur_index in 0.. {
         profiling::scope!("IDXGIFactory1::EnumAdapters1");
         let adapter1: Dxgi::IDXGIAdapter1 = match unsafe { factory.EnumAdapters1(cur_index) } {
@@ -98,12 +107,7 @@ pub fn enumerate_adapters(factory: DxgiFactory) -> Vec<DxgiAdapter> {
             continue;
         }
 
-        if let Ok(adapter4) = adapter1.cast::<Dxgi::IDXGIAdapter4>() {
-            adapters.push(DxgiAdapter::Adapter4(adapter4));
-        } else {
-            let adapter3 = adapter1.cast::<Dxgi::IDXGIAdapter3>().unwrap();
-            adapters.push(DxgiAdapter::Adapter3(adapter3));
-        }
+        push_if_adapter_4_or_3(adapter1);
     }
 
     adapters
