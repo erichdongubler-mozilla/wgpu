@@ -652,6 +652,27 @@ fn binding_arrays_cannot_hold_scalars() {
     assert!(t.validator.validate(&t.module).is_err());
 }
 
+#[track_caller]
+fn assert_wgsl_validation_err(input: &str, snapshot: &str) {
+    let module = naga::front::wgsl::parse_str(input)
+        .expect("expected parsed WGSL module, but WGSL parse failed");
+    let err = valid::Validator::new(Default::default(), valid::Capabilities::all())
+        .validate(&module)
+        .expect_err("module should be invalid");
+    let output = err.emit_to_string(input);
+    if output != snapshot {
+        for diff in diff::lines(snapshot, &output) {
+            match diff {
+                diff::Result::Left(l) => println!("-{l}"),
+                diff::Result::Both(l, _) => println!(" {l}"),
+                diff::Result::Right(r) => println!("+{r}"),
+            }
+        }
+        panic!("Error snapshot failed");
+    }
+}
+
+#[cfg(feature = "wgsl-in")]
 #[test]
 fn validation_error_messages() {
     let cases = [(
@@ -679,12 +700,7 @@ error: Function [1] 'main' is invalid
     )];
 
     for (source, expected_err) in cases {
-        let module = naga::front::wgsl::parse_str(source).unwrap();
-        let err = valid::Validator::new(Default::default(), valid::Capabilities::all())
-            .validate(&module)
-            .expect_err("module should be invalid");
-        eprintln!("{}", err.emit_to_string(source));
-        assert_eq!(err.emit_to_string(source), expected_err);
+        assert_wgsl_validation_err(source, expected_err)
     }
 }
 
