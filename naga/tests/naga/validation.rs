@@ -683,7 +683,7 @@ error: Function [1] 'main' is invalid
         let err = valid::Validator::new(Default::default(), valid::Capabilities::all())
             .validate(&module)
             .expect_err("module should be invalid");
-        println!("{}", err.emit_to_string(source));
+        eprintln!("{}", err.emit_to_string(source));
         assert_eq!(err.emit_to_string(source), expected_err);
     }
 }
