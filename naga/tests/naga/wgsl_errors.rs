@@ -2232,12 +2232,7 @@ fn select() {
         ",
             "\
 error: unexpected argument type for `select` call
-  ┌─ wgsl:5:28
-  │
-5 │             let p = select(&x, &y, which);
-  │                            ^^ this value of type `ptr<function, i32>`
-  │
-  = note: expected a scalar or a `vecN` of scalars
+ = note: expected a scalar or a `vecN` of scalars
 
 ",
         ),
@@ -2252,12 +2247,7 @@ error: unexpected argument type for `select` call
         ",
             "\
 error: unexpected argument type for `select` call
-  ┌─ wgsl:5:28
-  │
-5 │             let s = select(x, y, which);
-  │                            ^ this value of type `array<i32, 4>`
-  │
-  = note: expected a scalar or a `vecN` of scalars
+ = note: expected a scalar or a `vecN` of scalars
 
 ",
         ),
@@ -2273,12 +2263,7 @@ error: unexpected argument type for `select` call
         ",
             "\
 error: unexpected argument type for `select` call
-  ┌─ wgsl:6:28
-  │
-6 │             let s = select(x, y, which);
-  │                            ^ this value of type `S`
-  │
-  = note: expected a scalar or a `vecN` of scalars
+ = note: expected a scalar or a `vecN` of scalars
 
 ",
         ),

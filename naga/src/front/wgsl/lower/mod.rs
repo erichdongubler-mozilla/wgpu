@@ -2546,11 +2546,9 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                         "select" => {
                             let mut args = ctx.prepare_args(arguments, 3, span);
 
-                            let reject_orig = args.next()?;
-                            let accept_orig = args.next()?;
                             let mut values = [
-                                self.expression_for_abstract(reject_orig, ctx)?,
-                                self.expression_for_abstract(accept_orig, ctx)?,
+                                self.expression_for_abstract(args.next()?, ctx)?,
+                                self.expression_for_abstract(args.next()?, ctx)?,
                             ];
                             let condition = self.expression(args.next()?, ctx)?;
 
@@ -2559,15 +2557,13 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                             let diagnostic_details =
                                 |ctx: &ExpressionContext<'_, '_, '_>,
                                  ty_res: &proc::TypeResolution,
-                                 orig_expr| {
+                                 expr| {
                                     (
-                                        ctx.ast_expressions.get_span(orig_expr),
+                                        ctx.get_expression_span(expr),
                                         format!("`{}`", ctx.as_diagnostic_display(ty_res)),
                                     )
                                 };
-                            for (&value, orig_value) in
-                                values.iter().zip([reject_orig, accept_orig])
-                            {
+                            for value in values {
                                 let value_ty_res = resolve!(ctx, value);
                                 if value_ty_res
                                     .inner_with(&ctx.module.types)
@@ -2575,7 +2571,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                                     .is_none()
                                 {
                                     let (arg_span, arg_type) =
-                                        diagnostic_details(ctx, value_ty_res, orig_value);
+                                        diagnostic_details(ctx, value_ty_res, value);
                                     return Err(Box::new(Error::SelectUnexpectedArgumentType {
                                         arg_span,
                                         arg_type,
@@ -2587,12 +2583,10 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                                 .map_err(|_idx| {
                                     let [reject, accept] = values;
                                     let [(reject_span, reject_type), (accept_span, accept_type)] =
-                                        [(reject_orig, reject), (accept_orig, accept)].map(
-                                            |(orig_expr, expr)| {
-                                                let ty_res = &ctx.typifier()[expr];
-                                                diagnostic_details(ctx, ty_res, orig_expr)
-                                            },
-                                        );
+                                        [reject, accept].map(|expr| {
+                                            let ty_res = &ctx.typifier()[expr];
+                                            diagnostic_details(ctx, ty_res, expr)
+                                        });
                                     Error::SelectRejectAndAcceptHaveNoCommonType {
                                         reject_span,
                                         reject_type,
