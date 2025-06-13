@@ -217,6 +217,7 @@ impl WebGpuError for BuildAccelerationStructureError {
 }
 
 #[derive(Clone, Debug, Error)]
+#[non_exhaustive]
 pub enum ValidateAsActionsError {
     #[error(transparent)]
     DestroyedResource(#[from] DestroyedResourceError),
