@@ -73,10 +73,7 @@ async fn array_size_overrides(
             label: None,
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(SHADER)),
         });
-    let pipeline_options = wgpu::PipelineCompilationOptions {
-        constants: &[("n", f64::from(n.unwrap_or(0)))],
-        ..Default::default()
-    };
+    let pipeline_constants = n.map(f64::from).map(|n| [("n", n)]);
     let compute_pipeline = fail_if(
         &ctx.device,
         should_fail,
@@ -87,11 +84,13 @@ async fn array_size_overrides(
                     layout: None,
                     module: &module,
                     entry_point: Some("main"),
-                    compilation_options: if n.is_some() {
-                        pipeline_options
-                    } else {
-                        wgpu::PipelineCompilationOptions::default()
-                    },
+                    compilation_options: pipeline_constants
+                        .as_ref()
+                        .map(|constants| wgpu::PipelineCompilationOptions {
+                            constants,
+                            ..Default::default()
+                        })
+                        .unwrap_or_default(),
                     cache: None,
                 })
         },
