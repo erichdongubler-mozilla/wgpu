@@ -130,3 +130,4 @@ walkdir.workspace = true
 std_instead_of_alloc = "warn"
 std_instead_of_core = "warn"
 alloc_instead_of_core = "warn"
+todo = "warn"
