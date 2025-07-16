@@ -22,7 +22,7 @@ fn is_f16(scalar: &crate::Scalar) -> bool {
     scalar.kind == crate::ScalarKind::Float && scalar.width == 2
 }
 
-pub(in crate::back::spv) fn create_polyfill_type(ty_inner: &crate::TypeInner) -> Option<LocalType> {
+pub(in crate::back::spv) fn f32_local_ty(ty_inner: &crate::TypeInner) -> Option<LocalType> {
     use crate::TypeInner;
 
     match *ty_inner {

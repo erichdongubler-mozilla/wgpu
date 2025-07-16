@@ -1961,7 +1961,7 @@ impl Writer {
         let pointer_type_id = if let Some(f32_value_local) = self
             .io_f16_polyfills
             .as_ref()
-            .and_then(|_p| super::f16_polyfill::create_polyfill_type(ty_inner))
+            .and_then(|_p| super::f16_polyfill::f32_local_ty(ty_inner))
         {
             let f32_type_id = self.get_localtype_id(f32_value_local);
             let ptr_id = self.get_pointer_type_id(f32_type_id, class);
