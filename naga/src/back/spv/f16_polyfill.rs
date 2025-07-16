@@ -12,14 +12,13 @@ It works by:
 use crate::back::spv::{Instruction, LocalType, NumericType, Word};
 use alloc::vec::Vec;
 
-fn is_f16(scalar: &crate::Scalar) -> bool {
-    scalar.kind == crate::ScalarKind::Float && scalar.width == 2
-}
-
 /// Returns a `LocalType` converting the given `ty_inner` scalar elements from `f16` to `f32`. If
 /// the `ty_inner` is not an `f16` scalar or vector of `f16` scalars, returns `None`.
 pub(in crate::back::spv) fn f32_local_ty(ty_inner: &crate::TypeInner) -> Option<LocalType> {
     use crate::TypeInner;
+
+    let is_f16 =
+        |scalar: &crate::Scalar| scalar.kind == crate::ScalarKind::Float && scalar.width == 2;
 
     match *ty_inner {
         TypeInner::Scalar(ref s) if is_f16(s) => {
