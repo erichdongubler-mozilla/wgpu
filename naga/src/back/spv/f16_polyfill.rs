@@ -12,12 +12,6 @@ It works by:
 use crate::back::spv::{Instruction, LocalType, NumericType, Word};
 use alloc::vec::Vec;
 
-/// Manages `f16` I/O polyfill state and operations.
-#[derive(Default)]
-pub(in crate::back::spv) struct F16IoPolyfill {
-    variable_map: crate::FastHashMap<Word, (Word, Word)>,
-}
-
 fn is_f16(scalar: &crate::Scalar) -> bool {
     scalar.kind == crate::ScalarKind::Float && scalar.width == 2
 }
@@ -67,6 +61,12 @@ pub(in crate::back::spv) fn emit_f32_to_f16_conversion(
         converted_id,
         f32_value_id,
     ));
+}
+
+/// Manages `f16` I/O polyfill state and operations.
+#[derive(Default)]
+pub(in crate::back::spv) struct F16IoPolyfill {
+    variable_map: crate::FastHashMap<Word, (Word, Word)>,
 }
 
 impl F16IoPolyfill {
