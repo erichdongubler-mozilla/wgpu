@@ -22,6 +22,23 @@ fn is_f16(scalar: &crate::Scalar) -> bool {
     scalar.kind == crate::ScalarKind::Float && scalar.width == 2
 }
 
+pub(in crate::back::spv) fn create_polyfill_type(ty_inner: &crate::TypeInner) -> Option<LocalType> {
+    use crate::TypeInner;
+
+    match *ty_inner {
+        TypeInner::Scalar(ref s) if is_f16(s) => {
+            Some(LocalType::Numeric(NumericType::Scalar(crate::Scalar::F32)))
+        }
+        TypeInner::Vector { size, scalar } if is_f16(&scalar) => {
+            Some(LocalType::Numeric(NumericType::Vector {
+                size,
+                scalar: crate::Scalar::F32,
+            }))
+        }
+        _ => None,
+    }
+}
+
 impl F16IoPolyfill {
     pub fn new() -> Self {
         Self {
@@ -64,23 +81,6 @@ impl F16IoPolyfill {
             converted_id,
             f32_value_id,
         ));
-    }
-
-    pub fn create_polyfill_type(ty_inner: &crate::TypeInner) -> Option<LocalType> {
-        use crate::TypeInner;
-
-        match *ty_inner {
-            TypeInner::Scalar(ref s) if is_f16(s) => {
-                Some(LocalType::Numeric(NumericType::Scalar(crate::Scalar::F32)))
-            }
-            TypeInner::Vector { size, scalar } if is_f16(&scalar) => {
-                Some(LocalType::Numeric(NumericType::Vector {
-                    size,
-                    scalar: crate::Scalar::F32,
-                }))
-            }
-            _ => None,
-        }
     }
 }
 
