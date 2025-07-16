@@ -743,7 +743,7 @@ impl Writer {
                             .body
                             .push(Instruction::load(f32_ty, id, varying_id, None));
                         let converted = self.id_gen.next();
-                        super::f16_polyfill::F16IoPolyfill::emit_f32_to_f16_conversion(
+                        super::f16_polyfill::emit_f32_to_f16_conversion(
                             id,
                             argument_type_id,
                             converted,
@@ -792,7 +792,7 @@ impl Writer {
                                 .body
                                 .push(Instruction::load(f32_ty, id, varying_id, None));
                             let converted = self.id_gen.next();
-                            super::f16_polyfill::F16IoPolyfill::emit_f32_to_f16_conversion(
+                            super::f16_polyfill::emit_f32_to_f16_conversion(
                                 id,
                                 type_id,
                                 converted,

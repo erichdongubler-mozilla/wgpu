@@ -41,6 +41,34 @@ pub(in crate::back::spv) fn f32_local_ty(ty_inner: &crate::TypeInner) -> Option<
     }
 }
 
+pub(in crate::back::spv) fn emit_f16_to_f32_conversion(
+    f16_value_id: Word,
+    f32_type_id: Word,
+    converted_id: Word,
+    body: &mut Vec<Instruction>,
+) {
+    body.push(Instruction::unary(
+        spirv::Op::FConvert,
+        f32_type_id,
+        converted_id,
+        f16_value_id,
+    ));
+}
+
+pub(in crate::back::spv) fn emit_f32_to_f16_conversion(
+    f32_value_id: Word,
+    f16_type_id: Word,
+    converted_id: Word,
+    body: &mut Vec<Instruction>,
+) {
+    body.push(Instruction::unary(
+        spirv::Op::FConvert,
+        f16_type_id,
+        converted_id,
+        f32_value_id,
+    ));
+}
+
 impl F16IoPolyfill {
     pub fn new() -> Self {
         Self {
@@ -55,34 +83,6 @@ impl F16IoPolyfill {
 
     pub fn get_polyfill_info(&self, variable_id: Word) -> Option<(Word, Word)> {
         self.variable_map.get(&variable_id).copied()
-    }
-
-    pub fn emit_f16_to_f32_conversion(
-        f16_value_id: Word,
-        f32_type_id: Word,
-        converted_id: Word,
-        body: &mut Vec<Instruction>,
-    ) {
-        body.push(Instruction::unary(
-            spirv::Op::FConvert,
-            f32_type_id,
-            converted_id,
-            f16_value_id,
-        ));
-    }
-
-    pub fn emit_f32_to_f16_conversion(
-        f32_value_id: Word,
-        f16_type_id: Word,
-        converted_id: Word,
-        body: &mut Vec<Instruction>,
-    ) {
-        body.push(Instruction::unary(
-            spirv::Op::FConvert,
-            f16_type_id,
-            converted_id,
-            f32_value_id,
-        ));
     }
 }
 

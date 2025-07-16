@@ -243,7 +243,7 @@ impl Writer {
                 .and_then(|p| p.get_polyfill_info(res_member.id))
             {
                 let converted = self.id_gen.next();
-                super::f16_polyfill::F16IoPolyfill::emit_f16_to_f32_conversion(
+                super::f16_polyfill::emit_f16_to_f32_conversion(
                     member_value_id,
                     f32_ty,
                     converted,
@@ -2339,7 +2339,7 @@ impl BlockContext<'_> {
                         .body
                         .push(Instruction::load(f32_ty, id, pointer_id, None));
                     let converted = self.gen_id();
-                    super::f16_polyfill::F16IoPolyfill::emit_f32_to_f16_conversion(
+                    super::f16_polyfill::emit_f32_to_f16_conversion(
                         id,
                         result_type_id,
                         converted,
