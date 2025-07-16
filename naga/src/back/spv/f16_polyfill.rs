@@ -29,7 +29,7 @@ impl F16IoPolyfill {
         }
     }
 
-    pub fn needs_polyfill(&self, ty_inner: &crate::TypeInner) -> bool {
+    pub fn needs_polyfill(ty_inner: &crate::TypeInner) -> bool {
         use crate::TypeInner;
 
         match *ty_inner {
