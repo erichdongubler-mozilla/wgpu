@@ -15,7 +15,6 @@ use alloc::vec::Vec;
 /// Manages `f16` I/O polyfill state and operations.
 #[derive(Default)]
 pub(in crate::back::spv) struct F16IoPolyfill {
-    use_native: bool,
     variable_map: crate::FastHashMap<Word, (Word, Word)>,
 }
 
@@ -24,9 +23,8 @@ fn is_f16(scalar: &crate::Scalar) -> bool {
 }
 
 impl F16IoPolyfill {
-    pub fn new(use_storage_input_output_16: bool) -> Self {
+    pub fn new() -> Self {
         Self {
-            use_native: use_storage_input_output_16,
             variable_map: crate::FastHashMap::default(),
         }
     }
@@ -34,12 +32,11 @@ impl F16IoPolyfill {
     pub fn needs_polyfill(&self, ty_inner: &crate::TypeInner) -> bool {
         use crate::TypeInner;
 
-        !self.use_native
-            && match *ty_inner {
-                TypeInner::Scalar(ref s) if is_f16(s) => true,
-                TypeInner::Vector { scalar, .. } if is_f16(&scalar) => true,
-                _ => false,
-            }
+        match *ty_inner {
+            TypeInner::Scalar(ref s) if is_f16(s) => true,
+            TypeInner::Vector { scalar, .. } if is_f16(&scalar) => true,
+            _ => false,
+        }
     }
 
     pub fn register_variable(&mut self, variable_id: Word, f32_type_id: Word, f16_type_id: Word) {

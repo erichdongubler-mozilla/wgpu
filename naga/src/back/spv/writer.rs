@@ -93,9 +93,9 @@ impl Writer {
             temp_list: Vec::new(),
             ray_get_committed_intersection_function: None,
             ray_get_candidate_intersection_function: None,
-            io_f16_polyfills: super::f16_polyfill::F16IoPolyfill::new(
-                options.use_storage_input_output_16,
-            ),
+            io_f16_polyfills: options
+                .use_storage_input_output_16
+                .then(super::f16_polyfill::F16IoPolyfill::new),
         })
     }
 
@@ -156,7 +156,7 @@ impl Writer {
             temp_list: take(&mut self.temp_list).recycle(),
             ray_get_candidate_intersection_function: None,
             ray_get_committed_intersection_function: None,
-            io_f16_polyfills: take(&mut self.io_f16_polyfills).recycle(),
+            io_f16_polyfills: take(&mut self.io_f16_polyfills).map(|p| p.recycle()),
         };
 
         *self = fresh;
@@ -734,7 +734,11 @@ impl Writer {
                     iface.varying_ids.push(varying_id);
                     let mut id = self.id_gen.next();
 
-                    if let Some((f32_ty, _)) = self.io_f16_polyfills.get_polyfill_info(varying_id) {
+                    if let Some((f32_ty, _)) = self
+                        .io_f16_polyfills
+                        .as_ref()
+                        .and_then(|p| p.get_polyfill_info(varying_id))
+                    {
                         prelude
                             .body
                             .push(Instruction::load(f32_ty, id, varying_id, None));
@@ -779,8 +783,10 @@ impl Writer {
                         )?;
                         iface.varying_ids.push(varying_id);
                         let id = self.id_gen.next();
-                        if let Some((f32_ty, _)) =
-                            self.io_f16_polyfills.get_polyfill_info(varying_id)
+                        if let Some((f32_ty, _)) = self
+                            .io_f16_polyfills
+                            .as_ref()
+                            .and_then(|p| p.get_polyfill_info(varying_id))
                         {
                             prelude
                                 .body
@@ -1952,7 +1958,11 @@ impl Writer {
         let id = self.id_gen.next();
         let ty_inner = &ir_module.types[ty].inner;
 
-        let pointer_type_id = if self.io_f16_polyfills.needs_polyfill(ty_inner) {
+        let pointer_type_id = if self
+            .io_f16_polyfills
+            .as_ref()
+            .is_some_and(|p| p.needs_polyfill(ty_inner))
+        {
             let f32_value_local =
                 super::f16_polyfill::F16IoPolyfill::create_polyfill_type(ty_inner)
                     .expect("needs_polyfill returned true but create_polyfill_type returned None");
@@ -1961,6 +1971,8 @@ impl Writer {
             let ptr_id = self.get_pointer_type_id(f32_type_id, class);
             let f16_type_id = self.get_handle_type_id(ty);
             self.io_f16_polyfills
+                .as_mut()
+                .unwrap()
                 .register_variable(id, f32_type_id, f16_type_id);
 
             ptr_id
