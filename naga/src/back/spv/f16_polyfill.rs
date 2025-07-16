@@ -19,6 +19,10 @@ pub(in crate::back::spv) struct F16IoPolyfill {
     variable_map: crate::FastHashMap<Word, (Word, Word)>,
 }
 
+fn is_f16(scalar: &crate::Scalar) -> bool {
+    scalar.kind == crate::ScalarKind::Float && scalar.width == 2
+}
+
 impl F16IoPolyfill {
     pub fn new(use_storage_input_output_16: bool) -> Self {
         Self {
@@ -28,16 +32,12 @@ impl F16IoPolyfill {
     }
 
     pub fn needs_polyfill(&self, ty_inner: &crate::TypeInner) -> bool {
-        use crate::{ScalarKind as Sk, TypeInner};
+        use crate::TypeInner;
 
         !self.use_native
             && match *ty_inner {
-                TypeInner::Scalar(ref s) if s.kind == Sk::Float && s.width == 2 => true,
-                TypeInner::Vector { scalar, .. }
-                    if scalar.kind == Sk::Float && scalar.width == 2 =>
-                {
-                    true
-                }
+                TypeInner::Scalar(ref s) if is_f16(s) => true,
+                TypeInner::Vector { scalar, .. } if is_f16(&scalar) => true,
                 _ => false,
             }
     }
@@ -80,13 +80,13 @@ impl F16IoPolyfill {
     }
 
     pub fn create_polyfill_type(ty_inner: &crate::TypeInner) -> Option<LocalType> {
-        use crate::{ScalarKind as Sk, TypeInner};
+        use crate::TypeInner;
 
         match *ty_inner {
-            TypeInner::Scalar(ref s) if s.kind == Sk::Float && s.width == 2 => {
+            TypeInner::Scalar(ref s) if is_f16(s) => {
                 Some(LocalType::Numeric(NumericType::Scalar(crate::Scalar::F32)))
             }
-            TypeInner::Vector { size, scalar } if scalar.kind == Sk::Float && scalar.width == 2 => {
+            TypeInner::Vector { size, scalar } if is_f16(&scalar) => {
                 Some(LocalType::Numeric(NumericType::Vector {
                     size,
                     scalar: crate::Scalar::F32,
