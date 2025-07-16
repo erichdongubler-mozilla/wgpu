@@ -29,16 +29,6 @@ impl F16IoPolyfill {
         }
     }
 
-    pub fn needs_polyfill(ty_inner: &crate::TypeInner) -> bool {
-        use crate::TypeInner;
-
-        match *ty_inner {
-            TypeInner::Scalar(ref s) if is_f16(s) => true,
-            TypeInner::Vector { scalar, .. } if is_f16(&scalar) => true,
-            _ => false,
-        }
-    }
-
     pub fn register_variable(&mut self, variable_id: Word, f32_type_id: Word, f16_type_id: Word) {
         self.variable_map
             .insert(variable_id, (f32_type_id, f16_type_id));

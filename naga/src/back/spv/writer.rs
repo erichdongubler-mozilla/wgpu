@@ -1958,13 +1958,11 @@ impl Writer {
         let id = self.id_gen.next();
         let ty_inner = &ir_module.types[ty].inner;
 
-        let pointer_type_id = if self.io_f16_polyfills.as_ref().is_some()
-            && super::f16_polyfill::F16IoPolyfill::needs_polyfill(ty_inner)
+        let pointer_type_id = if let Some(f32_value_local) = self
+            .io_f16_polyfills
+            .as_ref()
+            .and_then(|_p| super::f16_polyfill::F16IoPolyfill::create_polyfill_type(ty_inner))
         {
-            let f32_value_local =
-                super::f16_polyfill::F16IoPolyfill::create_polyfill_type(ty_inner)
-                    .expect("needs_polyfill returned true but create_polyfill_type returned None");
-
             let f32_type_id = self.get_localtype_id(f32_value_local);
             let ptr_id = self.get_pointer_type_id(f32_type_id, class);
             let f16_type_id = self.get_handle_type_id(ty);
