@@ -9,12 +9,12 @@ It works by:
 3. Maintaining mappings to track which variables need conversion
 */
 
-use crate::back::spv::{Instruction, LocalType, NumericType, Word};
+use crate::back::spv::{recyclable::Recyclable, Instruction, LocalType, NumericType, Word};
 use alloc::vec::Vec;
 
 /// Returns a `LocalType` converting the given `ty_inner` scalar elements from `f16` to `f32`. If
 /// the `ty_inner` is not an `f16` scalar or vector of `f16` scalars, returns `None`.
-pub(in crate::back::spv) fn f32_local_ty(ty_inner: &crate::TypeInner) -> Option<LocalType> {
+fn f32_local_ty(ty_inner: &crate::TypeInner) -> Option<LocalType> {
     use crate::TypeInner;
 
     let is_f16 =
@@ -62,13 +62,99 @@ pub(in crate::back::spv) fn emit_f32_to_f16_conversion(
     ));
 }
 
-/// Manages `f16` I/O polyfill state and operations.
-#[derive(Default)]
-pub(in crate::back::spv) struct F16IoPolyfill {
+#[derive(Clone, Copy, Debug, Default)]
+pub(in crate::back::spv) enum F16StorageIoKind {
+    #[default]
+    Disabled,
+    Polyfill,
+    Native,
+}
+
+impl F16StorageIoKind {
+    pub fn init(self) -> F16StorageIo {
+        match self {
+            Self::Disabled => F16StorageIo::Disabled,
+            Self::Polyfill => F16StorageIo::Polyfill(Polyfill::new()),
+            Self::Native => F16StorageIo::Native,
+        }
+    }
+}
+
+/// Manages `f16` storage I/O polyfill state and operations.
+#[derive(Clone, Debug)]
+pub(in crate::back::spv) enum F16StorageIo {
+    Disabled,
+    Polyfill(Polyfill),
+    Native,
+}
+
+impl F16StorageIo {
+    pub fn native() -> Self {
+        Self::Native
+    }
+
+    #[track_caller]
+    fn check_not_disabled(&self) {
+        if let Self::Disabled = self {
+            unreachable!("internal error: `f16` storage I/O was expected to be disabled")
+        }
+    }
+
+    pub fn register_variable(&mut self, variable_id: Word, f32_type_id: Word, f16_type_id: Word) {
+        if let Self::Polyfill(polyfill) = self {
+            polyfill.register_variable(variable_id, f32_type_id, f16_type_id);
+        }
+    }
+
+    pub fn polyfill_info(&self, variable_id: Word) -> Option<(Word, Word)> {
+        if let Self::Polyfill(polyfill) = self {
+            polyfill.map_polyfilled_to_f32(variable_id)
+        } else {
+            None
+        }
+    }
+
+    #[track_caller]
+    pub(crate) fn capabilities(&self) -> impl Iterator<Item = spirv::Capability> {
+        self.check_not_disabled();
+        let storage_io = match self {
+            Self::Disabled => unreachable!(),
+            Self::Polyfill(..) => &[][..],
+            Self::Native => &[spirv::Capability::StorageInputOutput16],
+        }
+        .iter()
+        .copied();
+        [
+            spirv::Capability::Float16,
+            spirv::Capability::StorageBuffer16BitAccess,
+            spirv::Capability::UniformAndStorageBuffer16BitAccess,
+        ]
+        .into_iter()
+        .chain(storage_io)
+    }
+
+    #[track_caller]
+    pub(crate) fn is_f16(&self, ty_inner: &crate::TypeInner) -> Option<LocalType> {
+        f32_local_ty(ty_inner).inspect(|_| self.check_not_disabled())
+    }
+}
+
+impl Recyclable for F16StorageIo {
+    fn recycle(self) -> Self {
+        match self {
+            Self::Disabled => Self::Disabled,
+            Self::Polyfill(polyfill) => Self::Polyfill(polyfill.recycle()),
+            Self::Native => Self::Native,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub(in crate::back::spv) struct Polyfill {
     variable_map: crate::FastHashMap<Word, (Word, Word)>,
 }
 
-impl F16IoPolyfill {
+impl Polyfill {
     pub fn new() -> Self {
         Self {
             variable_map: crate::FastHashMap::default(),
@@ -80,12 +166,12 @@ impl F16IoPolyfill {
             .insert(variable_id, (f32_type_id, f16_type_id));
     }
 
-    pub fn get_polyfill_info(&self, variable_id: Word) -> Option<(Word, Word)> {
+    pub fn map_polyfilled_to_f32(&self, variable_id: Word) -> Option<(Word, Word)> {
         self.variable_map.get(&variable_id).copied()
     }
 }
 
-impl crate::back::spv::recyclable::Recyclable for F16IoPolyfill {
+impl Recyclable for Polyfill {
     fn recycle(mut self) -> Self {
         self.variable_map = self.variable_map.recycle();
         self

@@ -387,13 +387,16 @@ impl PhysicalDeviceFeatures {
             } else {
                 None
             },
-            shader_float16_int8: match requested_features.contains(wgt::Features::SHADER_F16) {
-                shader_float16 if shader_float16 || private_caps.shader_int8 => Some(
+            shader_float16_int8: if requested_features.contains(wgt::Features::SHADER_F16)
+                || private_caps.shader_int8
+            {
+                Some(
                     vk::PhysicalDeviceShaderFloat16Int8Features::default()
                         .shader_float16(shader_float16)
                         .shader_int8(private_caps.shader_int8),
-                ),
-                _ => None,
+                )
+            } else {
+                None
             },
             _16bit_storage: if requested_features.contains(wgt::Features::SHADER_F16) {
                 // Check if the device actually supports storage_input_output16

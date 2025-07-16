@@ -78,7 +78,6 @@ impl Writer {
             bounds_check_policies: options.bounds_check_policies,
             zero_initialize_workgroup_memory: options.zero_initialize_workgroup_memory,
             force_loop_bounding: options.force_loop_bounding,
-            use_storage_input_output_16: options.use_storage_input_output_16,
             void_type,
             lookup_type: crate::FastHashMap::default(),
             lookup_function: crate::FastHashMap::default(),
@@ -93,9 +92,7 @@ impl Writer {
             temp_list: Vec::new(),
             ray_get_committed_intersection_function: None,
             ray_get_candidate_intersection_function: None,
-            io_f16_polyfills: options
-                .use_storage_input_output_16
-                .then(super::f16_polyfill::F16IoPolyfill::new),
+            io_f16: options.f16_io.init(),
         })
     }
 
@@ -129,7 +126,6 @@ impl Writer {
             bounds_check_policies: self.bounds_check_policies,
             zero_initialize_workgroup_memory: self.zero_initialize_workgroup_memory,
             force_loop_bounding: self.force_loop_bounding,
-            use_storage_input_output_16: self.use_storage_input_output_16,
             capabilities_available: take(&mut self.capabilities_available),
             binding_map: take(&mut self.binding_map),
 
@@ -156,7 +152,7 @@ impl Writer {
             temp_list: take(&mut self.temp_list).recycle(),
             ray_get_candidate_intersection_function: None,
             ray_get_committed_intersection_function: None,
-            io_f16_polyfills: take(&mut self.io_f16_polyfills).map(|p| p.recycle()),
+            io_f16: self.io_f16.clone().recycle(),
         };
 
         *self = fresh;
@@ -734,11 +730,7 @@ impl Writer {
                     iface.varying_ids.push(varying_id);
                     let mut id = self.id_gen.next();
 
-                    if let Some((f32_ty, _)) = self
-                        .io_f16_polyfills
-                        .as_ref()
-                        .and_then(|p| p.get_polyfill_info(varying_id))
-                    {
+                    if let Some((f32_ty, _)) = self.io_f16.polyfill_info(varying_id) {
                         prelude
                             .body
                             .push(Instruction::load(f32_ty, id, varying_id, None));
@@ -783,11 +775,7 @@ impl Writer {
                         )?;
                         iface.varying_ids.push(varying_id);
                         let id = self.id_gen.next();
-                        if let Some((f32_ty, _)) = self
-                            .io_f16_polyfills
-                            .as_ref()
-                            .and_then(|p| p.get_polyfill_info(varying_id))
-                        {
+                        if let Some((f32_ty, _)) = self.io_f16.polyfill_info(varying_id) {
                             prelude
                                 .body
                                 .push(Instruction::load(f32_ty, id, varying_id, None));
@@ -1261,14 +1249,8 @@ impl Writer {
                     self.capabilities_used.insert(spirv::Capability::Float64);
                 }
                 if bits == 16 {
-                    self.capabilities_used.insert(spirv::Capability::Float16);
-                    self.capabilities_used
-                        .insert(spirv::Capability::StorageBuffer16BitAccess);
-                    self.capabilities_used
-                        .insert(spirv::Capability::UniformAndStorageBuffer16BitAccess);
-                    if self.use_storage_input_output_16 {
-                        self.capabilities_used
-                            .insert(spirv::Capability::StorageInputOutput16);
+                    for cap in self.io_f16.capabilities() {
+                        self.capabilities_used.insert(cap);
                     }
                 }
                 Instruction::type_float(id, bits)
@@ -1958,18 +1940,11 @@ impl Writer {
         let id = self.id_gen.next();
         let ty_inner = &ir_module.types[ty].inner;
 
-        let pointer_type_id = if let Some(f32_value_local) = self
-            .io_f16_polyfills
-            .as_ref()
-            .and_then(|_p| super::f16_polyfill::f32_local_ty(ty_inner))
-        {
+        let pointer_type_id = if let Some(f32_value_local) = self.io_f16.is_f16(ty_inner) {
             let f32_type_id = self.get_localtype_id(f32_value_local);
             let ptr_id = self.get_pointer_type_id(f32_type_id, class);
             let f16_type_id = self.get_handle_type_id(ty);
-            self.io_f16_polyfills
-                .as_mut()
-                .unwrap()
-                .register_variable(id, f32_type_id, f16_type_id);
+            self.io_f16.register_variable(id, f32_type_id, f16_type_id);
 
             ptr_id
         } else {
