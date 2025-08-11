@@ -36,6 +36,8 @@ mod webgpu_impl {
     //! `cbindgen` in `mozilla-central` (where Firefox is developed).
     #![allow(missing_docs)]
 
+    // TODO: CORE_FEATURES_AND_LIMITS
+
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_DEPTH_CLIP_CONTROL: u64 = 1 << 0;
 
@@ -80,6 +82,16 @@ mod webgpu_impl {
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_DUAL_SOURCE_BLENDING: u64 = 1 << 14;
+
+    // TODO: SUBGROUPS
+
+    // TODO: TEXTURE_FORMATS_TIER1
+
+    // TODO: TEXTURE_FORMATS_TIER2
+
+    // TODO: PRIMITIVE_INDEX
+
+    // TODO: TEXTURE_COMPONENT_SWIZZLE
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_CLIP_DISTANCES: u64 = 1 << 15;
