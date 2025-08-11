@@ -1707,6 +1707,18 @@ bitflags_array! {
         #[name("float32-blendable")]
         const FLOAT32_BLENDABLE = WEBGPU_FEATURE_FLOAT32_BLENDABLE;
 
+        /// Allows the use of `@builtin(clip_distances)` in WGSL.
+        ///
+        /// Supported platforms:
+        /// - Vulkan (mainly on Desktop GPUs)
+        /// - Metal
+        /// - GL (Desktop or `GL_EXT_clip_cull_distance`)
+        /// - WebGPU
+        ///
+        /// This is a web and native feature.
+        #[name("clip-distances")]
+        const CLIP_DISTANCES = WEBGPU_FEATURE_CLIP_DISTANCES;
+
         /// Allows two outputs from a shader to be used for blending.
         /// Note that dual-source blending doesn't support multiple render targets.
         ///
@@ -1722,18 +1734,6 @@ bitflags_array! {
         /// This is a web and native feature.
         #[name("dual-source-blending")]
         const DUAL_SOURCE_BLENDING = WEBGPU_FEATURE_DUAL_SOURCE_BLENDING;
-
-        /// Allows the use of `@builtin(clip_distances)` in WGSL.
-        ///
-        /// Supported platforms:
-        /// - Vulkan (mainly on Desktop GPUs)
-        /// - Metal
-        /// - GL (Desktop or `GL_EXT_clip_cull_distance`)
-        /// - WebGPU
-        ///
-        /// This is a web and native feature.
-        #[name("clip-distances")]
-        const CLIP_DISTANCES = WEBGPU_FEATURE_CLIP_DISTANCES;
 
         /// Allows the use of immediate data: small, fast bits of memory that can be updated
         /// inside a [`RenderPass`].
