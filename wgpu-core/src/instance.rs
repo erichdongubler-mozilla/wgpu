@@ -890,6 +890,26 @@ impl Adapter {
             return Err(RequestDeviceError::LimitsExceeded(failed));
         }
 
+        let texture_formats_tier_features = desc.required_features.intersection(
+            wgt::Features::TEXTURE_FORMATS_TIER1 | wgt::Features::TEXTURE_FORMATS_TIER2,
+        );
+        if desc
+            .required_features
+            .intersects(texture_formats_tier_features)
+        {
+            log::warn!(
+                concat!(
+                    "{:?} was requested, and is not yet implemented. ",
+                    "Upstream tracking can be found at ",
+                    "<TODO>",
+                ),
+                texture_formats_tier_features
+            );
+            return Err(RequestDeviceError::UnsupportedFeature(
+                texture_formats_tier_features,
+            ));
+        }
+
         let open = unsafe {
             self.raw.adapter.open(
                 desc.required_features,

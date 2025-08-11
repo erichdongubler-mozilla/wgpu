@@ -101,6 +101,12 @@ mod webgpu_impl {
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_PRIMITIVE_INDEX: u64 = 1 << 17;
+
+    #[doc(hidden)]
+    pub const WEBGPU_FEATURE_TEXTURE_FORMATS_TIER1: u64 = 1 << 15;
+
+    #[doc(hidden)]
+    pub const WEBGPU_FEATURE_TEXTURE_FORMATS_TIER2: u64 = 1 << 16;
 }
 
 macro_rules! bitflags_array_impl {
@@ -644,21 +650,11 @@ bitflags_array! {
         // ? const 32BIT_FORMAT_MULTISAMPLE = 1 << ??; (https://github.com/gpuweb/gpuweb/issues/3844)
         // ? const 32BIT_FORMAT_RESOLVE = 1 << ??; (https://github.com/gpuweb/gpuweb/issues/3844)
         // ? const TEXTURE_COMPRESSION_ASTC_HDR = 1 << ??; (https://github.com/gpuweb/gpuweb/issues/3856)
-        // TEXTURE_FORMAT_16BIT_NORM & TEXTURE_COMPRESSION_ASTC_HDR will most likely become web features as well
+        // TEXTURE_COMPRESSION_ASTC_HDR will most likely become web features as well
         // TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES might not be necessary if we have all the texture features implemented
 
         // Texture Formats:
 
-        /// Enables normalized `16-bit` texture formats.
-        ///
-        /// Supported platforms:
-        /// - Vulkan
-        /// - DX12
-        /// - Metal
-        ///
-        /// This is a native only feature.
-        #[name("wgpu-texture-format-16-bit-norm", "texture-format-16-bit-norm")]
-        const TEXTURE_FORMAT_16BIT_NORM = 1 << 1;
         /// Enables ASTC HDR family of compressed textures.
         ///
         /// Compressed textures sacrifice some quality in exchange for significantly reduced
@@ -1746,6 +1742,99 @@ bitflags_array! {
         /// This is a web and native feature.
         #[name("dual-source-blending")]
         const DUAL_SOURCE_BLENDING = WEBGPU_FEATURE_DUAL_SOURCE_BLENDING;
+
+        /// Implies [`Features::RG11B10UFLOAT_RENDERABLE`]. Adds the following texture format
+        /// support (TODO: translate to `rustdoc` links):
+        ///
+        /// - TODO: validate: Enables the following formats with `RENDER_ATTACHMENT`, `blendable`,
+        ///   `multisampling` capabilities and the `STORAGE_BINDING` capability with `read-only`
+        ///   and `write-only` storage texture accesses:
+        ///
+        ///   - [`R16Unorm`]
+        ///   - [`R16Snorm`]
+        ///   - [`Rg16Unorm`]
+        ///   - [`Rg16Snorm`]
+        ///   - [`Rgba16Unorm`]
+        ///   - [`Rgba16Snorm`]
+        ///
+        /// - TODO: validate: Allows the `RENDER_ATTACHMENT`, `blendable`, `multisampling` and
+        ///   `resolve` capabilities on below texture formats:
+        ///
+        ///   - [`R8Snorm`]
+        ///   - [`Rg8Snorm`]
+        ///   - [`Rgba8Snorm`]
+        ///
+        /// - TODO: validate: Allows the `read-only` and `write-only` storage texture accesses on
+        ///   below texture formats:
+        ///
+        ///   - [`R8Unorm`]
+        ///   - [`R8Snorm`]
+        ///   - [`R8Uint`]
+        ///   - [`R8Sint`]
+        ///   - [`Rg8Unorm`]
+        ///   - [`Rg8Snorm`]
+        ///   - [`Rg8Uint`]
+        ///   - [`Rg8Sint`]
+        ///   - [`R16Uint`]
+        ///   - [`R16Sint`]
+        ///   - [`R16Float`]
+        ///   - [`Rg16Uint`]
+        ///   - [`Rg16Sint`]
+        ///   - [`Rg16Float`]
+        ///   - [`Rgb10A2uint`]
+        ///   - [`Rgb10A2unorm`]
+        ///   - [`Rg11B10ufloat`]
+        ///
+        /// [`R16Float`]: super::TextureFormat::R16Float
+        /// [`R16Sint`]: super::TextureFormat::R16Sint
+        /// [`R16Snorm`]: super::TextureFormat::R16Snorm
+        /// [`R16Uint`]: super::TextureFormat::R16Uint
+        /// [`R16Unorm`]: super::TextureFormat::R16Unorm
+        /// [`R8Sint`]: super::TextureFormat::R8Sint
+        /// [`R8Snorm`]: super::TextureFormat::R8Snorm
+        /// [`R8Uint`]: super::TextureFormat::R8Uint
+        /// [`R8Unorm`]: super::TextureFormat::R8Unorm
+        /// [`Rg11B10ufloat`]: super::TextureFormat::Rg11B10ufloat
+        /// [`Rg16Float`]: super::TextureFormat::Rg16Float
+        /// [`Rg16Sint`]: super::TextureFormat::Rg16Sint
+        /// [`Rg16Snorm`]: super::TextureFormat::Rg16Snorm
+        /// [`Rg16Uint`]: super::TextureFormat::Rg16Uint
+        /// [`Rg16Unorm`]: super::TextureFormat::Rg16Unorm
+        /// [`Rg8Sint`]: super::TextureFormat::Rg8Sint
+        /// [`Rg8Snorm`]: super::TextureFormat::Rg8Snorm
+        /// [`Rg8Snorm`]: super::TextureFormat::Rg8Snorm
+        /// [`Rg8Uint`]: super::TextureFormat::Rg8Uint
+        /// [`Rg8Unorm`]: super::TextureFormat::Rg8Unorm
+        /// [`Rgb10A2uint`]: super::TextureFormat::Rgb10A2uint
+        /// [`Rgb10A2unorm`]: super::TextureFormat::Rgb10A2unorm
+        /// [`Rgba16Snorm`]: super::TextureFormat::Rgba16Snorm
+        /// [`Rgba16Unorm`]: super::TextureFormat::Rgba16Unorm
+        /// [`Rgba8Snorm`]: super::TextureFormat::Rgba8Snorm
+        ///
+        /// This is a WebGPU equivalent to requesting [`Features::TEXTURE_FORMAT_16BIT_NORM`].
+        /// TODO: Just migrate that feature to this one, maybe?
+        const TEXTURE_FORMATS_TIER1 = WEBGPU_FEATURE_TEXTURE_FORMATS_TIER1;
+
+        /// Implies [`Feature::TEXTURE_FORMATS_TIER1`]. Enables
+        /// [`TextureFormatFeatureFlags::STORAGE_READ_WRITE`](super::TextureFormatFeatureFlags::STORAGE_READ_WRITE)
+        /// for the various formats listed below.
+        ///
+        /// - [`R8Unorm`](super::TextureFormat::R8Unorm)
+        /// - [`R8Uint`](super::TextureFormat::R8Uint)
+        /// - [`R8Sint`](super::TextureFormat::R8Sint)
+        /// - [`Rgba8Unorm`](super::TextureFormat::Rgba8Unorm)
+        /// - [`Rgba8Uint`](super::TextureFormat::Rgba8Uint)
+        /// - [`Rgba8Sint`](super::TextureFormat::Rgba8Sint)
+        /// - [`R16Uint`](super::TextureFormat::R16Uint)
+        /// - [`R16Sint`](super::TextureFormat::R16Sint)
+        /// - [`R16Float`](super::TextureFormat::R16Float)
+        /// - [`Rgba16Uint`](super::TextureFormat::Rgba16Uint)
+        /// - [`Rgba16Sint`](super::TextureFormat::Rgba16Sint)
+        /// - [`Rgba16Float`](super::TextureFormat::Rgba16Float)
+        /// - [`Rgba32Uint`](super::TextureFormat::Rgba32Uint)
+        /// - [`Rgba32Sint`](super::TextureFormat::Rgba32Sint)
+        /// - [`Rgba32Float`](super::TextureFormat::Rgba32Float)
+        const TEXTURE_FORMATS_TIER2 = WEBGPU_FEATURE_TEXTURE_FORMATS_TIER2;
 
         /// Allows the use of immediate data: small, fast bits of memory that can be updated
         /// inside a [`RenderPass`].

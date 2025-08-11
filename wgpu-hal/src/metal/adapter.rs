@@ -1074,7 +1074,7 @@ impl super::CapabilitiesQuery {
             | F::IMMEDIATES
             | F::POLYGON_MODE_LINE
             | F::CLEAR_TEXTURE
-            | F::TEXTURE_FORMAT_16BIT_NORM
+            | F::TEXTURE_FORMATS_TIER1
             | F::SHADER_F16
             | F::DEPTH32FLOAT_STENCIL8
             | F::BGRA8UNORM_STORAGE

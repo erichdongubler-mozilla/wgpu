@@ -93,7 +93,12 @@ impl GPUAdapter {
     self.features.get(scope, |scope| {
       let features = self.instance.adapter_features(self.id);
       // Only expose WebGPU features, not wgpu native-only features
-      let features = features & wgpu_types::Features::all_webgpu_mask();
+      let texture_format_tier_features =
+        wgpu_types::Features::TEXTURE_FORMATS_TIER1
+          | wgpu_types::Features::TEXTURE_FORMATS_TIER2;
+      let features = features
+        & wgpu_types::Features::all_webgpu_mask()
+        & !texture_format_tier_features;
       GPUSupportedFeatures::new(scope, features)
     })
   }
