@@ -237,7 +237,7 @@ impl Writer {
                 }
             };
 
-            body.push(Instruction::store(res_member.id, member_value_id, None));
+            self.store_io_with_f16_polyfill(body, res_member.id, member_value_id);
 
             match res_member.built_in {
                 Some(crate::BuiltIn::Position { .. })
@@ -2313,6 +2313,21 @@ impl BlockContext<'_> {
         match self.write_access_chain(pointer, block, access_type_adjustment)? {
             ExpressionPointer::Ready { pointer_id } => {
                 let id = self.gen_id();
+
+                if self
+                    .writer
+                    .io_f16_polyfills
+                    .get_f32_io_type(pointer_id)
+                    .is_some()
+                {
+                    let converted = self.writer.load_io_with_f16_polyfill(
+                        &mut block.body,
+                        pointer_id,
+                        result_type_id,
+                    );
+                    return Ok(converted);
+                }
+
                 let atomic_space =
                     match *self.fun_info[pointer].ty.inner_with(&self.ir_module.types) {
                         crate::TypeInner::Pointer { base, space } => {
