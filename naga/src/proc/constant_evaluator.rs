@@ -2654,6 +2654,47 @@ impl<'a> ConstantEvaluator<'a> {
         e3: Handle<Expression>,
         span: Span,
     ) -> Result<Handle<Expression>, ConstantEvaluatorError> {
+        // Check for second overload, where `e1` and `e2` are `vecN<T>` and `e3` is `T`. If so,
+        // reify `e3` to `vecN<T>`.
+        let e3 = Some(e3)
+            .and_then(|e3| {
+                if let (
+                    &Expression::Compose {
+                        ty: e1_ty_handle,
+                        components: _,
+                    },
+                    &Expression::Compose {
+                        ty: e2_ty_handle,
+                        components: _,
+                    },
+                    &Expression::Literal(e3_lit),
+                ) = (
+                    &self.expressions[e1],
+                    &self.expressions[e2],
+                    &self.expressions[e3],
+                ) {
+                    let e1_ty = &self.types[e1_ty_handle].inner;
+                    let e2_ty = &self.types[e2_ty_handle].inner;
+                    if let Some((Some(size), scalar)) = e1_ty.vector_size_and_scalar() {
+                        if e1_ty == e2_ty && scalar == e3_lit.scalar() {
+                            let e3 = self.register_evaluated_expr(
+                                Expression::Compose {
+                                    ty: e1_ty_handle,
+                                    components: vec![e3; size as usize],
+                                },
+                                self.expressions.get_span(e3),
+                            );
+                            return Some(e3);
+                        }
+                    }
+                }
+                // Otherwise, fall back to diagnostics via `component_wise_float!(…)`.
+                //
+                // TODO: Make this diagnostic not suck.
+                None
+            })
+            .transpose()?
+            .unwrap_or(e3);
         component_wise_float!(self, span, [e1, e2, e3], |e1, e2, e3| {
             let one = {
                 let mut one = e1;
