@@ -1128,6 +1128,7 @@ impl<'a> ConstantEvaluator<'a> {
                     Ok([e1.max(e2)])
                 })
             }
+            crate::MathFunction::Mix => self.mix(arg, arg1.unwrap(), arg2.unwrap(), span),
             crate::MathFunction::Clamp => {
                 component_wise_scalar!(
                     self,
@@ -1362,7 +1363,6 @@ impl<'a> ConstantEvaluator<'a> {
             | crate::MathFunction::FaceForward
             | crate::MathFunction::Reflect
             | crate::MathFunction::Refract
-            | crate::MathFunction::Mix
             | crate::MathFunction::SmoothStep
             | crate::MathFunction::Inverse
             | crate::MathFunction::Transpose
@@ -2645,6 +2645,23 @@ impl<'a> ConstantEvaluator<'a> {
             }
             _ => Err(ConstantEvaluatorError::SelectAcceptRejectTypeMismatch),
         }
+    }
+
+    fn mix(
+        &mut self,
+        e1: Handle<Expression>,
+        e2: Handle<Expression>,
+        e3: Handle<Expression>,
+        span: Span,
+    ) -> Result<Handle<Expression>, ConstantEvaluatorError> {
+        component_wise_float!(self, span, [e1, e2, e3], |e1, e2, e3| {
+            let one = {
+                let mut one = e1;
+                one.set_one();
+                one
+            };
+            Ok([e1 * (one - e3) + e2 * e3])
+        })
     }
 }
 
