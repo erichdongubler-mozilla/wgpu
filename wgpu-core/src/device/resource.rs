@@ -3884,6 +3884,28 @@ impl Device {
                     }
 
                     if let Some(blend_mode) = cs.blend {
+                        for (blend_component, blend_component_name) in
+                            [(blend_mode.color, "color"), (blend_mode.alpha, "alpha")]
+                        {
+                            let wgt::BlendComponent {
+                                src_factor,
+                                dst_factor,
+                                operation,
+                            } = blend_component;
+
+                            if matches!(
+                                operation,
+                                wgt::BlendOperation::Min | wgt::BlendOperation::Max
+                            ) {
+                                if let Some((factor, factor_name)) =
+                                    [(src_factor, "src_factor"), (dst_factor, "dst_factor")]
+                                        .into_iter()
+                                        .find(|&(f, _name)| f != wgt::BlendFactor::One)
+                                {
+                                    return Err(pipeline::CreateRenderPipelineError::BlendOperationRequiresOne { blend_component_name, factor_name, factor_value: factor});
+                                }
+                            }
+                        }
                         for factor in [
                             blend_mode.color.src_factor,
                             blend_mode.color.dst_factor,

@@ -694,6 +694,23 @@ pub enum CreateRenderPipelineError {
     NoTargetSpecified,
     #[error(transparent)]
     InvalidResource(#[from] InvalidResourceError),
+    #[error("{}", format_args!(
+        concat!(
+            "`{}` specifies operation `{:?}`, which requires both factors to be {:?}, ",
+            "but `{}` is set to {:?}",
+        ),
+        blend_component_name,
+        operation,
+        wgt::BlendFactor::One,
+        factor_name,
+        factor_value,
+    ))]
+    BlendOperationRequiresOne {
+        blend_component_name: &'static str,
+        operation: wgt::BlendOperation,
+        factor_name: &'static str,
+        factor_value: wgt::BlendFactor,
+    },
 }
 
 impl WebGpuError for CreateRenderPipelineError {
