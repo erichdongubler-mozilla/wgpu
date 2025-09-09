@@ -27,7 +27,6 @@ fn main() {
 
     env_logger::init();
 
-    //TODO: setting for the backend bits
     //TODO: setting for the target frame, or controls
 
     const HELP: &str = "\
