@@ -121,7 +121,21 @@ fn main() {
     {
         unsafe { global.device_start_graphics_debugger_capture(device) };
 
+        let panic_hook = std::panic::take_hook();
+        let panic_action = std::sync::Arc::new(std::sync::Mutex::new(None));
+        std::panic::set_hook(Box::new({
+            let panic_action = panic_action.clone();
+            move |info| {
+                let panic_action = panic_action.lock().unwrap();
+                if let Some(action) = &*panic_action {
+                    eprintln!("Panicked with action: {action:#?}");
+                }
+                panic_hook(info);
+            }
+        }));
+
         while let Some(action) = actions.pop() {
+            *panic_action.lock().unwrap() = Some(action.clone());
             global.process(
                 device,
                 queue,
@@ -131,6 +145,7 @@ fn main() {
                 &mut command_buffer_id_manager,
             );
         }
+        *panic_action.lock().unwrap() = None;
 
         unsafe { global.device_stop_graphics_debugger_capture(device) };
         global
