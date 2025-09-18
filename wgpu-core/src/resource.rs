@@ -509,17 +509,20 @@ impl Buffer {
     pub fn resolve_binding_size(
         &self,
         offset: wgt::BufferAddress,
-        binding_size: Option<wgt::BufferSize>,
+        binding_size: Option<u64>,
     ) -> Result<u64, BindingError> {
         let buffer_size = self.size;
 
         match binding_size {
-            Some(binding_size) => match offset.checked_add(binding_size.get()) {
-                Some(end) if end <= buffer_size => Ok(binding_size.get()),
+            Some(0) => Err(BindingError::BindingSizeZero {
+                buffer: self.error_ident(),
+            }),
+            Some(binding_size) => match offset.checked_add(binding_size) {
+                Some(end) if end <= buffer_size => Ok(binding_size),
                 _ => Err(BindingError::BindingRangeTooLarge {
                     buffer: self.error_ident(),
                     offset,
-                    binding_size: binding_size.get(),
+                    binding_size,
                     buffer_size,
                 }),
             },
@@ -558,7 +561,7 @@ impl Buffer {
     pub fn binding<'a>(
         &'a self,
         offset: wgt::BufferAddress,
-        binding_size: Option<wgt::BufferSize>,
+        binding_size: Option<u64>,
         snatch_guard: &'a SnatchGuard,
     ) -> Result<(hal::BufferBinding<'a, dyn hal::DynBuffer>, u64), BindingError> {
         let buf_raw = self.try_raw(snatch_guard)?;

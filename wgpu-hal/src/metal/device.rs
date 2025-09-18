@@ -1,5 +1,5 @@
 use alloc::{borrow::ToOwned as _, sync::Arc, vec::Vec};
-use core::{ptr::NonNull, sync::atomic};
+use core::{num::NonZeroU64, ptr::NonNull, sync::atomic};
 use std::{thread, time};
 
 use parking_lot::Mutex;
@@ -967,12 +967,11 @@ impl crate::Device for super::Device {
                                     .extend(desc.buffers[start..end].iter().map(|source| {
                                         // Given the restrictions on `BufferBinding::offset`,
                                         // this should never be `None`.
-                                        let remaining_size = wgt::BufferSize::new(
-                                            source.buffer.size - source.offset,
-                                        );
+                                        let remaining_size = source.buffer.size - source.offset;
                                         let binding_size = match ty {
                                             wgt::BufferBindingType::Storage { .. } => {
-                                                source.size.or(remaining_size)
+                                                let size = source.size.unwrap_or(remaining_size);
+                                                Some(NonZeroU64::new(size).unwrap())
                                             }
                                             _ => None,
                                         };

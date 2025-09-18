@@ -1263,7 +1263,7 @@ impl crate::Device for super::Device {
                         raw: bb.buffer.raw.unwrap(),
                         offset: bb.offset as i32,
                         size: match bb.size {
-                            Some(s) => s.get() as i32,
+                            Some(s) => s as i32,
                             None => (bb.buffer.size - bb.offset) as i32,
                         },
                     }

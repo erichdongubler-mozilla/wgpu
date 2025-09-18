@@ -289,7 +289,11 @@ impl TimestampNormalizer {
                 .create_bind_group(&hal::BindGroupDescriptor {
                     label: hal_label(Some(label), device.instance_flags),
                     layout: &*state.temporary_bind_group_layout,
-                    buffers: &[hal::BufferBinding::new_unchecked(buffer, 0, buffer_size)],
+                    buffers: &[hal::BufferBinding::new_unchecked(
+                        buffer,
+                        0,
+                        buffer_size.get(),
+                    )],
                     samplers: &[],
                     textures: &[],
                     acceleration_structures: &[],

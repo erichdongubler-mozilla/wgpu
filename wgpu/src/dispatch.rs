@@ -404,14 +404,14 @@ pub trait RenderPassInterface: CommonTraits {
         buffer: &DispatchBuffer,
         index_format: crate::IndexFormat,
         offset: crate::BufferAddress,
-        size: Option<crate::BufferSize>,
+        size: Option<u64>,
     );
     fn set_vertex_buffer(
         &mut self,
         slot: u32,
         buffer: &DispatchBuffer,
         offset: crate::BufferAddress,
-        size: Option<crate::BufferSize>,
+        size: Option<u64>,
     );
     fn set_push_constants(&mut self, stages: crate::ShaderStages, offset: u32, data: &[u8]);
     fn set_blend_constant(&mut self, color: crate::Color);

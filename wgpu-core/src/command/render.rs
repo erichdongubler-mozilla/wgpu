@@ -6,8 +6,8 @@ use arrayvec::ArrayVec;
 use thiserror::Error;
 use wgt::{
     error::{ErrorType, WebGpuError},
-    BufferAddress, BufferSize, BufferUsages, Color, DynamicOffset, IndexFormat, ShaderStages,
-    TextureSelector, TextureUsages, TextureViewDimension, VertexStepMode,
+    BufferAddress, BufferUsages, Color, DynamicOffset, IndexFormat, ShaderStages, TextureSelector,
+    TextureUsages, TextureViewDimension, VertexStepMode,
 };
 
 use crate::command::{
@@ -2378,7 +2378,7 @@ fn set_index_buffer(
     buffer: Arc<crate::resource::Buffer>,
     index_format: IndexFormat,
     offset: u64,
-    size: Option<BufferSize>,
+    size: Option<u64>,
 ) -> Result<(), RenderPassErrorInner> {
     api_log!("RenderPass::set_index_buffer {}", buffer.error_ident());
 
@@ -2430,7 +2430,7 @@ fn set_vertex_buffer(
     slot: u32,
     buffer: Arc<crate::resource::Buffer>,
     offset: u64,
-    size: Option<BufferSize>,
+    size: Option<u64>,
 ) -> Result<(), RenderPassErrorInner> {
     api_log!(
         "RenderPass::set_vertex_buffer {slot} {}",
@@ -3167,7 +3167,7 @@ impl Global {
         buffer_id: id::BufferId,
         index_format: IndexFormat,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     ) -> Result<(), PassStateError> {
         let scope = PassErrorScope::SetIndexBuffer;
         let base = pass_base!(pass, scope);
@@ -3188,7 +3188,7 @@ impl Global {
         slot: u32,
         buffer_id: id::BufferId,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     ) -> Result<(), PassStateError> {
         let scope = PassErrorScope::SetVertexBuffer;
         let base = pass_base!(pass, scope);

@@ -495,7 +495,7 @@ impl Buffer {
 pub struct BufferSlice<'a> {
     pub(crate) buffer: &'a Buffer,
     pub(crate) offset: BufferAddress,
-    pub(crate) size: BufferSize,
+    pub(crate) size: u64,
 }
 #[cfg(send_sync)]
 static_assertions::assert_impl_all!(BufferSlice<'_>: Send, Sync);
@@ -1012,18 +1012,17 @@ fn check_buffer_bounds(
 pub(crate) fn range_to_offset_size<S: RangeBounds<BufferAddress>>(
     bounds: S,
     whole_size: BufferAddress,
-) -> (BufferAddress, BufferSize) {
+) -> (BufferAddress, u64) {
     let offset = match bounds.start_bound() {
         Bound::Included(&bound) => bound,
         Bound::Excluded(&bound) => bound + 1,
         Bound::Unbounded => 0,
     };
-    let size = BufferSize::new(match bounds.end_bound() {
+    let size = match bounds.end_bound() {
         Bound::Included(&bound) => bound + 1 - offset,
         Bound::Excluded(&bound) => bound - offset,
         Bound::Unbounded => whole_size - offset,
-    })
-    .expect("buffer slices can not be empty");
+    };
 
     (offset, size)
 }

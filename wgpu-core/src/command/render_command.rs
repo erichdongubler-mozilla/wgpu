@@ -1,6 +1,6 @@
 use alloc::sync::Arc;
 
-use wgt::{BufferAddress, BufferSize, Color};
+use wgt::{BufferAddress, Color};
 
 use super::{DrawCommandFamily, Rect, RenderBundle};
 use crate::{
@@ -24,13 +24,13 @@ pub enum RenderCommand {
         buffer_id: id::BufferId,
         index_format: wgt::IndexFormat,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     },
     SetVertexBuffer {
         slot: u32,
         buffer_id: id::BufferId,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     },
     SetBlendConstant(Color),
     SetStencilReference(u32),
@@ -430,13 +430,13 @@ pub enum ArcRenderCommand {
         buffer: Arc<Buffer>,
         index_format: wgt::IndexFormat,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     },
     SetVertexBuffer {
         slot: u32,
         buffer: Arc<Buffer>,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     },
     SetBlendConstant(Color),
     SetStencilReference(u32),

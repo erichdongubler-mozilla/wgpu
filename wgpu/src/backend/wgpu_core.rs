@@ -3095,7 +3095,7 @@ impl dispatch::RenderPassInterface for CoreRenderPass {
         buffer: &dispatch::DispatchBuffer,
         index_format: crate::IndexFormat,
         offset: crate::BufferAddress,
-        size: Option<crate::BufferSize>,
+        size: Option<u64>,
     ) {
         let buffer = buffer.as_core();
 
@@ -3120,7 +3120,7 @@ impl dispatch::RenderPassInterface for CoreRenderPass {
         slot: u32,
         buffer: &dispatch::DispatchBuffer,
         offset: crate::BufferAddress,
-        size: Option<crate::BufferSize>,
+        size: Option<u64>,
     ) {
         let buffer = buffer.as_core();
 
@@ -3709,7 +3709,7 @@ impl dispatch::RenderBundleEncoderInterface for CoreRenderBundleEncoder {
         slot: u32,
         buffer: &dispatch::DispatchBuffer,
         offset: crate::BufferAddress,
-        size: Option<crate::BufferSize>,
+        size: Option<u64>,
     ) {
         let buffer = buffer.as_core();
 

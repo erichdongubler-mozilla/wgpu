@@ -236,7 +236,7 @@ impl Dispatch {
             buffers: &[hal::BufferBinding::new_unchecked(
                 dst_buffer.as_ref(),
                 0,
-                Some(DST_BUFFER_SIZE),
+                Some(DST_BUFFER_SIZE.get()),
             )],
             samplers: &[],
             textures: &[],
@@ -269,9 +269,6 @@ impl Dispatch {
         buffer: &dyn hal::DynBuffer,
     ) -> Result<Option<Box<dyn hal::DynBindGroup>>, DeviceError> {
         let binding_size = calculate_src_buffer_binding_size(buffer_size, limits);
-        let Some(binding_size) = NonZeroU64::new(binding_size) else {
-            return Ok(None);
-        };
         let hal_desc = hal::BindGroupDescriptor {
             label: None,
             layout: self.src_bind_group_layout.as_ref(),

@@ -606,11 +606,7 @@ impl<A: hal::Api> Example<A> {
         let bind_group = {
             let buffer_binding = unsafe {
                 // SAFETY: The size matches the buffer allocation.
-                hal::BufferBinding::new_unchecked(
-                    &uniform_buffer,
-                    0,
-                    wgpu_types::BufferSize::new_unchecked(uniforms_size as u64),
-                )
+                hal::BufferBinding::new_unchecked(&uniform_buffer, 0, uniforms_size as u64)
             };
             let texture_binding = hal::TextureBinding {
                 view: &texture_view,

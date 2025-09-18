@@ -2,7 +2,6 @@
 
 use std::borrow::Cow;
 use std::cell::RefCell;
-use std::num::NonZeroU64;
 
 use deno_core::cppgc::Ptr;
 use deno_core::op2;
@@ -261,12 +260,7 @@ impl GPURenderBundleEncoder {
       JsErrorBox::generic("Encoder has already been finished")
     })?;
 
-    encoder.set_index_buffer(
-      buffer.id,
-      index_format.into(),
-      offset,
-      size.and_then(NonZeroU64::new),
-    );
+    encoder.set_index_buffer(buffer.id, index_format.into(), offset, size);
     Ok(())
   }
 
@@ -285,11 +279,7 @@ impl GPURenderBundleEncoder {
     })?;
 
     wgpu_core::command::bundle_ffi::wgpu_render_bundle_set_vertex_buffer(
-      encoder,
-      slot,
-      buffer.id,
-      offset,
-      size.and_then(NonZeroU64::new),
+      encoder, slot, buffer.id, offset, size,
     );
     Ok(())
   }

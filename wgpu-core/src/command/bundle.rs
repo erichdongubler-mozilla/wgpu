@@ -84,11 +84,7 @@ use alloc::{
     sync::Arc,
     vec::Vec,
 };
-use core::{
-    convert::Infallible,
-    num::{NonZeroU32, NonZeroU64},
-    ops::Range,
-};
+use core::{convert::Infallible, num::NonZeroU32, ops::Range};
 
 use arrayvec::ArrayVec;
 use thiserror::Error;
@@ -521,7 +517,7 @@ impl RenderBundleEncoder {
         buffer_id: id::BufferId,
         index_format: wgt::IndexFormat,
         offset: wgt::BufferAddress,
-        size: Option<wgt::BufferSize>,
+        size: Option<u64>,
     ) {
         self.base.commands.push(RenderCommand::SetIndexBuffer {
             buffer_id,
@@ -632,7 +628,7 @@ fn set_index_buffer(
     buffer_id: id::Id<id::markers::Buffer>,
     index_format: wgt::IndexFormat,
     offset: u64,
-    size: Option<NonZeroU64>,
+    size: Option<u64>,
 ) -> Result<(), RenderBundleErrorInner> {
     let buffer = buffer_guard.get(buffer_id).get()?;
 
@@ -671,7 +667,7 @@ fn set_vertex_buffer(
     slot: u32,
     buffer_id: id::Id<id::markers::Buffer>,
     offset: u64,
-    size: Option<NonZeroU64>,
+    size: Option<u64>,
 ) -> Result<(), RenderBundleErrorInner> {
     let max_vertex_buffers = state.device.limits.max_vertex_buffers;
     if slot >= max_vertex_buffers {
@@ -1242,7 +1238,7 @@ impl IndexState {
                 buffer: self.buffer.clone(),
                 index_format: self.format,
                 offset: self.range.start,
-                size: NonZeroU64::new(binding_size),
+                size: Some(binding_size),
             })
         } else {
             None
@@ -1298,7 +1294,7 @@ impl VertexState {
                 slot,
                 buffer: self.buffer.clone(),
                 offset: self.range.start,
-                size: NonZeroU64::new(binding_size),
+                size: Some(binding_size),
             })
         } else {
             None
@@ -1663,7 +1659,7 @@ pub mod bundle_ffi {
     use super::{RenderBundleEncoder, RenderCommand};
     use crate::{command::DrawCommandFamily, id, RawString};
     use core::{convert::TryInto, slice};
-    use wgt::{BufferAddress, BufferSize, DynamicOffset, IndexFormat};
+    use wgt::{BufferAddress, DynamicOffset, IndexFormat};
 
     /// # Safety
     ///
@@ -1715,7 +1711,7 @@ pub mod bundle_ffi {
         slot: u32,
         buffer_id: id::BufferId,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     ) {
         bundle.base.commands.push(RenderCommand::SetVertexBuffer {
             slot,
@@ -1730,7 +1726,7 @@ pub mod bundle_ffi {
         buffer: id::BufferId,
         index_format: IndexFormat,
         offset: BufferAddress,
-        size: Option<BufferSize>,
+        size: Option<u64>,
     ) {
         encoder.set_index_buffer(buffer, index_format, offset, size);
     }

@@ -124,9 +124,6 @@ impl Draw {
         buffer: &dyn hal::DynBuffer,
     ) -> Result<Option<Box<dyn hal::DynBindGroup>>, DeviceError> {
         let binding_size = calculate_src_buffer_binding_size(buffer_size, limits);
-        let Some(binding_size) = NonZeroU64::new(binding_size) else {
-            return Ok(None);
-        };
         let hal_desc = hal::BindGroupDescriptor {
             label: None,
             layout: self.src_bind_group_layout.as_ref(),
@@ -686,7 +683,7 @@ fn create_buffer_and_bind_group(
         buffers: &[hal::BufferBinding::new_unchecked(
             buffer.as_ref(),
             0,
-            BUFFER_SIZE,
+            BUFFER_SIZE.get(),
         )],
         samplers: &[],
         textures: &[],

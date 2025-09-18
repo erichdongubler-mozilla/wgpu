@@ -113,15 +113,17 @@ pub enum BindingError {
         offset: wgt::BufferAddress,
         buffer_size: u64,
     },
+    #[error("Buffer {buffer}: Binding size is zero")]
+    BindingSizeZero { buffer: ResourceErrorIdent },
 }
 
 impl WebGpuError for BindingError {
     fn webgpu_error_type(&self) -> ErrorType {
         match self {
             Self::DestroyedResource(e) => e.webgpu_error_type(),
-            Self::BindingRangeTooLarge { .. } | Self::BindingOffsetTooLarge { .. } => {
-                ErrorType::Validation
-            }
+            Self::BindingRangeTooLarge { .. }
+            | Self::BindingOffsetTooLarge { .. }
+            | Self::BindingSizeZero { .. } => ErrorType::Validation,
         }
     }
 }
@@ -1014,7 +1016,7 @@ crate::impl_storage_item!(PipelineLayout);
 pub struct BufferBinding<B = BufferId> {
     pub buffer: B,
     pub offset: wgt::BufferAddress,
-    pub size: Option<wgt::BufferSize>,
+    pub size: Option<u64>,
 }
 
 pub type ResolvedBufferBinding = BufferBinding<Arc<Buffer>>;

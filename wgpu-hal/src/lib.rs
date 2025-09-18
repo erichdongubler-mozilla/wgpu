@@ -2050,9 +2050,8 @@ pub struct BufferBinding<'a, B: DynBuffer + ?Sized> {
     /// The size of the region bound, in bytes.
     ///
     /// If `None`, the region extends from `offset` to the end of the
-    /// buffer. Given the restrictions on `offset`, this means that
-    /// the size is always greater than zero.
-    pub size: Option<wgt::BufferSize>,
+    /// buffer.
+    pub size: Option<u64>,
 }
 
 // We must implement this manually because `B` is not necessarily `Clone`.
@@ -2111,7 +2110,7 @@ impl<'a, B: DynBuffer + ?Sized> BufferBinding<'a, B> {
     /// pass a zero size. When the zero-size binding issue is resolved, the
     /// argument should just match the type of the member.
     /// TODO(<https://github.com/gfx-rs/wgpu/issues/3170>): remove the parameter
-    pub fn new_unchecked<S: Into<Option<NonZeroU64>>>(
+    pub fn new_unchecked<S: Into<Option<u64>>>(
         buffer: &'a B,
         offset: wgt::BufferAddress,
         size: S,

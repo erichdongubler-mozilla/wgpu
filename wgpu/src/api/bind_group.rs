@@ -118,7 +118,7 @@ pub struct BufferBinding<'a> {
     pub offset: BufferAddress,
 
     /// Size of the binding in bytes, or `None` for using the rest of the buffer.
-    pub size: Option<BufferSize>,
+    pub size: Option<u64>,
 }
 #[cfg(send_sync)]
 static_assertions::assert_impl_all!(BufferBinding<'_>: Send, Sync);
