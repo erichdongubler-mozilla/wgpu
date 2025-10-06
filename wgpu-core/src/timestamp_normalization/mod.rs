@@ -190,7 +190,7 @@ impl TimestampNormalizer {
                 .raw()
                 .create_pipeline_layout(&hal::PipelineLayoutDescriptor {
                     label: None,
-                    bind_group_layouts: &[temporary_bind_group_layout.as_ref()],
+                    bind_group_layouts: &[temporary_bind_group_layout.as_ref()].map(Some),
                     push_constant_ranges: &[PushConstantRange {
                         stages: wgt::ShaderStages::COMPUTE,
                         range: 0..8,

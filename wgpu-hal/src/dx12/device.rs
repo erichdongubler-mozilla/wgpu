@@ -949,6 +949,8 @@ impl crate::Device for super::Device {
         let mut total_non_dynamic_entries = 0_usize;
         let mut sampler_in_any_bind_group = false;
         for bgl in desc.bind_group_layouts {
+            let Some(bgl) = bgl else { continue };
+
             let mut sampler_in_bind_group = false;
 
             for entry in &bgl.entries {
@@ -981,7 +983,10 @@ impl crate::Device for super::Device {
 
         let mut bind_group_infos =
             arrayvec::ArrayVec::<super::BindGroupInfo, { crate::MAX_BIND_GROUPS }>::default();
+        // TODO: Not sure if this is right yet.
         for (index, bgl) in desc.bind_group_layouts.iter().enumerate() {
+            let Some(bgl) = bgl else { continue };
+
             let mut info = super::BindGroupInfo {
                 tables: super::TableTypes::empty(),
                 base_root_index: parameters.len() as u32,

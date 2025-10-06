@@ -768,7 +768,12 @@ impl Global {
                 let bind_group_layouts_guard = hub.bind_group_layouts.read();
                 desc.bind_group_layouts
                     .iter()
-                    .map(|bgl_id| bind_group_layouts_guard.get(*bgl_id).get())
+                    .map(|bgl_id| {
+                        bgl_id
+                            .clone()
+                            .map(|id| bind_group_layouts_guard.get(id).get())
+                            .transpose()
+                    })
                     .collect::<Result<Vec<_>, _>>()
             };
 

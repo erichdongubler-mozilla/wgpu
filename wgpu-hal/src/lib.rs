@@ -1973,7 +1973,7 @@ pub struct BindGroupLayoutDescriptor<'a> {
 pub struct PipelineLayoutDescriptor<'a, B: DynBindGroupLayout + ?Sized> {
     pub label: Label<'a>,
     pub flags: PipelineLayoutFlags,
-    pub bind_group_layouts: &'a [&'a B],
+    pub bind_group_layouts: &'a [Option<&'a B>],
     pub push_constant_ranges: &'a [wgt::PushConstantRange],
 }
 

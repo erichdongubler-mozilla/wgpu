@@ -1173,6 +1173,8 @@ impl crate::Device for super::Device {
         let mut binding_map = glsl::BindingMap::default();
 
         for (group_index, bg_layout) in desc.bind_group_layouts.iter().enumerate() {
+            let Some(bg_layout) = bg_layout else { continue };
+
             // create a vector with the size enough to hold all the bindings, filled with `!0`
             let mut binding_to_slot = vec![
                 !0;

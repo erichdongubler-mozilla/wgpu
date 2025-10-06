@@ -864,8 +864,8 @@ impl WebGpuError for PushConstantUploadError {
 #[cfg_attr(feature = "serde", serde(bound = "BGL: Serialize"))]
 pub struct PipelineLayoutDescriptor<'a, BGL = BindGroupLayoutId>
 where
-    [BGL]: ToOwned,
-    <[BGL] as ToOwned>::Owned: fmt::Debug,
+    [Option<BGL>]: ToOwned,
+    <[Option<BGL>] as ToOwned>::Owned: fmt::Debug,
 {
     /// Debug label of the pipeline layout.
     ///
@@ -875,9 +875,9 @@ where
     /// "set = 0", second entry will provide all the bindings for "set = 1" etc.
     #[cfg_attr(
         feature = "serde",
-        serde(bound(deserialize = "<[BGL] as ToOwned>::Owned: Deserialize<'de>"))
+        serde(bound(deserialize = "<[Option<BGL>] as ToOwned>::Owned: Deserialize<'de>"))
     )]
-    pub bind_group_layouts: Cow<'a, [BGL]>,
+    pub bind_group_layouts: Cow<'a, [Option<BGL>]>,
     /// Set of push constant ranges this pipeline uses. Each shader stage that
     /// uses push constants must define the range in push constant memory that
     /// corresponds to its single `layout(push_constant)` uniform block.

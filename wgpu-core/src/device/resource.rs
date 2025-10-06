@@ -3400,8 +3400,10 @@ impl Device {
         let mut count_validator = binding_model::BindingTypeMaxCountValidator::default();
 
         for bgl in desc.bind_group_layouts.iter() {
-            bgl.same_device(self)?;
-            count_validator.merge(&bgl.binding_count_validator);
+            if let Some(bgl) = bgl {
+                bgl.same_device(self)?;
+                count_validator.merge(&bgl.binding_count_validator);
+            }
         }
 
         count_validator
@@ -3417,7 +3419,7 @@ impl Device {
         let raw_bind_group_layouts = desc
             .bind_group_layouts
             .iter()
-            .map(|bgl| bgl.raw())
+            .map(|bgl| bgl.map(|bgl| bgl.raw()))
             .collect::<ArrayVec<_, { hal::MAX_BIND_GROUPS }>>();
 
         let additional_flags = if self.indirect_validation.is_some() {
@@ -3471,7 +3473,7 @@ impl Device {
             .map(|mut bgl_entry_map| {
                 bgl_entry_map.sort();
                 match unique_bind_group_layouts.entry(bgl_entry_map) {
-                    hashbrown::hash_map::Entry::Occupied(v) => Ok(Arc::clone(v.get())),
+                    hashbrown::hash_map::Entry::Occupied(v) => Ok(Some(Arc::clone(v.get()))),
                     hashbrown::hash_map::Entry::Vacant(e) => {
                         match self.create_bind_group_layout(
                             &None,
@@ -3480,7 +3482,7 @@ impl Device {
                         ) {
                             Ok(bgl) => {
                                 e.insert(bgl.clone());
-                                Ok(bgl)
+                                Ok(Some(bgl))
                             }
                             Err(e) => Err(e),
                         }

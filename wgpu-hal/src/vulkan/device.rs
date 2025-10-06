@@ -1620,7 +1620,7 @@ impl crate::Device for super::Device {
         let vk_set_layouts = desc
             .bind_group_layouts
             .iter()
-            .map(|bgl| bgl.raw)
+            .filter_map(|bgl| bgl.map(|bgl| bgl.raw))
             .collect::<Vec<_>>();
         let vk_push_constant_ranges = desc
             .push_constant_ranges
@@ -1652,7 +1652,10 @@ impl crate::Device for super::Device {
         }
 
         let mut binding_map = BTreeMap::new();
+        let mut vk_set_layout_idx = 0;
         for (group, &layout) in desc.bind_group_layouts.iter().enumerate() {
+            let Some(layout) = layout else { continue };
+
             for &(binding, binding_info) in &layout.binding_map {
                 binding_map.insert(
                     naga::ResourceBinding {
@@ -1660,12 +1663,13 @@ impl crate::Device for super::Device {
                         binding,
                     },
                     naga::back::spv::BindingInfo {
-                        descriptor_set: group as u32,
+                        descriptor_set: vk_set_layout_idx,
                         binding: binding_info.binding,
                         binding_array_size: binding_info.binding_array_size.map(NonZeroU32::get),
                     },
                 );
             }
+            vk_set_layout_idx += 1;
         }
 
         self.counters.pipeline_layouts.add(1);

@@ -176,7 +176,8 @@ impl Dispatch {
             bind_group_layouts: &[
                 dst_bind_group_layout.as_ref(),
                 src_bind_group_layout.as_ref(),
-            ],
+            ]
+            .map(Some),
             push_constant_ranges: &[wgt::PushConstantRange {
                 stages: wgt::ShaderStages::COMPUTE,
                 range: 0..4,
