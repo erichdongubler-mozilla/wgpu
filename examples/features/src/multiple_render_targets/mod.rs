@@ -33,48 +33,37 @@ impl MultiTargetRenderer {
         let size = wgpu::Extent3d {
             width: WIDTH as u32,
             height: HEIGHT as u32,
-            depth_or_array_layers: 1,
+            ..
         };
 
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("data texture"),
             size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
             format: wgpu::TextureFormat::R8Unorm, // we need only the red channel for black/white image,
             usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[],
+            ..
         });
 
         let ball_texture_data = &create_ball_texture_data(WIDTH, HEIGHT);
 
         queue.write_texture(
             wgpu::TexelCopyTextureInfo {
-                aspect: wgpu::TextureAspect::All,
                 texture: &texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
+                ..
             },
             ball_texture_data,
             wgpu::TexelCopyBufferLayout {
-                offset: 0,
                 bytes_per_row: Some(WIDTH as u32),
                 rows_per_image: Some(HEIGHT as u32),
+                ..
             },
             size,
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor {
             label: Some("view"),
-            format: None,
-            dimension: Some(wgpu::TextureViewDimension::D2),
-            usage: None,
-            aspect: wgpu::TextureAspect::All,
-            base_mip_level: 0,
-            mip_level_count: None,
-            base_array_layer: 0,
-            array_layer_count: None,
+            ..
         });
 
         (texture, view)
@@ -92,36 +81,28 @@ impl MultiTargetRenderer {
                     wgpu::BindGroupLayoutEntry {
                         binding: 0,
                         visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                        },
-                        count: None,
+                        ty: wgpu::BindingType::Texture { .. },
+                        ..
                     },
                     wgpu::BindGroupLayoutEntry {
                         binding: 1,
                         visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                        count: None,
+                        ty: wgpu::BindingType::Sampler(Default::default()),
+                        ..
                     },
                 ],
                 label: None,
             });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
             bind_group_layouts: &[Some(&texture_bind_group_layout)],
-            immediate_size: 0,
+            ..
         });
 
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::Repeat,
             address_mode_v: wgpu::AddressMode::Repeat,
             address_mode_w: wgpu::AddressMode::Repeat,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Nearest,
-            mipmap_filter: wgpu::MipmapFilterMode::Nearest,
             ..Default::default()
         });
 
@@ -139,30 +120,24 @@ impl MultiTargetRenderer {
                     resource: wgpu::BindingResource::Sampler(&sampler),
                 },
             ],
-            label: None,
+            ..
         });
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: shader,
                 entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
+                ..
             },
             fragment: Some(wgpu::FragmentState {
                 module: shader,
                 entry_point: Some("fs_multi_main"),
                 // IMPORTANT: specify the color states for the outputs:
-                compilation_options: Default::default(),
                 targets: target_states,
+                ..
             }),
-            primitive: wgpu::PrimitiveState::default(),
-            depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            multiview_mask: None,
-            cache: None,
+            ..
         });
 
         Self {
@@ -177,12 +152,8 @@ impl MultiTargetRenderer {
         targets: &[Option<wgpu::RenderPassColorAttachment>],
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: None,
             color_attachments: targets,
-            depth_stencil_attachment: None,
-            timestamp_writes: None,
-            occlusion_query_set: None,
-            multiview_mask: None,
+            ..
         });
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.bindgroup, &[]);
@@ -212,63 +183,45 @@ impl TargetRenderer {
                     wgpu::BindGroupLayoutEntry {
                         binding: 0,
                         visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                        },
-                        count: None,
+                        ty: wgpu::BindingType::Texture { .. },
+                        ..
                     },
                     wgpu::BindGroupLayoutEntry {
                         binding: 1,
                         visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                        count: None,
+                        ty: wgpu::BindingType::Sampler(Default::default()),
+                        ..
                     },
                 ],
                 label: None,
             });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
             bind_group_layouts: &[Some(&texture_bind_group_layout)],
-            immediate_size: 0,
+            ..
         });
 
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::Repeat,
             address_mode_v: wgpu::AddressMode::Repeat,
             address_mode_w: wgpu::AddressMode::Repeat,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Nearest,
-            mipmap_filter: wgpu::MipmapFilterMode::Nearest,
             ..Default::default()
         });
 
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: shader,
                 entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[],
+                ..
             },
             fragment: Some(wgpu::FragmentState {
                 module: shader,
                 entry_point: Some("fs_display_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format,
-                    blend: None,
-                    write_mask: Default::default(),
-                })],
+                targets: &[Some(wgpu::ColorTargetState { format, .. })],
+                ..
             }),
-            primitive: wgpu::PrimitiveState::default(),
-            depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            multiview_mask: None,
-            cache: None,
+            ..
         });
 
         let (bg_left, bg_right) =
@@ -330,17 +283,13 @@ impl TargetRenderer {
             label: None,
             color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: surface_view,
-                depth_slice: None,
-                resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
                     store: wgpu::StoreOp::Store,
                 },
+                ..
             })],
-            depth_stencil_attachment: None,
-            timestamp_writes: None,
-            occlusion_query_set: None,
-            multiview_mask: None,
+            ..
         });
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.bindgroup_left, &[]);
@@ -389,26 +338,22 @@ impl TextureTargets {
         let red_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
             format,
             usage: wgpu::TextureUsages::COPY_DST
                 | wgpu::TextureUsages::TEXTURE_BINDING
                 | wgpu::TextureUsages::RENDER_ATTACHMENT,
             view_formats: &[format],
+            ..
         });
         let green_texture = device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
             format,
             usage: wgpu::TextureUsages::COPY_DST
                 | wgpu::TextureUsages::TEXTURE_BINDING
                 | wgpu::TextureUsages::RENDER_ATTACHMENT,
             view_formats: &[format],
+            ..
         });
         let red_view = red_texture.create_view(&wgpu::TextureViewDescriptor {
             format: Some(format),
@@ -443,10 +388,10 @@ impl crate::framework::Example for Example {
         queue: &wgpu::Queue,
     ) -> Self {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!(
                 "shader.wgsl"
             ))),
+            ..
         });
         // Renderer that draws to 2 textures at the same time:
         let multi_target_renderer = MultiTargetRenderer::init(
@@ -458,13 +403,11 @@ impl crate::framework::Example for Example {
             &[
                 Some(wgpu::ColorTargetState {
                     format: config.view_formats[0],
-                    blend: None,
-                    write_mask: Default::default(),
+                    ..
                 }),
                 Some(wgpu::ColorTargetState {
                     format: config.view_formats[0],
-                    blend: None,
-                    write_mask: Default::default(),
+                    ..
                 }),
             ],
         );
@@ -511,15 +454,13 @@ impl crate::framework::Example for Example {
             &[
                 Some(wgpu::RenderPassColorAttachment {
                     view: &self.texture_targets.red_view,
-                    depth_slice: None,
-                    resolve_target: None,
                     ops: Default::default(),
+                    ..
                 }),
                 Some(wgpu::RenderPassColorAttachment {
                     view: &self.texture_targets.green_view,
-                    depth_slice: None,
-                    resolve_target: None,
                     ops: Default::default(),
+                    ..
                 }),
             ],
         );
@@ -543,9 +484,8 @@ pub static TEST: crate::framework::ExampleTestParams = crate::framework::Example
     image_path: "/examples/features/src/multiple_render_targets/screenshot.png",
     width: 1024,
     height: 768,
-    optional_features: wgpu::Features::default(),
-    base_test_parameters: wgpu_test::TestParameters::default(),
     // Bounded by lavapipe
     comparisons: &[wgpu_test::ComparisonType::Mean(0.014)], // Bounded by Apple A9
     _phantom: std::marker::PhantomData::<Example>,
+    ..
 };

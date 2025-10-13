@@ -467,6 +467,7 @@ impl<L> CommandBufferDescriptor<L> {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct QuerySetDescriptor<L> {
     /// Debug label for the query set.
+    // TODO: make optional to specify
     pub label: L,
     /// Kind of query that this query set should contain.
     pub ty: QueryType,

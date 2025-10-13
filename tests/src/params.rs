@@ -15,37 +15,29 @@ const LOWEST_DOWNLEVEL_PROPERTIES: wgpu::DownlevelCapabilities = DownlevelCapabi
 /// This information determines if a test should run.
 #[derive(Clone)]
 pub struct TestParameters {
-    pub required_features: Features,
-    pub required_downlevel_caps: DownlevelCapabilities,
-    pub required_limits: Limits,
+    pub required_features: Features = Features::empty(),
+    pub required_downlevel_caps: DownlevelCapabilities = LOWEST_DOWNLEVEL_PROPERTIES,
+    pub required_limits: Limits = Limits::downlevel_webgl2_defaults(),
 
-    pub required_instance_flags: InstanceFlags,
+    pub required_instance_flags: InstanceFlags = InstanceFlags::empty(),
 
     /// On Dx12, specifically test against the Fxc compiler.
     ///
     /// For testing workarounds to Fxc bugs.
-    pub force_fxc: bool,
+    pub force_fxc: bool = false,
 
     /// Conditions under which this test should be skipped.
-    pub skips: Vec<FailureCase>,
+    // By default we skip the noop backend, and enable it if the test
+    // parameters ask us to remove it.
+    pub skips: Vec<FailureCase> = vec![FailureCase::backend(wgpu::Backends::NOOP)],
 
     /// Conditions under which this test should be run, but is expected to fail.
-    pub failures: Vec<FailureCase>,
+    pub failures: Vec<FailureCase> = Vec::new(),
 }
 
 impl Default for TestParameters {
     fn default() -> Self {
-        Self {
-            required_features: Features::empty(),
-            required_downlevel_caps: LOWEST_DOWNLEVEL_PROPERTIES,
-            required_limits: Limits::downlevel_webgl2_defaults(),
-            required_instance_flags: InstanceFlags::empty(),
-            force_fxc: false,
-            // By default we skip the noop backend, and enable it if the test
-            // parameters ask us to remove it.
-            skips: vec![FailureCase::backend(wgpu::Backends::NOOP)],
-            failures: Vec::new(),
-        }
+        Self { .. }
     }
 }
 

@@ -222,7 +222,7 @@ static_assertions::assert_impl_all!(ShaderSource<'_>: Send, Sync);
 #[derive(Clone, Debug)]
 pub struct ShaderModuleDescriptor<'a> {
     /// Debug label of the shader module. This will show up in graphics debuggers for easy identification.
-    pub label: Label<'a>,
+    pub label: Label<'a>  = None,
     /// Source code for the shader.
     pub source: ShaderSource<'a>,
 }

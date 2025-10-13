@@ -34,18 +34,18 @@ crate::cmp::impl_eq_ord_hash_proxy!(RenderBundleEncoder<'_> => .inner);
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct RenderBundleEncoderDescriptor<'a> {
     /// Debug label of the render bundle encoder. This will show up in graphics debuggers for easy identification.
-    pub label: Label<'a>,
+    pub label: Label<'a> = None,
     /// The formats of the color attachments that this render bundle is capable to rendering to. This
     /// must match the formats of the color attachments in the render pass this render bundle is executed in.
     pub color_formats: &'a [Option<TextureFormat>],
     /// Information about the depth attachment that this render bundle is capable to rendering to. This
     /// must match the format of the depth attachments in the render pass this render bundle is executed in.
-    pub depth_stencil: Option<RenderBundleDepthStencil>,
+    pub depth_stencil: Option<RenderBundleDepthStencil> = None,
     /// Sample count this render bundle is capable of rendering to. This must match the pipelines and
     /// the render passes it is used in.
-    pub sample_count: u32,
+    pub sample_count: u32 = 1,
     /// If this render bundle will rendering to multiple array layers in the attachments at the same time.
-    pub multiview: Option<NonZeroU32>,
+    pub multiview: Option<NonZeroU32> = None,
 }
 static_assertions::assert_impl_all!(RenderBundleEncoderDescriptor<'_>: Send, Sync);
 
