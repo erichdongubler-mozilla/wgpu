@@ -47,4 +47,4 @@ jobs:
       # NOTE: Keep label name(s) in sync. with `xtask`'s implementation.
       - name: Run `cargo xtask changelog …`
         run: |
-          cargo xtask changelog --emit-github-messages "origin/${{ github.event.pull_request.base.ref }}" ${{ contains(github.event.pull_request.labels.*.name, 'changelog: released entry changed') && '--allow-released-changes' || ''  }}
+          cargo xtask changelog --emit-github-messages "origin/${{ github.event.pull_request.base.ref }}" ${{ contains(github.event.pull_request.labels.*.name, 'changelog: released entry changed') && '--allow-released-changes' || ''  }} 2> >(tee --append "$GITHUB_STEP_SUMMARY" >&2)
