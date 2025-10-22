@@ -6,7 +6,10 @@ use xshell::Shell;
 
 pub(crate) fn check_changelog(shell: Shell, mut args: Arguments) -> anyhow::Result<()> {
     const CHANGELOG_PATH_RELATIVE: &str = "./CHANGELOG.md";
+    const WARN_LABEL: &str = "changelog: released entry changed";
+
     let allow_released_changes = args.contains("--allow-released-changes");
+    let emit_github_messages = args.contains("--emit-github-messages");
 
     let from_branch = args
         .free_from_str()
@@ -63,7 +66,30 @@ pub(crate) fn check_changelog(shell: Shell, mut args: Arguments) -> anyhow::Resu
         }
 
         for hunk in &hunks_in_a_released_section {
-            eprintln!("{hunk}");
+            eprintln!("{}", hunk.contents);
+
+            if emit_github_messages {
+                let severity = if warn_only { "warning" } else { "error" };
+                let title = "Released changelog content changed";
+                let mut message =
+                    "This PR changes changelog content that is already released.".to_owned();
+                if !warn_only {
+                    // NOTE: Keep this label name in sync. with CI's branching logic.
+                    message += &format!(
+                        concat!(
+                            " ",
+                            "If you know what you're doing, ",
+                            "you can add the `{}` label ",
+                            "and reduce this error's severity to a warning."
+                        ),
+                        WARN_LABEL
+                    );
+                }
+                println!(
+                    "::{severity} file=CHANGELOG.md,line={},endLine={},title={title}::{message}",
+                    hunk.change_start_line_num, hunk.change_end_line_num,
+                )
+            }
         }
     }
 
@@ -84,6 +110,16 @@ pub(crate) fn check_changelog(shell: Shell, mut args: Arguments) -> anyhow::Resu
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct Hunk<'a> {
+    /// The first line on which this hunk actually makes changes (on the new side of the diff).
+    change_start_line_num: u64,
+    /// The last line on which this hunk actually makes changes (on the new side of the diff).
+    change_end_line_num: u64,
+    /// The full diff contents of this hunk.
+    contents: &'a str,
+}
+
 /// Given some `changelog_contents` (in Markdown) containing the full end state of the provided
 /// `diff` (in [unified diff format]), return all hunks that are (1) below a `## Unreleased` section
 /// _and_ (2) above all other second-level (i.e., `## …`) headings.
@@ -98,7 +134,7 @@ pub(crate) fn check_changelog(shell: Shell, mut args: Arguments) -> anyhow::Resu
 ///   `changelog_contents`. using hunk information to compare against `changelog_contents`.
 ///
 /// Failing to uphold these assumptons is not unsafe, but will yield incorrect results.
-fn hunks_in_a_released_section<'a>(changelog_contents: &str, diff: &'a str) -> Vec<&'a str> {
+fn hunks_in_a_released_section<'a>(changelog_contents: &str, diff: &'a str) -> Vec<Hunk<'a>> {
     let mut changelog_lines = changelog_contents.lines();
 
     let changelog_unreleased_line_num =
@@ -117,7 +153,7 @@ fn hunks_in_a_released_section<'a>(changelog_contents: &str, diff: &'a str) -> V
         SplitPrefixInclusive::new("\n@@", &diff[first_hunk_idx..]).map(|s| &s['\n'.len_utf8()..])
     };
     let hunks_in_a_released_section = hunks
-        .filter(|hunk| {
+        .filter_map(|hunk| {
             let (hunk_header, hunk_contents) = hunk.split_once('\n').unwrap();
 
             // Reference: This is of the format `@@ -86,6 +88,10 @@ …`.
@@ -128,15 +164,25 @@ fn hunks_in_a_released_section<'a>(changelog_contents: &str, diff: &'a str) -> V
             let post_change_hunk_start_offset =
                 captures.get(1).unwrap().as_str().parse::<u64>().unwrap();
 
-            let lines_until_first_change = hunk_contents
+            let mut change_lines = hunk_contents
                 .lines()
-                .take_while(|l| l.starts_with(' '))
-                .count() as u64;
+                .enumerate()
+                .filter(|(_idx, l)| !l.starts_with(' '))
+                .map(|(zero_based_idx, _l)| {
+                    post_change_hunk_start_offset + (zero_based_idx as u64)
+                });
 
-            let first_hunk_change_start_offset =
-                post_change_hunk_start_offset + lines_until_first_change;
+            let change_start_line_num = change_lines.next().unwrap();
 
-            first_hunk_change_start_offset >= changelog_first_release_section_line_num
+            if change_start_line_num >= changelog_first_release_section_line_num {
+                Some(Hunk {
+                    contents: hunk,
+                    change_start_line_num,
+                    change_end_line_num: change_lines.last().unwrap_or(change_start_line_num),
+                })
+            } else {
+                None
+            }
         })
         .collect::<Vec<_>>();
 
@@ -260,13 +306,15 @@ mod test_split_prefix_inclusive {
 
 #[cfg(test)]
 mod test_hunks_in_a_released_section {
+    use super::Hunk;
+
     #[collapse_debuginfo(yes)]
     macro_rules! assert_released_section_changes {
         ($changelog_contents: expr, $diff: expr, $expected: expr $(,)?) => {
             assert_eq!(
                 super::hunks_in_a_released_section($changelog_contents, $diff),
                 $expected
-                    .map(|h: &str| h.to_owned())
+                    .map(|h: Hunk<'_>| h.to_owned())
                     .into_iter()
                     .collect::<Vec<_>>(),
             );
@@ -302,7 +350,10 @@ mod test_hunks_in_a_released_section {
  ## An older release
 ",
             [
-        "\
+                Hunk {
+                    change_start_line_num: 8,
+                    change_end_line_num: 8,
+                    contents: "\
 @@ -5,6 +5,7 @@
  ## Recently released
 \u{0020}
@@ -311,6 +362,7 @@ mod test_hunks_in_a_released_section {
 \u{0020}
  ## An older release
 ",
+                }
             ],
         }
     }
@@ -450,7 +502,10 @@ mod test_hunks_in_a_released_section {
 \u{0020}
 ",
             [
-                "\
+                Hunk {
+                    change_start_line_num: 31,
+                    change_end_line_num: 31,
+                    contents: "\
 @@ -26,6 +28,7 @@
  - Pad out some changes here so we force multiple hunks in a diff.
  - Pad out some changes here so we force multiple hunks in a diff.
@@ -460,6 +515,7 @@ mod test_hunks_in_a_released_section {
  ## An older release
 \u{0020}
 ",
+                },
             ],
         }
     }
@@ -508,7 +564,10 @@ index a6bf3614a..c766d7225 100644
 \u{0020}
 ",
             [
-                "\
+                Hunk {
+                    change_start_line_num: 10,
+                    change_end_line_num: 15,
+                    contents: "\
 @@ -7,6 +7,12 @@
  ## Recently released
 \u{0020}
@@ -523,6 +582,7 @@ index a6bf3614a..c766d7225 100644
  ## An older release
 \u{0020}
 ",
+                },
             ],
         }
         assert_released_section_changes! {
@@ -557,7 +617,10 @@ index a6bf3614a..5c2dcdc4e 100644
 +- Accidentally added after.
 ",
             [
-                "\
+                Hunk {
+                    change_start_line_num: 13,
+                    change_end_line_num: 15,
+                    contents: "\
 @@ -10,4 +10,6 @@
 \u{0020}
  ## An older release
@@ -566,6 +629,7 @@ index a6bf3614a..5c2dcdc4e 100644
  - Yada yada.
 +- Accidentally added after.
 ",
+                }
             ]
         }
     }

@@ -54,6 +54,7 @@ Commands:
         `<to_commit>` is the tip of the `git diff` that will be used for checking (1).
 
     --allow-released-changes  Only reports issues as warnings, rather than reporting errors and forcing a non-zero exit code.
+    --emit-github-messages    Emit GitHub workflow commands for nice integrations like error reporting in PR views.
 
   miri
     Run all miri-compatible tests under miri. Requires a nightly toolchain
