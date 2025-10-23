@@ -543,6 +543,11 @@ impl Queue {
             return Ok(());
         };
 
+        // TODO:
+        //
+        // - Try to map immediately if there's nothing in enqueued commands affecting this buffer.
+        // - Otherwise, do a submission after creating the staging buffer.
+
         // Platform validation requires that the staging buffer always be
         // freed, even if an error occurs. All paths from here must call
         // `device.pending_writes.consume`.
@@ -692,27 +697,34 @@ impl Queue {
 
         self.validate_write_buffer_impl(&buffer, buffer_offset, staging_buffer.size)?;
 
-        let region = hal::BufferCopy {
-            src_offset: 0,
-            dst_offset: buffer_offset,
-            size: staging_buffer.size,
-        };
-        let barriers = iter::once(hal::BufferBarrier {
-            buffer: staging_buffer.raw(),
-            usage: hal::StateTransition {
-                from: wgt::BufferUses::MAP_WRITE,
-                to: wgt::BufferUses::COPY_SRC,
-            },
-        })
-        .chain(transition.map(|pending| pending.into_hal(&buffer, snatch_guard)))
-        .collect::<Vec<_>>();
-        let encoder = pending_writes.activate();
-        unsafe {
-            encoder.transition_buffers(&barriers);
-            encoder.copy_buffer_to_buffer(staging_buffer.raw(), dst_raw, &[region]);
-        }
+        if buffer
+            .usage
+            .intersects(wgt::BufferUsages::MAP_READ | wgt::BufferUsages::MAP_WRITE)
+        {
+            let asdf = buffer.raw(&self.device.snatchable_lock.read()).unwrap();
+        } else {
+            let region = hal::BufferCopy {
+                src_offset: 0,
+                dst_offset: buffer_offset,
+                size: staging_buffer.size,
+            };
+            let barriers = iter::once(hal::BufferBarrier {
+                buffer: staging_buffer.raw(),
+                usage: hal::StateTransition {
+                    from: wgt::BufferUses::MAP_WRITE,
+                    to: wgt::BufferUses::COPY_SRC,
+                },
+            })
+            .chain(transition.map(|pending| pending.into_hal(&buffer, snatch_guard)))
+            .collect::<Vec<_>>();
+            let encoder = pending_writes.activate();
+            unsafe {
+                encoder.transition_buffers(&barriers);
+                encoder.copy_buffer_to_buffer(staging_buffer.raw(), dst_raw, &[region]);
+            }
 
-        pending_writes.insert_buffer(&buffer);
+            pending_writes.insert_buffer(&buffer);
+        }
 
         // Ensure the overwritten bytes are marked as initialized so
         // they don't need to be nulled prior to mapping or binding.
