@@ -583,7 +583,7 @@ impl super::Adapter {
 
         let mut private_caps = super::PrivateCapabilities::empty();
         private_caps.set(
-            super::PrivateCapabilities::BUFFER_ALLOCATION,
+            super::PrivateCapabilities::BUFFER_STORAGE,
             extensions.contains("GL_EXT_buffer_storage")
                 || extensions.contains("GL_ARB_buffer_storage"),
         );

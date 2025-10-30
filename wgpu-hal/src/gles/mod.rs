@@ -200,7 +200,7 @@ bitflags::bitflags! {
     #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
     struct PrivateCapabilities: u32 {
         /// Indicates support for `glBufferStorage` allocation.
-        const BUFFER_ALLOCATION = 1 << 0;
+        const BUFFER_STORAGE = 1 << 0;
         /// Support explicit layouts in shader.
         const SHADER_BINDING_LAYOUT = 1 << 1;
         /// Support extended shadow sampling instructions.

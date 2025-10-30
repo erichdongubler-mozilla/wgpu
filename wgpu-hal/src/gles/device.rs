@@ -524,7 +524,7 @@ impl crate::Device for super::Device {
             || !self
                 .shared
                 .private_caps
-                .contains(PrivateCapabilities::BUFFER_ALLOCATION);
+                .contains(PrivateCapabilities::BUFFER_STORAGE);
 
         if emulate_map && desc.usage.intersects(wgt::BufferUses::MAP_WRITE) {
             return Ok(super::Buffer {
@@ -570,7 +570,7 @@ impl crate::Device for super::Device {
         if self
             .shared
             .private_caps
-            .contains(PrivateCapabilities::BUFFER_ALLOCATION)
+            .contains(PrivateCapabilities::BUFFER_STORAGE)
         {
             if is_host_visible {
                 map_flags |= glow::MAP_PERSISTENT_BIT;
