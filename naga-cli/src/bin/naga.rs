@@ -479,7 +479,7 @@ fn run() -> anyhow::Result<()> {
 
     params.entry_point.clone_from(&args.entry_point);
     if let Some(ref version) = args.profile {
-        params.glsl.version = version.0;
+        params.glsl.environment.version = version.0;
     }
     if let Some(ref model) = args.shader_model {
         params.hlsl.shader_model = model.0;

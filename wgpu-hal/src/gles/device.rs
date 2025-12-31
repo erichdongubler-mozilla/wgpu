@@ -1225,7 +1225,9 @@ impl crate::Device for super::Device {
         Ok(super::PipelineLayout {
             group_infos: group_infos.into_boxed_slice(),
             naga_options: glsl::Options {
-                version: self.shared.shading_language_version,
+                environment: glsl::EnvironmentOptions {
+                    version: self.shared.shading_language_version,
+                },
                 writer_flags,
                 binding_map,
                 zero_initialize_workgroup_memory: true,

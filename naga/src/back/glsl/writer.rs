@@ -62,8 +62,8 @@ impl<'a, W: Write> Writer<'a, W> {
         policies: proc::BoundsCheckPolicies,
     ) -> Result<Self, Error> {
         // Check if the requested version is supported
-        if !options.version.is_supported() {
-            log::error!("Version {}", options.version);
+        if !options.version().is_supported() {
+            log::error!("Version {}", options.version());
             return Err(Error::VersionNotSupported);
         }
 
@@ -131,10 +131,10 @@ impl<'a, W: Write> Writer<'a, W> {
         // We use `writeln!(self.out)` throughout the write to add newlines
         // to make the output more readable
 
-        let es = self.options.version.is_es();
+        let es = self.options.version().is_es();
 
         // Write the version (It must be the first thing or it isn't a valid glsl output)
-        writeln!(self.out, "#version {}", self.options.version)?;
+        writeln!(self.out, "#version {}", self.options.version())?;
         // Write all the needed extensions
         //
         // This used to be the last thing being written as it allowed to search for features while
@@ -176,7 +176,7 @@ impl<'a, W: Write> Writer<'a, W> {
         // Enable early depth tests if needed
         if let Some(early_depth_test) = self.entry_point.early_depth_test {
             // If early depth test is supported for this version of GLSL
-            if self.options.version.supports_early_depth_test() {
+            if self.options.version().supports_early_depth_test() {
                 match early_depth_test {
                     crate::EarlyDepthTest::Force => {
                         writeln!(self.out, "layout(early_fragment_tests) in;")?;
@@ -194,12 +194,12 @@ impl<'a, W: Write> Writer<'a, W> {
             } else {
                 log::warn!(
                     "Early depth testing is not supported for this version of GLSL: {}",
-                    self.options.version
+                    self.options.version()
                 );
             }
         }
 
-        if self.entry_point.stage == ShaderStage::Vertex && self.options.version.is_webgl() {
+        if self.entry_point.stage == ShaderStage::Vertex && self.options.version().is_webgl() {
             if let Some(multiview) = self.multiview.as_ref() {
                 writeln!(self.out, "layout(num_views = {multiview}) in;")?;
                 writeln!(self.out)?;
@@ -263,7 +263,7 @@ impl<'a, W: Write> Writer<'a, W> {
                         };
 
                     writeln!(self.out)?;
-                    if !self.options.version.supports_frexp_function()
+                    if !self.options.version().supports_frexp_function()
                         && matches!(type_key, &crate::PredeclaredType::FrexpResult { .. })
                     {
                         writeln!(
@@ -346,7 +346,7 @@ impl<'a, W: Write> Writer<'a, W> {
                     }
 
                     // Gether the location if needed
-                    let layout_binding = if self.options.version.supports_explicit_locations() {
+                    let layout_binding = if self.options.version().supports_explicit_locations() {
                         let br = global.binding.as_ref().unwrap();
                         self.options.binding_map.get(br).cloned()
                     } else {
@@ -599,7 +599,7 @@ impl<'a, W: Write> Writer<'a, W> {
             Ic::External => unimplemented!(),
         };
 
-        let precision = if self.options.version.is_es() {
+        let precision = if self.options.version().is_es() {
             "highp "
         } else {
             ""
@@ -630,7 +630,7 @@ impl<'a, W: Write> Writer<'a, W> {
         // Determine which (if any) explicit memory layout to use, and whether we support it
         let layout = match global.space {
             crate::AddressSpace::Uniform => {
-                if !self.options.version.supports_std140_layout() {
+                if !self.options.version().supports_std140_layout() {
                     return Err(Error::Custom(
                         "Uniform address space requires std140 layout support".to_string(),
                     ));
@@ -639,7 +639,7 @@ impl<'a, W: Write> Writer<'a, W> {
                 Some("std140")
             }
             crate::AddressSpace::Storage { .. } => {
-                if !self.options.version.supports_std430_layout() {
+                if !self.options.version().supports_std430_layout() {
                     return Err(Error::Custom(
                         "Storage address space requires std430 layout support".to_string(),
                     ));
@@ -652,7 +652,7 @@ impl<'a, W: Write> Writer<'a, W> {
 
         // If our version supports explicit layouts, we can also output the explicit binding
         // if we have it
-        if self.options.version.supports_explicit_locations() {
+        if self.options.version().supports_explicit_locations() {
             if let Some(ref br) = global.binding {
                 match self.options.binding_map.get(br) {
                     Some(binding) => {
@@ -873,26 +873,26 @@ impl<'a, W: Write> Writer<'a, W> {
                     }
                     /* crate::MathFunction::Pack4x8unorm | */
                     crate::MathFunction::Unpack4x8snorm
-                        if !self.options.version.supports_pack_unpack_4x8() =>
+                        if !self.options.version().supports_pack_unpack_4x8() =>
                     {
                         // We have a fallback if the platform doesn't natively support these
                         self.need_bake_expressions.insert(arg);
                     }
                     /* crate::MathFunction::Pack4x8unorm | */
                     crate::MathFunction::Unpack4x8unorm
-                        if !self.options.version.supports_pack_unpack_4x8() =>
+                        if !self.options.version().supports_pack_unpack_4x8() =>
                     {
                         self.need_bake_expressions.insert(arg);
                     }
                     /* crate::MathFunction::Pack2x16snorm |  */
                     crate::MathFunction::Unpack2x16snorm
-                        if !self.options.version.supports_pack_unpack_snorm_2x16() =>
+                        if !self.options.version().supports_pack_unpack_snorm_2x16() =>
                     {
                         self.need_bake_expressions.insert(arg);
                     }
                     /* crate::MathFunction::Pack2x16unorm | */
                     crate::MathFunction::Unpack2x16unorm
-                        if !self.options.version.supports_pack_unpack_unorm_2x16() =>
+                        if !self.options.version().supports_pack_unpack_unorm_2x16() =>
                     {
                         self.need_bake_expressions.insert(arg);
                     }
@@ -1042,7 +1042,7 @@ impl<'a, W: Write> Writer<'a, W> {
             crate::Binding::BuiltIn(built_in) => {
                 match built_in {
                     crate::BuiltIn::Position { invariant: true } => {
-                        match (self.options.version, self.entry_point.stage) {
+                        match (self.options.version(), self.entry_point.stage) {
                             (
                                 Version::Embedded {
                                     version: 300,
@@ -1098,10 +1098,10 @@ impl<'a, W: Write> Writer<'a, W> {
         };
 
         // Write the I/O locations, if allowed
-        let io_location = if self.options.version.supports_explicit_locations()
+        let io_location = if self.options.version().supports_explicit_locations()
             || !emit_interpolation_and_auxiliary
         {
-            if self.options.version.supports_io_locations() {
+            if self.options.version().supports_io_locations() {
                 if let Some(blend_src) = blend_src {
                     write!(
                         self.out,
@@ -2561,7 +2561,8 @@ impl<'a, W: Write> Writer<'a, W> {
                     coord_dim += 1;
                 }
 
-                let tex_1d_hack = dim == crate::ImageDimension::D1 && self.options.version.is_es();
+                let tex_1d_hack =
+                    dim == crate::ImageDimension::D1 && self.options.version().is_es();
                 let is_vec = tex_1d_hack || coord_dim != 1;
                 // Compose a new texture coordinates vector
                 if is_vec {
@@ -2732,7 +2733,7 @@ impl<'a, W: Write> Writer<'a, W> {
                             ImageClass::External => unimplemented!(),
                         }
                         write!(self.out, ")")?;
-                        if components != 1 || self.options.version.is_es() {
+                        if components != 1 || self.options.version().is_es() {
                             write!(self.out, ".{}", &"xyz"[..components])?;
                         }
                     }
@@ -2755,7 +2756,7 @@ impl<'a, W: Write> Writer<'a, W> {
                             write!(self.out, ", 0")?;
                         }
                         write!(self.out, ")")?;
-                        if components != 1 || self.options.version.is_es() {
+                        if components != 1 || self.options.version().is_es() {
                             write!(self.out, ".{}", back::COMPONENTS[components])?;
                         }
                     }
@@ -2966,7 +2967,7 @@ impl<'a, W: Write> Writer<'a, W> {
             // `Derivative` is a function call to a glsl provided function
             Expression::Derivative { axis, ctrl, expr } => {
                 use crate::{DerivativeAxis as Axis, DerivativeControl as Ctrl};
-                let fun_name = if self.options.version.supports_derivative_control() {
+                let fun_name = if self.options.version().supports_derivative_control() {
                     match (axis, ctrl) {
                         (Axis::X, Ctrl::Coarse) => "dFdxCoarse",
                         (Axis::X, Ctrl::Fine) => "dFdxFine",
@@ -3155,7 +3156,7 @@ impl<'a, W: Write> Writer<'a, W> {
                     // computational
                     Mf::Sign => "sign",
                     Mf::Fma => {
-                        if self.options.version.supports_fma_function() {
+                        if self.options.version().supports_fma_function() {
                             // Use the fma function when available
                             "fma"
                         } else {
@@ -3259,7 +3260,7 @@ impl<'a, W: Write> Writer<'a, W> {
                         return Ok(());
                     }
                     Mf::CountLeadingZeros => {
-                        if self.options.version.supports_integer_functions() {
+                        if self.options.version().supports_integer_functions() {
                             match *ctx.resolve_type(arg, &self.module.types) {
                                 TypeInner::Vector { size, scalar } => {
                                     let s = common::vector_size_str(size);
@@ -3391,7 +3392,7 @@ impl<'a, W: Write> Writer<'a, W> {
                     Mf::FirstLeadingBit => "findMSB",
                     // data packing
                     Mf::Pack4x8snorm => {
-                        if self.options.version.supports_pack_unpack_4x8() {
+                        if self.options.version().supports_pack_unpack_4x8() {
                             "packSnorm4x8"
                         } else {
                             // polyfill should go here. Needs a corresponding entry in `need_bake_expression`
@@ -3399,28 +3400,28 @@ impl<'a, W: Write> Writer<'a, W> {
                         }
                     }
                     Mf::Pack4x8unorm => {
-                        if self.options.version.supports_pack_unpack_4x8() {
+                        if self.options.version().supports_pack_unpack_4x8() {
                             "packUnorm4x8"
                         } else {
                             return Err(Error::UnsupportedExternal("packUnorm4x8".to_owned()));
                         }
                     }
                     Mf::Pack2x16snorm => {
-                        if self.options.version.supports_pack_unpack_snorm_2x16() {
+                        if self.options.version().supports_pack_unpack_snorm_2x16() {
                             "packSnorm2x16"
                         } else {
                             return Err(Error::UnsupportedExternal("packSnorm2x16".to_owned()));
                         }
                     }
                     Mf::Pack2x16unorm => {
-                        if self.options.version.supports_pack_unpack_unorm_2x16() {
+                        if self.options.version().supports_pack_unpack_unorm_2x16() {
                             "packUnorm2x16"
                         } else {
                             return Err(Error::UnsupportedExternal("packUnorm2x16".to_owned()));
                         }
                     }
                     Mf::Pack2x16float => {
-                        if self.options.version.supports_pack_unpack_half_2x16() {
+                        if self.options.version().supports_pack_unpack_half_2x16() {
                             "packHalf2x16"
                         } else {
                             return Err(Error::UnsupportedExternal("packHalf2x16".to_owned()));
@@ -3465,14 +3466,14 @@ impl<'a, W: Write> Writer<'a, W> {
                     }
                     // data unpacking
                     Mf::Unpack2x16float => {
-                        if self.options.version.supports_pack_unpack_half_2x16() {
+                        if self.options.version().supports_pack_unpack_half_2x16() {
                             "unpackHalf2x16"
                         } else {
                             return Err(Error::UnsupportedExternal("unpackHalf2x16".into()));
                         }
                     }
                     Mf::Unpack2x16snorm => {
-                        if self.options.version.supports_pack_unpack_snorm_2x16() {
+                        if self.options.version().supports_pack_unpack_snorm_2x16() {
                             "unpackSnorm2x16"
                         } else {
                             let scale = 32767;
@@ -3486,7 +3487,7 @@ impl<'a, W: Write> Writer<'a, W> {
                         }
                     }
                     Mf::Unpack2x16unorm => {
-                        if self.options.version.supports_pack_unpack_unorm_2x16() {
+                        if self.options.version().supports_pack_unpack_unorm_2x16() {
                             "unpackUnorm2x16"
                         } else {
                             let scale = 65535;
@@ -3500,7 +3501,7 @@ impl<'a, W: Write> Writer<'a, W> {
                         }
                     }
                     Mf::Unpack4x8snorm => {
-                        if self.options.version.supports_pack_unpack_4x8() {
+                        if self.options.version().supports_pack_unpack_4x8() {
                             "unpackSnorm4x8"
                         } else {
                             let scale = 127;
@@ -3518,7 +3519,7 @@ impl<'a, W: Write> Writer<'a, W> {
                         }
                     }
                     Mf::Unpack4x8unorm => {
-                        if self.options.version.supports_pack_unpack_4x8() {
+                        if self.options.version().supports_pack_unpack_4x8() {
                             "unpackUnorm4x8"
                         } else {
                             let scale = 255;
@@ -3808,7 +3809,7 @@ impl<'a, W: Write> Writer<'a, W> {
     // for the images operations need.
     fn get_coordinate_vector_size(&self, dim: crate::ImageDimension, arrayed: bool) -> u8 {
         // openGL es doesn't have 1D images so we need workaround it
-        let tex_1d_hack = dim == crate::ImageDimension::D1 && self.options.version.is_es();
+        let tex_1d_hack = dim == crate::ImageDimension::D1 && self.options.version().is_es();
         // Get how many components the coordinate vector needs for the dimensions only
         let tex_coord_size = match dim {
             crate::ImageDimension::D1 => 1,
@@ -3913,7 +3914,7 @@ impl<'a, W: Write> Writer<'a, W> {
         write!(self.out, ", ")?;
 
         // openGL es doesn't have 1D images so we need workaround it
-        let tex_1d_hack = dim == IDim::D1 && self.options.version.is_es();
+        let tex_1d_hack = dim == IDim::D1 && self.options.version().is_es();
         // Write the coordinate vector
         self.write_texture_coord(
             ctx,
@@ -3963,7 +3964,7 @@ impl<'a, W: Write> Writer<'a, W> {
         write!(self.out, ", ")?;
 
         // openGL es doesn't have 1D images so we need workaround it
-        let tex_1d_hack = dim == IDim::D1 && self.options.version.is_es();
+        let tex_1d_hack = dim == IDim::D1 && self.options.version().is_es();
         // Write the coordinate vector
         self.write_texture_coord(
             ctx,
@@ -4037,7 +4038,7 @@ impl<'a, W: Write> Writer<'a, W> {
                 // "Invalid image loads will return zero."
                 //
                 // So, we only inject bounds checks for ES
-                let policy = if self.options.version.is_es() {
+                let policy = if self.options.version().is_es() {
                     self.policies.image_load
                 } else {
                     proc::BoundsCheckPolicy::Unchecked
@@ -4054,7 +4055,7 @@ impl<'a, W: Write> Writer<'a, W> {
         };
 
         // openGL es doesn't have 1D images so we need workaround it
-        let tex_1d_hack = dim == IDim::D1 && self.options.version.is_es();
+        let tex_1d_hack = dim == IDim::D1 && self.options.version().is_es();
         // Get the size of the coordinate vector
         let vector_size = self.get_coordinate_vector_size(dim, array_index.is_some());
 

@@ -322,8 +322,8 @@ bitflags::bitflags! {
 #[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
 #[cfg_attr(feature = "deserialize", serde(default))]
 pub struct Options {
-    /// The GLSL version to be used.
-    pub version: Version,
+    /// Environmental information used to determine capabilities.
+    pub environment: EnvironmentOptions,
     /// Configuration flags for the [`Writer`].
     pub writer_flags: WriterFlags,
     /// Map of resources association to binding locations.
@@ -339,10 +339,34 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Options {
-            version: Version::new_gles(310),
+            environment: EnvironmentOptions::default(),
             writer_flags: WriterFlags::ADJUST_COORDINATE_SPACE,
             binding_map: BindingMap::default(),
             zero_initialize_workgroup_memory: true,
+        }
+    }
+}
+
+impl Options {
+    pub(crate) const fn version(&self) -> Version {
+        self.environment.version
+    }
+}
+
+/// Environmental information provided by [`Options::environment`].
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
+#[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
+#[cfg_attr(feature = "deserialize", serde(default))]
+pub struct EnvironmentOptions {
+    /// The GLSL version to be used.
+    pub version: Version,
+}
+
+impl Default for EnvironmentOptions {
+    fn default() -> Self {
+        Self {
+            version: Version::new_gles(310),
         }
     }
 }
@@ -475,7 +499,7 @@ impl VaryingOptions {
     const fn from_writer_options(options: &Options, output: bool) -> Self {
         Self {
             output,
-            targeting_webgl: options.version.is_webgl(),
+            targeting_webgl: options.environment.version.is_webgl(),
             draw_parameters: options.writer_flags.contains(WriterFlags::DRAW_PARAMETERS),
         }
     }

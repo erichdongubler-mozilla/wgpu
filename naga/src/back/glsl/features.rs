@@ -152,12 +152,12 @@ impl FeaturesManager {
     /// This won't check for feature availability so it might output extensions that aren't even
     /// supported.[`check_availability`](Self::check_availability) will check feature availability
     pub fn write(&self, options: &Options, mut out: impl Write) -> BackendResult {
-        if self.0.contains(Features::COMPUTE_SHADER) && !options.version.is_es() {
+        if self.0.contains(Features::COMPUTE_SHADER) && !options.version().is_es() {
             // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_compute_shader.txt
             writeln!(out, "#extension GL_ARB_compute_shader : require")?;
         }
 
-        if self.0.contains(Features::BUFFER_STORAGE) && !options.version.is_es() {
+        if self.0.contains(Features::BUFFER_STORAGE) && !options.version().is_es() {
             // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_shader_storage_buffer_object.txt
             writeln!(
                 out,
@@ -165,22 +165,22 @@ impl FeaturesManager {
             )?;
         }
 
-        if self.0.contains(Features::DOUBLE_TYPE) && options.version < Version::Desktop(400) {
+        if self.0.contains(Features::DOUBLE_TYPE) && options.version() < Version::Desktop(400) {
             // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_gpu_shader_fp64.txt
             writeln!(out, "#extension GL_ARB_gpu_shader_fp64 : require")?;
         }
 
         if self.0.contains(Features::CUBE_TEXTURES_ARRAY) {
-            if options.version.is_es() {
+            if options.version().is_es() {
                 // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_texture_cube_map_array.txt
                 writeln!(out, "#extension GL_EXT_texture_cube_map_array : require")?;
-            } else if options.version < Version::Desktop(400) {
+            } else if options.version() < Version::Desktop(400) {
                 // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_cube_map_array.txt
                 writeln!(out, "#extension GL_ARB_texture_cube_map_array : require")?;
             }
         }
 
-        if self.0.contains(Features::MULTISAMPLED_TEXTURE_ARRAYS) && options.version.is_es() {
+        if self.0.contains(Features::MULTISAMPLED_TEXTURE_ARRAYS) && options.version().is_es() {
             // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_texture_storage_multisample_2d_array.txt
             writeln!(
                 out,
@@ -188,49 +188,49 @@ impl FeaturesManager {
             )?;
         }
 
-        if self.0.contains(Features::ARRAY_OF_ARRAYS) && options.version < Version::Desktop(430) {
+        if self.0.contains(Features::ARRAY_OF_ARRAYS) && options.version() < Version::Desktop(430) {
             // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_arrays_of_arrays.txt
             writeln!(out, "#extension ARB_arrays_of_arrays : require")?;
         }
 
         if self.0.contains(Features::IMAGE_LOAD_STORE) {
-            if self.0.contains(Features::FULL_IMAGE_FORMATS) && options.version.is_es() {
+            if self.0.contains(Features::FULL_IMAGE_FORMATS) && options.version().is_es() {
                 // https://www.khronos.org/registry/OpenGL/extensions/NV/NV_image_formats.txt
                 writeln!(out, "#extension GL_NV_image_formats : require")?;
             }
 
-            if options.version < Version::Desktop(420) {
+            if options.version() < Version::Desktop(420) {
                 // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_shader_image_load_store.txt
                 writeln!(out, "#extension GL_ARB_shader_image_load_store : require")?;
             }
         }
 
         if self.0.contains(Features::CONSERVATIVE_DEPTH) {
-            if options.version.is_es() {
+            if options.version().is_es() {
                 // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_conservative_depth.txt
                 writeln!(out, "#extension GL_EXT_conservative_depth : require")?;
             }
 
-            if options.version < Version::Desktop(420) {
+            if options.version() < Version::Desktop(420) {
                 // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_conservative_depth.txt
                 writeln!(out, "#extension GL_ARB_conservative_depth : require")?;
             }
         }
 
         if (self.0.contains(Features::CLIP_DISTANCE) || self.0.contains(Features::CULL_DISTANCE))
-            && options.version.is_es()
+            && options.version().is_es()
         {
             // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_clip_cull_distance.txt
             writeln!(out, "#extension GL_EXT_clip_cull_distance : require")?;
         }
 
-        if self.0.contains(Features::SAMPLE_VARIABLES) && options.version.is_es() {
+        if self.0.contains(Features::SAMPLE_VARIABLES) && options.version().is_es() {
             // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_sample_variables.txt
             writeln!(out, "#extension GL_OES_sample_variables : require")?;
         }
 
         if self.0.contains(Features::MULTI_VIEW) {
-            if let Version::Embedded { is_webgl: true, .. } = options.version {
+            if let Version::Embedded { is_webgl: true, .. } = options.version() {
                 // https://www.khronos.org/registry/OpenGL/extensions/OVR/OVR_multiview2.txt
                 writeln!(out, "#extension GL_OVR_multiview2 : require")?;
             } else {
@@ -247,11 +247,11 @@ impl FeaturesManager {
             )?;
         }
 
-        if self.0.contains(Features::TEXTURE_LEVELS) && options.version < Version::Desktop(430) {
+        if self.0.contains(Features::TEXTURE_LEVELS) && options.version() < Version::Desktop(430) {
             // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_query_levels.txt
             writeln!(out, "#extension GL_ARB_texture_query_levels : require")?;
         }
-        if self.0.contains(Features::DUAL_SOURCE_BLENDING) && options.version.is_es() {
+        if self.0.contains(Features::DUAL_SOURCE_BLENDING) && options.version().is_es() {
             // https://registry.khronos.org/OpenGL/extensions/EXT/EXT_blend_func_extended.txt
             writeln!(out, "#extension GL_EXT_blend_func_extended : require")?;
         }
@@ -314,7 +314,7 @@ impl<W> Writer<'_, W> {
         if let Some(early_depth_test) = self.entry_point.early_depth_test {
             match early_depth_test {
                 crate::EarlyDepthTest::Force => {
-                    if self.options.version.supports_early_depth_test() {
+                    if self.options.version().supports_early_depth_test() {
                         self.features.request(Features::IMAGE_LOAD_STORE);
                     }
                 }
@@ -531,7 +531,7 @@ impl<W> Writer<'_, W> {
                         let auto = matches!(level, SampleLevel::Auto);
                         let cube = dim == ImageDimension::Cube;
                         let array2d = dim == ImageDimension::D2 && arrayed;
-                        let gles = self.options.version.is_es();
+                        let gles = self.options.version().is_es();
 
                         // We have a workaround of using `textureGrad` instead of `textureLod` if the LOD is zero,
                         // so we don't *need* this extension for those cases.
@@ -586,7 +586,7 @@ impl<W> Writer<'_, W> {
             }
         }
 
-        self.features.check_availability(self.options.version)
+        self.features.check_availability(self.options.version())
     }
 
     /// Helper method that checks the [`Features`] needed by a scalar
