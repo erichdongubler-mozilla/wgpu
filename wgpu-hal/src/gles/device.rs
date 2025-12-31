@@ -1227,6 +1227,10 @@ impl crate::Device for super::Device {
             naga_options: glsl::Options {
                 environment: glsl::EnvironmentOptions {
                     version: self.shared.shading_language_version,
+                    dynamic_array_size_enabled: self
+                        .shared
+                        .private_caps
+                        .intersects(PrivateCapabilities::DYNAMIC_ARRAY_SIZE),
                 },
                 writer_flags,
                 binding_map,

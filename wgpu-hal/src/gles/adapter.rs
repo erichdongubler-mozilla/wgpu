@@ -653,6 +653,10 @@ impl super::Adapter {
             // that's the only way to get gl_InstanceID to work correctly.
             features.set(wgt::Features::INDIRECT_FIRST_INSTANCE, supported);
         }
+        private_caps.set(
+            super::PrivateCapabilities::DYNAMIC_ARRAY_SIZE,
+            indirect_execution,
+        );
 
         let max_texture_size = unsafe { gl.get_parameter_i32(glow::MAX_TEXTURE_SIZE) } as u32;
         let max_texture_3d_size = unsafe { gl.get_parameter_i32(glow::MAX_3D_TEXTURE_SIZE) } as u32;
