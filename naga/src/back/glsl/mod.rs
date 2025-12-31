@@ -361,12 +361,14 @@ impl Options {
 pub struct EnvironmentOptions {
     /// The GLSL version to be used.
     pub version: Version,
+    pub dynamic_array_size_enabled: bool,
 }
 
 impl Default for EnvironmentOptions {
     fn default() -> Self {
         Self {
             version: Version::new_gles(310),
+            dynamic_array_size_enabled: false,
         }
     }
 }
