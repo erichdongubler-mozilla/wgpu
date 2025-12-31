@@ -2,7 +2,7 @@ use core::fmt::Write;
 
 use super::{BackendResult, Error, Version, Writer};
 use crate::{
-    back::glsl::{Options, WriterFlags},
+    back::glsl::{EnvironmentOptions, Options, WriterFlags},
     AddressSpace, Binding, Expression, Handle, ImageClass, ImageDimension, Interpolation,
     SampleLevel, Sampling, Scalar, ScalarKind, ShaderStage, StorageFormat, Type, TypeInner,
 };
@@ -84,7 +84,9 @@ impl FeaturesManager {
 
     /// Checks that all required [`Features`] are available for the specified
     /// [`Version`] otherwise returns an [`Error::MissingFeatures`].
-    pub fn check_availability(&self, version: Version) -> BackendResult {
+    pub fn check_availability(&self, environment: &EnvironmentOptions) -> BackendResult {
+        let &EnvironmentOptions { version } = environment;
+
         // Will store all the features that are unavailable
         let mut missing = Features::empty();
 
@@ -586,7 +588,7 @@ impl<W> Writer<'_, W> {
             }
         }
 
-        self.features.check_availability(self.options.version())
+        self.features.check_availability(&self.options.environment)
     }
 
     /// Helper method that checks the [`Features`] needed by a scalar
