@@ -2814,6 +2814,7 @@ pub struct TlasInstance {
 #[cfg(dx12)]
 pub enum D3D12ExposeAdapterResult {
     CreateDeviceError(dx12::CreateDeviceError),
+    UnexpectedFeatureLevelError(windows::Win32::Graphics::Direct3D::D3D_FEATURE_LEVEL),
     ResourceBindingTier2Requirement,
     ShaderModel6Requirement,
     Success(dx12::FeatureLevel, dx12::ShaderModel),

@@ -129,6 +129,13 @@ impl super::Adapter {
                 log::warn!(
                     "internal error: unexpected feature level {l:?}; please report this upstream!"
                 );
+                if let Some(telemetry) = telemetry.as_ref() {
+                    (telemetry.d3d12_expose_adapter)(
+                        &desc,
+                        driver_version,
+                        crate::D3D12ExposeAdapterResult::UnexpectedFeatureLevelError(l),
+                    );
+                }
                 return None;
             }
         };
