@@ -105,10 +105,11 @@ impl super::Adapter {
             Direct3D::D3D_FEATURE_LEVEL_11_1,
             Direct3D::D3D_FEATURE_LEVEL_11_0,
         ];
+        let default_feature_level = Default::default();
         let mut device_levels = Direct3D12::D3D12_FEATURE_DATA_FEATURE_LEVELS {
             NumFeatureLevels: d3d_feature_level.len() as u32,
             pFeatureLevelsRequested: d3d_feature_level.as_ptr().cast(),
-            MaxSupportedFeatureLevel: Default::default(),
+            MaxSupportedFeatureLevel: default_feature_level,
         };
         unsafe {
             device.CheckFeatureSupport(
@@ -124,7 +125,12 @@ impl super::Adapter {
             Direct3D::D3D_FEATURE_LEVEL_12_0 => FeatureLevel::_12_0,
             Direct3D::D3D_FEATURE_LEVEL_12_1 => FeatureLevel::_12_1,
             Direct3D::D3D_FEATURE_LEVEL_12_2 => FeatureLevel::_12_2,
-            _ => unreachable!(),
+            l => {
+                log::warn!(
+                    "internal error: unexpected feature level {l:?}; please report this upstream!"
+                );
+                return None;
+            }
         };
 
         let device_name = auxil::dxgi::conv::map_adapter_name(desc.Description);
