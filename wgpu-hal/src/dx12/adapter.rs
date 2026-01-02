@@ -98,12 +98,12 @@ impl super::Adapter {
         profiling::scope!("feature queries");
 
         // Detect the highest supported feature level.
-        let d3d_feature_level = [
+        let d3d_feature_level: [Direct3D::D3D_FEATURE_LEVEL; 1] = [
             Direct3D::D3D_FEATURE_LEVEL_12_2,
-            Direct3D::D3D_FEATURE_LEVEL_12_1,
-            Direct3D::D3D_FEATURE_LEVEL_12_0,
-            Direct3D::D3D_FEATURE_LEVEL_11_1,
-            Direct3D::D3D_FEATURE_LEVEL_11_0,
+            // Direct3D::D3D_FEATURE_LEVEL_12_1,
+            // Direct3D::D3D_FEATURE_LEVEL_12_0,
+            // Direct3D::D3D_FEATURE_LEVEL_11_1,
+            // Direct3D::D3D_FEATURE_LEVEL_11_0,
         ];
         let default_feature_level = Default::default();
         let mut device_levels = Direct3D12::D3D12_FEATURE_DATA_FEATURE_LEVELS {
