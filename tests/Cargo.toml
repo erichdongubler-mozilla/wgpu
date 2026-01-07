@@ -57,6 +57,7 @@ ctor.workspace = true
 futures-lite.workspace = true
 libtest-mimic.workspace = true
 log.workspace = true
+paste = "^1.0.7"
 png.workspace = true
 pollster.workspace = true
 profiling.workspace = true

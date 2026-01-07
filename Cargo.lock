@@ -4968,6 +4968,7 @@ dependencies = [
  "nanorand",
  "nv-flip",
  "parking_lot",
+ "paste",
  "png",
  "pollster",
  "profiling",
@@ -4997,6 +4998,7 @@ dependencies = [
  "raw-window-handle 0.6.2",
  "serde",
  "serde_json",
+ "strum",
  "web-sys",
 ]
 
