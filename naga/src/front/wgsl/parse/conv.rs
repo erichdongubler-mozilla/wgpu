@@ -21,14 +21,8 @@ pub fn map_address_space<'a>(
         "immediate" => Ok(crate::AddressSpace::Immediate),
         "function" => Ok(crate::AddressSpace::Function),
         "task_payload" => {
-            if enable_extensions.contains(ImplementedEnableExtension::WgpuMeshShader) {
-                Ok(crate::AddressSpace::TaskPayload)
-            } else {
-                Err(Box::new(Error::EnableExtensionNotEnabled {
-                    span,
-                    kind: ImplementedEnableExtension::WgpuMeshShader.into(),
-                }))
-            }
+            enable_extensions.check(span, ImplementedEnableExtension::WgpuMeshShader)?;
+            Ok(crate::AddressSpace::TaskPayload)
         }
         "ray_payload" => {
             if enable_extensions.contains(ImplementedEnableExtension::WgpuRayTracingPipeline) {
@@ -73,12 +67,7 @@ pub fn map_ray_flag(
 ) -> Result<'static, ()> {
     match word {
         "vertex_return" => {
-            if !enable_extensions.contains(ImplementedEnableExtension::WgpuRayQueryVertexReturn) {
-                return Err(Box::new(Error::EnableExtensionNotEnabled {
-                    span,
-                    kind: ImplementedEnableExtension::WgpuRayQueryVertexReturn.into(),
-                }));
-            }
+            enable_extensions.check(span, ImplementedEnableExtension::WgpuRayQueryVertexReturn)?;
             Ok(())
         }
         _ => Err(Box::new(Error::UnknownRayFlag(span))),
@@ -154,12 +143,7 @@ pub fn map_built_in(
     };
     match built_in {
         crate::BuiltIn::ClipDistance => {
-            if !enable_extensions.contains(ImplementedEnableExtension::ClipDistances) {
-                return Err(Box::new(Error::EnableExtensionNotEnabled {
-                    span,
-                    kind: ImplementedEnableExtension::ClipDistances.into(),
-                }));
-            }
+            enable_extensions.check(span, ImplementedEnableExtension::ClipDistances)?
         }
         crate::BuiltIn::CullPrimitive
         | crate::BuiltIn::PointIndex
@@ -169,12 +153,7 @@ pub fn map_built_in(
         | crate::BuiltIn::Vertices
         | crate::BuiltIn::PrimitiveCount
         | crate::BuiltIn::Primitives => {
-            if !enable_extensions.contains(ImplementedEnableExtension::WgpuMeshShader) {
-                return Err(Box::new(Error::EnableExtensionNotEnabled {
-                    span,
-                    kind: ImplementedEnableExtension::WgpuMeshShader.into(),
-                }));
-            }
+            enable_extensions.check(span, ImplementedEnableExtension::WgpuMeshShader)?
         }
         _ => {}
     }
@@ -588,6 +567,7 @@ pub fn map_predeclared_type(
         _ => None,
     };
     if let Some(extensions_needed) = extensions_needed {
+        // TODO: encapsulate this into `EnableExtensions::check`?
         let mut any_extension_enabled = false;
         for extension_needed in extensions_needed {
             if enable_extensions.contains(*extension_needed) {

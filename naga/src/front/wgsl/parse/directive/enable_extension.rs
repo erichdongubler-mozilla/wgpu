@@ -62,8 +62,12 @@ impl EnableExtensions {
     }
 
     /// Query whether an enable-extension tracked here has been requested.
-    pub(crate) const fn contains(&self, ext: ImplementedEnableExtension) -> bool {
-        match ext {
+    pub(crate) const fn check(
+        &self,
+        span: Span,
+        ext: ImplementedEnableExtension,
+    ) -> core::result::Result<(), EnableExtensionNotAvailableError> {
+        let is_enabled = match ext {
             ImplementedEnableExtension::WgpuMeshShader => self.wgpu_mesh_shader,
             ImplementedEnableExtension::WgpuRayQuery => self.wgpu_ray_query,
             ImplementedEnableExtension::WgpuRayQueryVertexReturn => {
@@ -74,6 +78,16 @@ impl EnableExtensions {
             ImplementedEnableExtension::F16 => self.f16,
             ImplementedEnableExtension::ClipDistances => self.clip_distances,
             ImplementedEnableExtension::WgpuCooperativeMatrix => self.wgpu_cooperative_matrix,
+        };
+
+        if is_enabled {
+            Ok(())
+        } else {
+            Err(EnableExtensionNotAvailableError {
+                extension: ext,
+                span,
+                reason: EnableExtensionNotAvailableErrorReason::NotEnabled,
+            })
         }
     }
 }
@@ -82,6 +96,20 @@ impl Default for EnableExtensions {
     fn default() -> Self {
         Self::empty()
     }
+}
+
+/// An error returned by [`EnableExtensions::check`].
+#[derive(Clone, Debug)]
+pub struct EnableExtensionNotAvailableError {
+    pub span: Span,
+    pub extension: ImplementedEnableExtension,
+    pub reason: EnableExtensionNotAvailableErrorReason,
+}
+
+/// An [`EnableExtensionNotAvailableError::reason`].
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum EnableExtensionNotAvailableErrorReason {
+    NotEnabled,
 }
 
 /// An enable-extension not guaranteed to be present in all environments.

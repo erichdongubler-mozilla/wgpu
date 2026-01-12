@@ -3,10 +3,13 @@
 use crate::common::wgsl::TryToWgsl;
 use crate::diagnostic_filter::ConflictingDiagnosticRuleError;
 use crate::error::replace_control_chars;
+use crate::front::wgsl::parse::directive::enable_extension::EnableExtensionNotAvailableError;
 use crate::proc::{Alignment, ConstantEvaluatorError, ResolveError};
 use crate::{Scalar, SourceLocation, Span};
 
-use super::parse::directive::enable_extension::{EnableExtension, UnimplementedEnableExtension};
+use super::parse::directive::enable_extension::{
+    EnableExtension, EnableExtensionNotAvailableErrorReason, UnimplementedEnableExtension,
+};
 use super::parse::directive::language_extension::{
     LanguageExtension, UnimplementedLanguageExtension,
 };
@@ -457,6 +460,31 @@ pub(crate) enum DiagnosticAttributeNotSupportedPosition {
 impl From<&'static str> for DiagnosticAttributeNotSupportedPosition {
     fn from(display_plural: &'static str) -> Self {
         Self::Other { display_plural }
+    }
+}
+
+impl From<EnableExtensionNotAvailableError> for Error<'_> {
+    fn from(value: EnableExtensionNotAvailableError) -> Self {
+        let EnableExtensionNotAvailableError {
+            span,
+            extension,
+            reason,
+        } = value;
+
+        match reason {
+            EnableExtensionNotAvailableErrorReason::NotEnabled => {
+                Error::EnableExtensionNotEnabled {
+                    span,
+                    kind: extension.into(),
+                }
+            }
+        }
+    }
+}
+
+impl From<EnableExtensionNotAvailableError> for Box<Error<'_>> {
+    fn from(value: EnableExtensionNotAvailableError) -> Self {
+        Box::new(value.into())
     }
 }
 
