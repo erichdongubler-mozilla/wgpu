@@ -10,14 +10,21 @@ use alloc::boxed::Box;
 /// Tracks the status of every enable-extension known to Naga.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct EnableExtensions {
+    /// Whether `enable wgpu_mesh_shader;` was written earlier in the shader module.
     wgpu_mesh_shader: bool,
+    /// Whether `enable wgpu_ray_query;` was written earlier in the shader module.
     wgpu_ray_query: bool,
+    /// Whether `enable wgpu_ray_query_vertex_return;` was written earlier in the shader module.
     wgpu_ray_query_vertex_return: bool,
+    /// Whether `enable wgpu_ray_tracing_pipelines;` was written earlier in the shader module.
     wgpu_ray_tracing_pipelines: bool,
+    /// Whether `enable dual_source_blending;` was written earlier in the shader module.
     dual_source_blending: bool,
     /// Whether `enable f16;` was written earlier in the shader module.
     f16: bool,
+    /// Whether `enable clip_distances;` was written earlier in the shader module.
     clip_distances: bool,
+    /// Whether `enable wgpu_cooperative_matrix;` was written earlier in the shader module.
     wgpu_cooperative_matrix: bool,
 }
 
