@@ -36,7 +36,7 @@ alloc_instead_of_core = "warn"
 [lib]
 
 [features]
-default = ["std"]
+default = ["std", "unstable-testing"]
 std = ["js-sys?/std", "web-sys?/std"]
 strict_asserts = []
 fragile-send-sync-non-atomic-wasm = []
