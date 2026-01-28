@@ -2,7 +2,7 @@ use alloc::{vec, vec::Vec};
 
 use crate::{link_to_wgpu_docs, link_to_wgpu_item, TextureFormat, TextureUsages};
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Timing and queueing with which frames are actually displayed to the user.

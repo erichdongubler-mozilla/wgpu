@@ -21,7 +21,7 @@ extern crate alloc;
 
 use core::{fmt, hash::Hash, time::Duration};
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 mod adapter;

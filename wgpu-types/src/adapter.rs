@@ -3,7 +3,7 @@ use core::{fmt, mem};
 
 use crate::{link_to_wgpu_docs, Backend, Backends};
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(doc)]

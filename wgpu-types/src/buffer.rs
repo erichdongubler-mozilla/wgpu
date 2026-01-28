@@ -1,4 +1,4 @@
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(doc)]

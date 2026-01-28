@@ -3,7 +3,7 @@
 use alloc::string::String;
 use core::hash::Hash;
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::link_to_wgpu_docs;

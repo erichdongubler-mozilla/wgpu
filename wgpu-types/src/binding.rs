@@ -2,7 +2,7 @@
 
 use core::num::NonZeroU32;
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::{link_to_wgpu_docs, link_to_wgpu_item, BufferSize};

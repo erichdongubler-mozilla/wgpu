@@ -1,6 +1,6 @@
 use core::ops::Range;
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Describes a [`Device`](../wgpu/struct.Device.html).

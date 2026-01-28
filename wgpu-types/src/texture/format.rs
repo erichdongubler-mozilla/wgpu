@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 
 use crate::{Features, TextureAspect, TextureSampleType, TextureUsages};
 
-#[cfg(any(feature = "serde", test))]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// ASTC block dimensions
