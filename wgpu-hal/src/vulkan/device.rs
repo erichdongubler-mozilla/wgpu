@@ -720,7 +720,7 @@ impl super::Device {
         };
 
         let mut flags = vk::PipelineShaderStageCreateFlags::empty();
-        if self.shared.features.contains(wgt::Features::SUBGROUP) {
+        if self.shared.features.contains(wgt::Features::SUBGROUPS) {
             flags |= vk::PipelineShaderStageCreateFlags::ALLOW_VARYING_SUBGROUP_SIZE
         }
 

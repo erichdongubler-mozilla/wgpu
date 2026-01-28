@@ -1028,11 +1028,11 @@ impl super::Validator {
                     stages &= super::ShaderStages::COMPUTE_LIKE;
                     if barrier.contains(crate::Barrier::SUB_GROUP) {
                         if !self.capabilities.contains(
-                            super::Capabilities::SUBGROUP | super::Capabilities::SUBGROUP_BARRIER,
+                            super::Capabilities::SUBGROUPS | super::Capabilities::SUBGROUPS_BARRIER,
                         ) {
                             return Err(FunctionError::MissingCapability(
-                                super::Capabilities::SUBGROUP
-                                    | super::Capabilities::SUBGROUP_BARRIER,
+                                super::Capabilities::SUBGROUPS
+                                    | super::Capabilities::SUBGROUPS_BARRIER,
                             )
                             .with_span_static(span, "missing capability for this operation"));
                         }
@@ -1576,9 +1576,9 @@ impl super::Validator {
                 }
                 S::SubgroupBallot { result, predicate } => {
                     stages &= self.subgroup_stages;
-                    if !self.capabilities.contains(super::Capabilities::SUBGROUP) {
+                    if !self.capabilities.contains(super::Capabilities::SUBGROUPS) {
                         return Err(FunctionError::MissingCapability(
-                            super::Capabilities::SUBGROUP,
+                            super::Capabilities::SUBGROUPS,
                         )
                         .with_span_static(span, "missing capability for this operation"));
                     }
@@ -1617,9 +1617,9 @@ impl super::Validator {
                     result,
                 } => {
                     stages &= self.subgroup_stages;
-                    if !self.capabilities.contains(super::Capabilities::SUBGROUP) {
+                    if !self.capabilities.contains(super::Capabilities::SUBGROUPS) {
                         return Err(FunctionError::MissingCapability(
-                            super::Capabilities::SUBGROUP,
+                            super::Capabilities::SUBGROUPS,
                         )
                         .with_span_static(span, "missing capability for this operation"));
                     }
@@ -1638,9 +1638,9 @@ impl super::Validator {
                     result,
                 } => {
                     stages &= self.subgroup_stages;
-                    if !self.capabilities.contains(super::Capabilities::SUBGROUP) {
+                    if !self.capabilities.contains(super::Capabilities::SUBGROUPS) {
                         return Err(FunctionError::MissingCapability(
-                            super::Capabilities::SUBGROUP,
+                            super::Capabilities::SUBGROUPS,
                         )
                         .with_span_static(span, "missing capability for this operation"));
                     }

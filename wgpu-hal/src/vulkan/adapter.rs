@@ -876,18 +876,18 @@ impl PhysicalDeviceFeatures {
                 )
             {
                 features.set(
-                    F::SUBGROUP,
+                    F::SUBGROUPS,
                     subgroup
                         .supported_stages
                         .contains(vk::ShaderStageFlags::COMPUTE | vk::ShaderStageFlags::FRAGMENT),
                 );
                 features.set(
-                    F::SUBGROUP_VERTEX,
+                    F::SUBGROUPS_VERTEX,
                     subgroup
                         .supported_stages
                         .contains(vk::ShaderStageFlags::VERTEX),
                 );
-                features.insert(F::SUBGROUP_BARRIER);
+                features.insert(F::SUBGROUPS_BARRIER);
             }
         }
 
@@ -1254,7 +1254,7 @@ impl PhysicalDeviceProperties {
             }
 
             // Require `VK_EXT_subgroup_size_control` if the associated feature was requested
-            if requested_features.contains(wgt::Features::SUBGROUP) {
+            if requested_features.contains(wgt::Features::SUBGROUPS) {
                 extensions.push(ext::subgroup_size_control::NAME);
             }
 
@@ -2531,7 +2531,7 @@ impl super::Adapter {
                 capabilities.push(spv::Capability::Geometry);
             }
 
-            if features.intersects(wgt::Features::SUBGROUP | wgt::Features::SUBGROUP_VERTEX) {
+            if features.intersects(wgt::Features::SUBGROUPS | wgt::Features::SUBGROUPS_VERTEX) {
                 capabilities.push(spv::Capability::GroupNonUniform);
                 capabilities.push(spv::Capability::GroupNonUniformVote);
                 capabilities.push(spv::Capability::GroupNonUniformArithmetic);

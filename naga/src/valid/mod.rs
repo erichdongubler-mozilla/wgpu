@@ -134,24 +134,24 @@ bitflags::bitflags! {
         /// Support for subgroup operations (except barriers) in fragment and compute shaders.
         ///
         /// Subgroup operations in the vertex stage require
-        /// [`Capabilities::SUBGROUP_VERTEX_STAGE`] in addition to `Capabilities::SUBGROUP`.
+        /// [`Capabilities::SUBGROUPS_VERTEX_STAGE`] in addition to `Capabilities::SUBGROUPS`.
         /// (But note that `create_validator` automatically sets
-        /// `Capabilities::SUBGROUP` whenever `Features::SUBGROUP_VERTEX` is
+        /// `Capabilities::SUBGROUPS` whenever `Features::SUBGROUPS_VERTEX` is
         /// available.)
         ///
-        /// Subgroup barriers require [`Capabilities::SUBGROUP_BARRIER`] in addition to
-        /// `Capabilities::SUBGROUP`.
-        const SUBGROUP = 1 << 17;
+        /// Subgroup barriers require [`Capabilities::SUBGROUPS_BARRIER`] in addition to
+        /// `Capabilities::SUBGROUPS`.
+        const SUBGROUPS = 1 << 17;
         /// Support for subgroup barriers in compute shaders.
         ///
-        /// Requires [`Capabilities::SUBGROUP`]. Without it, enables nothing.
-        const SUBGROUP_BARRIER = 1 << 18;
+        /// Requires [`Capabilities::SUBGROUPS`]. Without it, enables nothing.
+        const SUBGROUPS_BARRIER = 1 << 18;
         /// Support for subgroup operations (not including barriers) in the vertex stage.
         ///
-        /// Without [`Capabilities::SUBGROUP`], enables nothing. (But note that
-        /// `create_validator` automatically sets `Capabilities::SUBGROUP`
-        /// whenever `Features::SUBGROUP_VERTEX` is available.)
-        const SUBGROUP_VERTEX_STAGE = 1 << 19;
+        /// Without [`Capabilities::SUBGROUPS`], enables nothing. (But note that
+        /// `create_validator` automatically sets `Capabilities::SUBGROUPS`
+        /// whenever `Features::SUBGROUPS_VERTEX` is available.)
+        const SUBGROUPS_VERTEX_STAGE = 1 << 19;
         /// Support for [`AtomicFunction::Min`] and [`AtomicFunction::Max`] on
         /// 64-bit integers in the [`Storage`] address space, when the return
         /// value is not used.
@@ -576,7 +576,7 @@ impl Validator {
     ///
     /// [`Module`]: crate::Module
     pub fn new(flags: ValidationFlags, capabilities: Capabilities) -> Self {
-        let subgroup_operations = if capabilities.contains(Capabilities::SUBGROUP) {
+        let subgroup_operations = if capabilities.contains(Capabilities::SUBGROUPS) {
             use SubgroupOperationSet as S;
             S::BASIC
                 | S::VOTE
@@ -590,10 +590,10 @@ impl Validator {
         };
         let subgroup_stages = {
             let mut stages = ShaderStages::empty();
-            if capabilities.contains(Capabilities::SUBGROUP_VERTEX_STAGE) {
+            if capabilities.contains(Capabilities::SUBGROUPS_VERTEX_STAGE) {
                 stages |= ShaderStages::VERTEX;
             }
-            if capabilities.contains(Capabilities::SUBGROUP) {
+            if capabilities.contains(Capabilities::SUBGROUPS) {
                 stages |= ShaderStages::FRAGMENT | ShaderStages::COMPUTE_LIKE;
             }
             stages

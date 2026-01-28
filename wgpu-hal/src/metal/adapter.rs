@@ -1169,7 +1169,7 @@ impl super::CapabilitiesQuery {
         );
 
         if self.supports_simd_scoped_operations {
-            features.insert(F::SUBGROUP | F::SUBGROUP_BARRIER);
+            features.insert(F::SUBGROUPS | F::SUBGROUPS_BARRIER);
         }
 
         features.set(F::EXPERIMENTAL_MESH_SHADER, self.mesh_shaders);

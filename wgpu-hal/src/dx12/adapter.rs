@@ -586,7 +586,7 @@ impl super::Adapter {
         );
 
         features.set(
-            wgt::Features::SUBGROUP,
+            wgt::Features::SUBGROUPS,
             shader_model >= naga::back::hlsl::ShaderModel::V6_0
                 && hr.is_ok()
                 && features1.WaveOps.as_bool(),

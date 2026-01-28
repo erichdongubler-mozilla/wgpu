@@ -1052,8 +1052,8 @@ macro_rules! check_one_validation {
 /// programs earlier.
 ///
 /// Multiple capabilities can be specified in the macro argument in the case
-/// where any one of them grants access to a feature (e.g. `SUBGROUP` and
-/// `SUBGROUP_BARRIER` for `subgroupBarrier`). When passing multiple capabilities,
+/// where any one of them grants access to a feature (e.g. `SUBGROUPS` and
+/// `SUBGROUPS_BARRIER` for `subgroupBarrier`). When passing multiple capabilities,
 /// all of the passed capabilities must be covered by the same enable-extension.
 ///
 /// NOTE: The only reason we don't use a function for this is because we need to syntactically
@@ -4117,7 +4117,7 @@ fn subgroup_capability() {
 
     // Non-barrier subgroup operations...
 
-    // ...in fragment and compute shaders require [`Capabilities::SUBGROUP`]`.
+    // ...in fragment and compute shaders require [`Capabilities::SUBGROUPS`]`.
     for stage in [naga::ShaderStage::Fragment, naga::ShaderStage::Compute] {
         let stage_attr = match stage {
             naga::ShaderStage::Fragment => "@fragment",
@@ -4134,14 +4134,14 @@ fn subgroup_capability() {
             Err(naga::valid::ValidationError::EntryPoint {
                 stage: err_stage,
                 source: naga::valid::EntryPointError::Function(
-                    naga::valid::FunctionError::MissingCapability(Capabilities::SUBGROUP)
+                    naga::valid::FunctionError::MissingCapability(Capabilities::SUBGROUPS)
                 ),
                 ..
             }) if *err_stage == stage
         }
     }
 
-    // ...in fragment and compute shaders require *only* [`Capabilities::SUBGROUP`]`.
+    // ...in fragment and compute shaders require *only* [`Capabilities::SUBGROUPS`]`.
     for stage in [naga::ShaderStage::Fragment, naga::ShaderStage::Compute] {
         let stage_attr = match stage {
             naga::ShaderStage::Fragment => "@fragment",
@@ -4157,15 +4157,18 @@ fn subgroup_capability() {
                 }}
             "
             ),
-            Capabilities::SUBGROUP,
+            Capabilities::SUBGROUPS,
         );
     }
 
-    // ...in vertex shaders require both [`Capabilities::SUBGROUP`] and
-    // [`Capabilities::SUBGROUP_VERTEX_STAGE`]`. (But note that
-    // `create_validator` automatically sets `Capabilities::SUBGROUP` whenever
-    // `Features::SUBGROUP_VERTEX` is available.)
-    for cap in [Capabilities::SUBGROUP, Capabilities::SUBGROUP_VERTEX_STAGE] {
+    // ...in vertex shaders require both [`Capabilities::SUBGROUPS`] and
+    // [`Capabilities::SUBGROUPS_VERTEX_STAGE`]`. (But note that
+    // `create_validator` automatically sets `Capabilities::SUBGROUPS` whenever
+    // `Features::SUBGROUPS_VERTEX` is available.)
+    for cap in [
+        Capabilities::SUBGROUPS,
+        Capabilities::SUBGROUPS_VERTEX_STAGE,
+    ] {
         check_validation! {
             "
                 @vertex
@@ -4186,13 +4189,13 @@ fn subgroup_capability() {
                 return vec4();
             }}
         ",
-        Capabilities::SUBGROUP | Capabilities::SUBGROUP_VERTEX_STAGE,
+        Capabilities::SUBGROUPS | Capabilities::SUBGROUPS_VERTEX_STAGE,
     );
 
     // Subgroup barriers...
 
-    // ...require both SUBGROUP and SUBGROUP_BARRIER.
-    for cap in [Capabilities::SUBGROUP, Capabilities::SUBGROUP_BARRIER] {
+    // ...require both SUBGROUPS and SUBGROUPS_BARRIER.
+    for cap in [Capabilities::SUBGROUPS, Capabilities::SUBGROUPS_BARRIER] {
         check_validation! {
             r#"
                 @compute @workgroup_size(1)
@@ -4206,7 +4209,7 @@ fn subgroup_capability() {
                     naga::valid::FunctionError::MissingCapability(required_caps)
                 ),
                 ..
-            }) if *required_caps == Capabilities::SUBGROUP | Capabilities::SUBGROUP_BARRIER,
+            }) if *required_caps == Capabilities::SUBGROUPS | Capabilities::SUBGROUPS_BARRIER,
             cap
         }
     }
@@ -4225,7 +4228,7 @@ fn subgroup_capability() {
             source: naga::valid::EntryPointError::ForbiddenStageOperations,
             ..
         }),
-        Capabilities::SUBGROUP | Capabilities::SUBGROUP_BARRIER | Capabilities::SUBGROUP_VERTEX_STAGE
+        Capabilities::SUBGROUPS | Capabilities::SUBGROUPS_BARRIER | Capabilities::SUBGROUPS_VERTEX_STAGE
     }
 
     // ...are never supported in fragment shaders.
@@ -4241,12 +4244,12 @@ fn subgroup_capability() {
             source: naga::valid::EntryPointError::ForbiddenStageOperations,
             ..
         }),
-        Capabilities::SUBGROUP | Capabilities::SUBGROUP_BARRIER
+        Capabilities::SUBGROUPS | Capabilities::SUBGROUPS_BARRIER
     }
 
     // The `subgroup_id` built-in...
 
-    // ...in compute shaders requires [`Capabilities::SUBGROUP`]`.
+    // ...in compute shaders requires [`Capabilities::SUBGROUPS`]`.
     check_one_validation! {
         "
             @compute @workgroup_size(1)
@@ -4257,20 +4260,20 @@ fn subgroup_capability() {
             stage: naga::ShaderStage::Compute,
             source: naga::valid::EntryPointError::Argument(
                 _,
-                naga::valid::VaryingError::UnsupportedCapability(Capabilities::SUBGROUP)
+                naga::valid::VaryingError::UnsupportedCapability(Capabilities::SUBGROUPS)
             ),
             ..
         })
     }
 
-    // ...in compute shaders requires *only* [`Capabilities::SUBGROUP`]`.
+    // ...in compute shaders requires *only* [`Capabilities::SUBGROUPS`]`.
     no_validation_error(
         "
         @compute @workgroup_size(1)
         fn main(@builtin(subgroup_id) subgroup_id: u32) {{
         }}
         ",
-        Capabilities::SUBGROUP,
+        Capabilities::SUBGROUPS,
     );
 }
 
@@ -4288,7 +4291,7 @@ fn subgroup_invalid_broadcast() {
             ),
             ..
         }),
-        naga::valid::Capabilities::SUBGROUP
+        naga::valid::Capabilities::SUBGROUPS
     }
     check_validation! {
         r#"
@@ -4302,7 +4305,7 @@ fn subgroup_invalid_broadcast() {
             ),
             ..
         }),
-        naga::valid::Capabilities::SUBGROUP
+        naga::valid::Capabilities::SUBGROUPS
     }
 }
 

@@ -1,4 +1,4 @@
-capabilities = "SUBGROUP"
+capabilities = "SUBGROUPS"
 
 [msl]
 fake_missing_bindings = false

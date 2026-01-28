@@ -1140,7 +1140,7 @@ bitflags_array! {
         /// Because it is expected to move to the WebGPU feature set in the
         /// not-too-distant future, the name omits the `wgpu-` prefix.
         #[name("subgroups")]
-        const SUBGROUP = 1 << 38;
+        const SUBGROUPS = 1 << 38;
         /// Allows vertex shaders to use the subgroup operation built-ins and
         /// perform subgroup operations (except barriers).
         ///
@@ -1149,10 +1149,10 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-subgroup-vertex")]
-        const SUBGROUP_VERTEX = 1 << 39;
+        const SUBGROUPS_VERTEX = 1 << 39;
         /// Allows compute shaders to use the subgroup barrier.
         ///
-        /// Requires [`Features::SUBGROUP`]. Without it, enables nothing.
+        /// Requires [`Features::SUBGROUPS`]. Without it, enables nothing.
         ///
         /// Supported Platforms:
         /// - Vulkan
@@ -1160,7 +1160,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-subgroup-barrier")]
-        const SUBGROUP_BARRIER = 1 << 40;
+        const SUBGROUPS_BARRIER = 1 << 40;
         /// Allows the use of pipeline cache objects
         ///
         /// Supported platforms:

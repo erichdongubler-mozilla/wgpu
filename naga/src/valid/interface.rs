@@ -270,7 +270,7 @@ impl VaryingContext<'_> {
                     Bi::NumSubgroups
                     | Bi::SubgroupId
                     | Bi::SubgroupSize
-                    | Bi::SubgroupInvocationId => Capabilities::SUBGROUP,
+                    | Bi::SubgroupInvocationId => Capabilities::SUBGROUPS,
                     Bi::DrawIndex => Capabilities::DRAW_INDEX,
                     _ => Capabilities::empty(),
                 };

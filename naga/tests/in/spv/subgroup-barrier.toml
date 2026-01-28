@@ -1,4 +1,4 @@
-capabilities = "SUBGROUP | SUBGROUP_BARRIER"
+capabilities = "SUBGROUPS | SUBGROUPS_BARRIER"
 targets = "WGSL | SPIRV | GLSL | METAL"
 
 [msl]

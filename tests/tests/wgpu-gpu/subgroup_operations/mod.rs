@@ -13,7 +13,7 @@ const TEST_COUNT: u32 = 37;
 static SUBGROUP_OPERATIONS: GpuTestConfiguration = GpuTestConfiguration::new()
     .parameters(
         TestParameters::default()
-            .features(wgpu::Features::SUBGROUP)
+            .features(wgpu::Features::SUBGROUPS)
             .limits(wgpu::Limits::downlevel_defaults())
             // Expect metal to fail on tests involving operations in divergent control flow
             //
