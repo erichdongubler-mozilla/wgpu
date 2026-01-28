@@ -986,7 +986,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         const SHADER_I16 = 1 << 34;
-        /// Enables `builtin(primitive_index)` in fragment shaders.
+        /// Enables `builtin(primitive_index)` in fragment shader input.
         ///
         /// Note: enables geometry processing for pipelines using the builtin.
         /// This may come with a significant performance impact on some hardware.
