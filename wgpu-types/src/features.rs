@@ -83,7 +83,8 @@ mod webgpu_impl {
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_DUAL_SOURCE_BLENDING: u64 = 1 << 14;
 
-    // TODO: SUBGROUPS
+    #[doc(hidden)]
+    pub const WEBGPU_FEATURE_SUBGROUPS: u64 = 1 << 15;
 
     // TODO: TEXTURE_FORMATS_TIER1
 
@@ -94,7 +95,7 @@ mod webgpu_impl {
     // TODO: TEXTURE_COMPONENT_SWIZZLE
 
     #[doc(hidden)]
-    pub const WEBGPU_FEATURE_CLIP_DISTANCES: u64 = 1 << 15;
+    pub const WEBGPU_FEATURE_CLIP_DISTANCES: u64 = 1 << 16;
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_IMMEDIATES: u64 = 1 << 16;
@@ -1124,23 +1125,6 @@ bitflags_array! {
         /// This is a native only feature.
         #[name("wgpu-shader-int64")]
         const SHADER_INT64 = 1 << 37;
-        /// Allows compute and fragment shaders to use the subgroup operation
-        /// built-ins and perform subgroup operations (except barriers).
-        ///
-        /// Supported Platforms:
-        /// - Vulkan
-        /// - DX12
-        /// - Metal
-        ///
-        /// The `subgroups` feature has been added to WebGPU, but there may be
-        /// differences between the standard and the `wgpu` implementation,
-        /// so it remains a native-only feature in wgpu for now.
-        /// See <https://github.com/gfx-rs/wgpu/issues/5555>.
-        ///
-        /// Because it is expected to move to the WebGPU feature set in the
-        /// not-too-distant future, the name omits the `wgpu-` prefix.
-        #[name("subgroups")]
-        const SUBGROUPS = 1 << 38;
         /// Allows vertex shaders to use the subgroup operation built-ins and
         /// perform subgroup operations (except barriers).
         ///
@@ -1149,7 +1133,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-subgroup-vertex")]
-        const SUBGROUPS_VERTEX = 1 << 39;
+        const SUBGROUPS_VERTEX = 1 << 38;
         /// Allows compute shaders to use the subgroup barrier.
         ///
         /// Requires [`Features::SUBGROUPS`]. Without it, enables nothing.
@@ -1160,7 +1144,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-subgroup-barrier")]
-        const SUBGROUPS_BARRIER = 1 << 40;
+        const SUBGROUPS_BARRIER = 1 << 39;
         /// Allows the use of pipeline cache objects
         ///
         /// Supported platforms:
@@ -1170,7 +1154,7 @@ bitflags_array! {
         /// - DX12
         /// - Metal
         #[name("wgpu-pipeline-cache")]
-        const PIPELINE_CACHE = 1 << 41;
+        const PIPELINE_CACHE = 1 << 40;
         /// Allows shaders to use i64 and u64 atomic min and max.
         ///
         /// Supported platforms:
@@ -1180,7 +1164,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-shader-int64-atomic-min-max")]
-        const SHADER_INT64_ATOMIC_MIN_MAX = 1 << 42;
+        const SHADER_INT64_ATOMIC_MIN_MAX = 1 << 41;
         /// Allows shaders to use all i64 and u64 atomic operations.
         ///
         /// Supported platforms:
@@ -1189,7 +1173,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-shader-int64-atomic-all-ops")]
-        const SHADER_INT64_ATOMIC_ALL_OPS = 1 << 43;
+        const SHADER_INT64_ATOMIC_ALL_OPS = 1 << 42;
         /// Allows using the [VK_GOOGLE_display_timing] Vulkan extension.
         ///
         /// This is used for frame pacing to reduce latency, and is generally only available on Android.
@@ -1206,7 +1190,7 @@ bitflags_array! {
         /// [VK_GOOGLE_display_timing]: https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_GOOGLE_display_timing.html
         #[doc = link_to_wgpu_docs!(["`Surface::as_hal()`"]: "struct.Surface.html#method.as_hal")]
         #[name("wgpu-vulkan-google-display-timing")]
-        const VULKAN_GOOGLE_DISPLAY_TIMING = 1 << 44;
+        const VULKAN_GOOGLE_DISPLAY_TIMING = 1 << 43;
 
         /// Allows using the [VK_KHR_external_memory_win32] Vulkan extension.
         ///
@@ -1217,7 +1201,7 @@ bitflags_array! {
         ///
         /// [VK_KHR_external_memory_win32]: https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_external_memory_win32.html
         #[name("wgpu-vulkan-external-memory-win32")]
-        const VULKAN_EXTERNAL_MEMORY_WIN32 = 1 << 45;
+        const VULKAN_EXTERNAL_MEMORY_WIN32 = 1 << 44;
 
         /// Enables R64Uint image atomic min and max.
         ///
@@ -1228,7 +1212,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-texture-int64-atomic")]
-        const TEXTURE_INT64_ATOMIC = 1 << 46;
+        const TEXTURE_INT64_ATOMIC = 1 << 45;
 
         /// Allows uniform buffers to be bound as binding arrays.
         ///
@@ -1246,7 +1230,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-uniform-buffer-binding-arrays", "uniform-buffer-binding-arrays")]
-        const UNIFORM_BUFFER_BINDING_ARRAYS = 1 << 47;
+        const UNIFORM_BUFFER_BINDING_ARRAYS = 1 << 46;
 
         /// Enables mesh shaders and task shaders in mesh shader pipelines. This extension does NOT imply support for
         /// compiling mesh shaders at runtime.
@@ -1273,7 +1257,7 @@ bitflags_array! {
         /// [`Device::create_shader_module_trusted`]: https://docs.rs/wgpu/latest/wgpu/struct.Device.html#method.create_shader_module_trusted
         /// [`ShaderRuntimeChecks::unchecked()`]: crate::ShaderRuntimeChecks::unchecked
         #[name("wgpu-mesh-shader")]
-        const EXPERIMENTAL_MESH_SHADER = 1 << 48;
+        const EXPERIMENTAL_MESH_SHADER = 1 << 47;
 
         /// ***THIS IS EXPERIMENTAL:*** Features enabled by this may have
         /// major bugs in them and are expected to be subject to breaking changes, suggestions
@@ -1289,7 +1273,7 @@ bitflags_array! {
         ///
         /// [`AccelerationStructureFlags::ALLOW_RAY_HIT_VERTEX_RETURN`]: super::AccelerationStructureFlags::ALLOW_RAY_HIT_VERTEX_RETURN
         #[name("wgpu-ray-hit-vertex-return")]
-        const EXPERIMENTAL_RAY_HIT_VERTEX_RETURN = 1 << 49;
+        const EXPERIMENTAL_RAY_HIT_VERTEX_RETURN = 1 << 48;
 
         /// Enables multiview in mesh shader pipelines
         ///
@@ -1302,7 +1286,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-mesh-shader-multiview")]
-        const EXPERIMENTAL_MESH_SHADER_MULTIVIEW = 1 << 50;
+        const EXPERIMENTAL_MESH_SHADER_MULTIVIEW = 1 << 49;
 
         /// Allows usage of additional vertex formats in [BlasTriangleGeometrySizeDescriptor::vertex_format]
         ///
@@ -1312,7 +1296,7 @@ bitflags_array! {
         ///
         /// [BlasTriangleGeometrySizeDescriptor::vertex_format]: super::BlasTriangleGeometrySizeDescriptor
         #[name("wgpu-extended-acceleration-structure-vertex-formats")]
-        const EXTENDED_ACCELERATION_STRUCTURE_VERTEX_FORMATS = 1 << 51;
+        const EXTENDED_ACCELERATION_STRUCTURE_VERTEX_FORMATS = 1 << 50;
 
         /// Enables creating shaders from passthrough with reflection info (unsafe)
         ///
@@ -1330,8 +1314,7 @@ bitflags_array! {
         /// [this comment](https://github.com/gfx-rs/wgpu/issues/3103#issuecomment-2833058367).
         ///
         #[doc = link_to_wgpu_docs!(["`Device::create_shader_module_passthrough`"]: "struct.Device.html#method.create_shader_module_passthrough")]
-        #[name("wgpu-passthrough-shaders", "passthrough-shaders")]
-        const PASSTHROUGH_SHADERS = 1 << 52;
+(??)        const EXPERIMENTAL_PASSTHROUGH_SHADERS = 1 << 52;
 
         /// Enables shader barycentric coordinates.
         ///
@@ -1342,7 +1325,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-shader-barycentrics")]
-        const SHADER_BARYCENTRICS = 1 << 53;
+        const SHADER_BARYCENTRICS = 1 << 52;
 
         /// Enables using multiview where not all texture array layers are rendered to in a single render pass/render pipeline. Making
         /// use of this feature also requires enabling `Features::MULTIVIEW`.
@@ -1354,7 +1337,7 @@ bitflags_array! {
         ///
         /// While metal supports this in theory, the behavior of `view_index` differs from vulkan and dx12 so the feature isn't exposed.
         #[name("wgpu-selective-multiview")]
-        const SELECTIVE_MULTIVIEW = 1 << 54;
+        const SELECTIVE_MULTIVIEW = 1 << 53;
 
         /// Enables the use of point-primitive outputs from mesh shaders. Making use of this feature also requires enabling
         /// `Features::EXPERIMENTAL_MESH_SHADER`.
@@ -1365,7 +1348,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-mesh-shader-points")]
-        const EXPERIMENTAL_MESH_SHADER_POINTS = 1 << 55;
+        const EXPERIMENTAL_MESH_SHADER_POINTS = 1 << 54;
 
         /// Enables creating texture arrays that are also multisampled.
         ///
@@ -1375,7 +1358,7 @@ bitflags_array! {
         /// Supported platforms:
         /// - Vulkan (except VK_KHR_portability_subset if multisampleArrayImage is not available)
         #[name("wgpu-multisample-array")]
-        const MULTISAMPLE_ARRAY = 1 << 56;
+        const MULTISAMPLE_ARRAY = 1 << 55;
 
         /// Enables cooperative matrix operations (also known as tensor cores on NVIDIA GPUs
         /// or simdgroup matrix operations on Apple GPUs).
@@ -1395,7 +1378,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-cooperative-matrix")]
-        const EXPERIMENTAL_COOPERATIVE_MATRIX = 1 << 57;
+        const EXPERIMENTAL_COOPERATIVE_MATRIX = 1 << 56;
 
         /// Enables shader per-vertex attributes.
         ///
@@ -1404,7 +1387,7 @@ bitflags_array! {
         ///
         /// This is a native only feature.
         #[name("wgpu-shader-per-vertex")]
-        const SHADER_PER_VERTEX = 1 << 58;
+        const SHADER_PER_VERTEX = 1 << 57;
 
         /// Enables shader `draw_index` builtin.
         ///
@@ -1746,6 +1729,24 @@ bitflags_array! {
         /// This is a web and native feature.
         #[name("dual-source-blending")]
         const DUAL_SOURCE_BLENDING = WEBGPU_FEATURE_DUAL_SOURCE_BLENDING;
+
+        /// Allows compute and fragment shaders to use the subgroup operation
+        /// built-ins and perform subgroup operations (except barriers).
+        ///
+        /// Supported Platforms:
+        /// - Vulkan
+        /// - DX12
+        /// - Metal
+        ///
+        /// The `subgroups` feature has been added to WebGPU, but there may be
+        /// differences between the standard and the `wgpu` implementation,
+        /// so it remains a native-only feature in wgpu for now.
+        /// See <https://github.com/gfx-rs/wgpu/issues/5555>.
+        ///
+        /// Because it is expected to move to the WebGPU feature set in the
+        /// not-too-distant future, the name omits the `wgpu-` prefix.
+        #[name("subgroups")]
+        const SUBGROUPS = WEBGPU_FEATURE_SUBGROUPS;
 
         /// Allows the use of immediate data: small, fast bits of memory that can be updated
         /// inside a [`RenderPass`].
