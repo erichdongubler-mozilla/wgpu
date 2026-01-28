@@ -5,13 +5,137 @@ use crate::{Features, TextureAspect, TextureSampleType, TextureUsages};
 #[cfg(any(feature = "serde", test))]
 use serde::{Deserialize, Serialize};
 
+#[doc(hidden)]
+/// A supporting trait to make [`AllEnumValues`] work.
+pub trait CloneableIterator<T>
+where
+    Self: Iterator<Item = T> + Clone,
+{
+}
+
+impl<T, U> CloneableIterator<U> for T where T: Iterator<Item = U> + Clone {}
+
+#[doc(hidden)]
+/// Derives an inherent `wgpu_all_enum_values` method for the target `enum`. When encountering
+/// variants with fields, assume that their types, in turn, have a `wgpu_all_enum_values` method.
+///
+/// Used for automatically deriving an iterator of [`TextureFormat`]s.
+///
+/// ```
+/// # use wgpu_types::AllEnumValues;
+///
+/// #[macro_rules_attribute::derive(AllEnumValues!)]
+/// #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+/// enum Thing {
+///     A,
+///     B,
+///     C { one: COne, two: CTwo },
+/// }
+///
+/// #[macro_rules_attribute::derive(AllEnumValues!)]
+/// #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+/// enum COne {
+///     Oof,
+///     Ugh,
+/// }
+///
+/// #[macro_rules_attribute::derive(AllEnumValues!)]
+/// #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+/// enum CTwo {
+///     Blarg,
+///     Meh,
+/// }
+///
+/// let mut things = Thing::wgpu_all_enum_values().collect::<Vec<_>>();
+/// things.sort();
+/// assert_eq!(
+///     things,
+///     std::vec![
+///         Thing::A,
+///         Thing::B,
+///         Thing::C {
+///             one: COne::Oof,
+///             two: CTwo::Blarg,
+///         },
+///         Thing::C {
+///             one: COne::Oof,
+///             two: CTwo::Meh,
+///         },
+///         Thing::C {
+///             one: COne::Ugh,
+///             two: CTwo::Blarg,
+///         },
+///         Thing::C {
+///             one: COne::Ugh,
+///             two: CTwo::Meh,
+///         },
+///     ],
+/// );
+/// ```
+#[macro_export]
+macro_rules! AllEnumValues {
+    (
+        $(#[$attr:meta])*
+        $vis:vis enum $container_ident:ident {
+            $(
+                $(#[$variant_attr:meta])*
+                $variant_ident:ident $({
+                    $(
+                        $(#[$field_attr:meta])*
+                        $field_ident:ident: $variant_ty:ident
+                    ),* $(,)?
+                })?,
+            )*
+        }
+    ) => {
+        impl $container_ident {
+            #[doc(hidden)]
+            pub fn wgpu_all_enum_values() -> impl $crate::CloneableIterator<Self> {
+                ::itertools::chain!(
+                    $(
+                        $crate::AllEnumValues! {
+                            @fields
+                            $variant_ident,
+                            {
+                                $(
+                                    $($field_ident: $variant_ty),*
+                                )?
+                            }
+                        }
+                    ),*
+                )
+            }
+        }
+    };
+    (
+        @fields
+        $variant_ident:ident,
+        {}
+    ) => {
+        [Self::$variant_ident].into_iter()
+    };
+    (
+        @fields
+        $variant_ident:ident,
+        {
+            $($field_ident:ident: $field_ty:ident),+
+        }
+    ) => {
+        ::itertools::iproduct!(
+            $($field_ty::wgpu_all_enum_values()),+
+        ).map(|($($field_ident),+)| Self::$variant_ident {
+            $($field_ident),+
+        })
+    };
+}
+
 /// ASTC block dimensions
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "unstable-testing", macro_rules_attribute::derive(AllEnumValues!))]
 pub enum AstcBlock {
     /// 4x4 block compressed texture. 16 bytes per block (8 bit/px).
-    #[default]
     B4x4,
     /// 5x4 block compressed texture. 16 bytes per block (6.4 bit/px).
     B5x4,
@@ -43,13 +167,13 @@ pub enum AstcBlock {
 
 /// ASTC RGBA channel
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "unstable-testing", macro_rules_attribute::derive(AllEnumValues!))]
 pub enum AstcChannel {
     /// 8 bit integer RGBA, [0, 255] converted to/from linear-color float [0, 1] in shader.
     ///
     /// [`Features::TEXTURE_COMPRESSION_ASTC`] must be enabled to use this channel.
-    #[default]
     Unorm,
     /// 8 bit integer RGBA, Srgb-color [0, 255] converted to/from linear-color float [0, 1] in shader.
     ///
@@ -84,7 +208,8 @@ pub enum AstcChannel {
 ///
 /// [sRGB transfer function]: https://en.wikipedia.org/wiki/SRGB#Transfer_function_(%22gamma%22)
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, strum::EnumIter)]
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+#[cfg_attr(feature = "unstable-testing", macro_rules_attribute::derive(AllEnumValues!))]
 pub enum TextureFormat {
     // Normal 8 bit formats
     /// Red channel only. 8 bit integer per channel. [0, 255] converted to/from float [0, 1] in shader.

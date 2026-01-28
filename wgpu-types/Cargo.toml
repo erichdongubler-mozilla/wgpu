@@ -45,19 +45,23 @@ serde = ["dep:serde", "bitflags/serde"]
 counters = []
 # Enables variants of `Trace` other than `Trace::Off`
 trace = ["std"]
+unstable-testing = ["dep:itertools", "dep:macro_rules_attribute"]
 # Enable web-specific dependencies for wasm.
 web = ["dep:js-sys", "dep:web-sys"]
 
 [dependencies]
 bitflags.workspace = true
 bytemuck = { workspace = true, features = ["derive"] }
+# NOTE: This matches our usage of `bindgen`, instead of the workspace, because we currently have
+# divergent versions.
+itertools = { version = "0.13", optional = true }
 log.workspace = true
+macro_rules_attribute = { workspace = true, optional = true }
 raw-window-handle.workspace = true
 serde = { workspace = true, default-features = false, features = [
     "alloc",
     "derive",
 ], optional = true }
-strum.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { workspace = true, optional = true, default-features = false }

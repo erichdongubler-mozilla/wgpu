@@ -46,7 +46,7 @@ wgpu = { workspace = true, features = ["noop"] }
 wgpu-core = { workspace = true, features = ["trace"] }
 wgpu-hal = { workspace = true, features = ["validation_canary"] }
 wgpu-macros.workspace = true
-wgpu-types.workspace = true
+wgpu-types = { workspace = true, features = ["unstable-testing"] }
 
 anyhow.workspace = true
 arrayvec.workspace = true

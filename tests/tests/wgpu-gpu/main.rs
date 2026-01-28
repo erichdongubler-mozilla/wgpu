@@ -1,3 +1,7 @@
+// NOTE: Deeply nested types in `./texture_format/mod.rs` via [`wgpu_types::AllEnumValues`] require
+// this.
+#![recursion_limit = "256"]
+
 mod regression {
     pub mod issue_3349;
     pub mod issue_3457;

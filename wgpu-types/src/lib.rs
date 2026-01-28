@@ -13,6 +13,8 @@
     unused_qualifications
 )]
 #![no_std]
+// NOTE: `AllEnumValues` derivation on `TextureFormat` needs s'more recursion.
+#![cfg_attr(feature = "unstable-testing", recursion_limit = "256")]
 
 #[cfg(feature = "std")]
 extern crate std;

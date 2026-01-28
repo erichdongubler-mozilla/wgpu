@@ -167,7 +167,7 @@ fn texture_format_capabilities_check(
                 .contains(wgpu::DownlevelFlags::VIEW_FORMATS)
                 && usage_type != UsageType::Transient
             {
-                for other_format in wgpu::TextureFormat::iter() {
+                for other_format in wgpu::TextureFormat::wgpu_all_enum_values() {
                     if other_format.remove_srgb_suffix() == format.remove_srgb_suffix() {
                         view_formats.push(other_format);
                     }
@@ -402,12 +402,14 @@ make_format_feature_functions!(
         (
             compat,
             wgpu::Features::empty(),
-            Box::new(wgpu::TextureFormat::iter().filter(|a| a.required_features().is_empty())),
+            Box::new(wgpu::TextureFormat::wgpu_all_enum_values().filter(|a| {
+                a.required_features().is_empty()
+            })),
         ),
         (
             native,
             wgpu::Features::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES,
-            Box::new(wgpu::TextureFormat::iter().filter(|a| {
+            Box::new(wgpu::TextureFormat::wgpu_all_enum_values().filter(|a| {
                 (a.required_features() - wgpu::Features::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES)
                     .is_empty()
             })),
@@ -415,7 +417,7 @@ make_format_feature_functions!(
         (
             norm_16bit,
             wgpu::Features::TEXTURE_FORMAT_16BIT_NORM,
-            Box::new(wgpu::TextureFormat::iter().filter(|a| {
+            Box::new(wgpu::TextureFormat::wgpu_all_enum_values().filter(|a| {
                 a.required_features()
                     .contains(wgpu::Features::TEXTURE_FORMAT_16BIT_NORM)
                     && (a.required_features()
@@ -427,7 +429,7 @@ make_format_feature_functions!(
         (
             compression_bc,
             wgpu::Features::TEXTURE_COMPRESSION_BC,
-            Box::new(wgpu::TextureFormat::iter().filter(|a| {
+            Box::new(wgpu::TextureFormat::wgpu_all_enum_values().filter(|a| {
                 a.required_features()
                     .contains(wgpu::Features::TEXTURE_COMPRESSION_BC)
                     && (a.required_features()
@@ -439,7 +441,7 @@ make_format_feature_functions!(
         (
             compression_etc2,
             wgpu::Features::TEXTURE_COMPRESSION_ETC2,
-            Box::new(wgpu::TextureFormat::iter().filter(|a| {
+            Box::new(wgpu::TextureFormat::wgpu_all_enum_values().filter(|a| {
                 a.required_features()
                     .contains(wgpu::Features::TEXTURE_COMPRESSION_ETC2)
                     && (a.required_features()
