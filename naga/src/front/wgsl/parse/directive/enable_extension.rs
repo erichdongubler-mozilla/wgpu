@@ -43,8 +43,8 @@ impl EnableExtensions {
     }
 
     /// Add an enable-extension to the set requested by a module.
-    pub(crate) const fn add(&mut self, ext: ImplementedEnableExtension) {
-        let field = match ext {
+    pub(crate) const fn add(&mut self, extension: ImplementedEnableExtension) {
+        let field = match extension {
             ImplementedEnableExtension::WgpuMeshShader => &mut self.wgpu_mesh_shader,
             ImplementedEnableExtension::WgpuRayQuery => &mut self.wgpu_ray_query,
             ImplementedEnableExtension::WgpuRayQueryVertexReturn => {
@@ -65,9 +65,9 @@ impl EnableExtensions {
     pub(crate) const fn check(
         &self,
         span: Span,
-        ext: ImplementedEnableExtension,
+        extension: ImplementedEnableExtension,
     ) -> core::result::Result<(), EnableExtensionNotAvailableError> {
-        let is_enabled = match ext {
+        let is_enabled = match extension {
             ImplementedEnableExtension::WgpuMeshShader => self.wgpu_mesh_shader,
             ImplementedEnableExtension::WgpuRayQuery => self.wgpu_ray_query,
             ImplementedEnableExtension::WgpuRayQueryVertexReturn => {
@@ -84,7 +84,7 @@ impl EnableExtensions {
             Ok(())
         } else {
             Err(EnableExtensionNotAvailableError {
-                extension: ext,
+                extension,
                 span,
                 reason: EnableExtensionNotAvailableErrorReason::NotEnabled,
             })
