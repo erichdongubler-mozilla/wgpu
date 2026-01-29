@@ -3,6 +3,7 @@
 //! The focal point of this module is the [`EnableExtension`] API.
 
 use crate::front::wgsl::{Error, Result};
+use crate::valid::Capabilities;
 use crate::Span;
 
 use alloc::boxed::Box;
@@ -47,7 +48,7 @@ impl EnableExtensions {
         &mut self,
         span: Span,
         extension: ImplementedEnableExtension,
-        capabilities: crate::valid::Capabilities,
+        capabilities: Capabilities,
     ) -> core::result::Result<(), EnableExtensionNotAvailableError> {
         let field = match extension {
             ImplementedEnableExtension::WgpuMeshShader => &mut self.wgpu_mesh_shader,
