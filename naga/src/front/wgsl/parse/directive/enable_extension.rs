@@ -43,7 +43,12 @@ impl EnableExtensions {
     }
 
     /// Add an enable-extension to the set requested by a module.
-    pub(crate) const fn add(&mut self, extension: ImplementedEnableExtension) {
+    pub(crate) const fn add(
+        &mut self,
+        span: Span,
+        extension: ImplementedEnableExtension,
+        capabilities: crate::valid::Capabilities,
+    ) -> core::result::Result<(), EnableExtensionNotAvailableError> {
         let field = match extension {
             ImplementedEnableExtension::WgpuMeshShader => &mut self.wgpu_mesh_shader,
             ImplementedEnableExtension::WgpuRayQuery => &mut self.wgpu_ray_query,
@@ -59,6 +64,18 @@ impl EnableExtensions {
             ImplementedEnableExtension::WgpuCooperativeMatrix => &mut self.wgpu_cooperative_matrix,
         };
         *field = true;
+
+        // Check if the required capability is supported
+        let required_capability = extension.capability();
+        if !capabilities.contains(required_capability) {
+            return Err(EnableExtensionNotAvailableError {
+                extension,
+                span,
+                reason: EnableExtensionNotAvailableErrorReason::NotSupported,
+            });
+        }
+
+        Ok(())
     }
 
     /// Query whether an enable-extension tracked here has been requested.
@@ -110,6 +127,7 @@ pub struct EnableExtensionNotAvailableError {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum EnableExtensionNotAvailableErrorReason {
     NotEnabled,
+    NotSupported,
 }
 
 /// An enable-extension not guaranteed to be present in all environments.

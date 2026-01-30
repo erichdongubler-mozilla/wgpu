@@ -25,24 +25,12 @@ pub fn map_address_space<'a>(
             Ok(crate::AddressSpace::TaskPayload)
         }
         "ray_payload" => {
-            if enable_extensions.contains(ImplementedEnableExtension::WgpuRayTracingPipeline) {
-                Ok(crate::AddressSpace::RayPayload)
-            } else {
-                Err(Box::new(Error::EnableExtensionNotEnabled {
-                    span,
-                    kind: ImplementedEnableExtension::WgpuRayTracingPipeline.into(),
-                }))
-            }
+            enable_extensions.check(span, ImplementedEnableExtension::WgpuRayTracingPipeline)?;
+            Ok(crate::AddressSpace::RayPayload)
         }
         "incoming_ray_payload" => {
-            if enable_extensions.contains(ImplementedEnableExtension::WgpuRayTracingPipeline) {
-                Ok(crate::AddressSpace::IncomingRayPayload)
-            } else {
-                Err(Box::new(Error::EnableExtensionNotEnabled {
-                    span,
-                    kind: ImplementedEnableExtension::WgpuRayTracingPipeline.into(),
-                }))
-            }
+            enable_extensions.check(span, ImplementedEnableExtension::WgpuRayTracingPipeline)?;
+            Ok(crate::AddressSpace::IncomingRayPayload)
         }
         _ => Err(Box::new(Error::UnknownAddressSpace(span))),
     }

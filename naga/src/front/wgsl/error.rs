@@ -478,6 +478,12 @@ impl From<EnableExtensionNotAvailableError> for Error<'_> {
                     kind: extension.into(),
                 }
             }
+            EnableExtensionNotAvailableErrorReason::NotSupported => {
+                Error::EnableExtensionNotSupported {
+                    span,
+                    kind: extension.into(),
+                }
+            }
         }
     }
 }

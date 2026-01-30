@@ -2247,7 +2247,7 @@ impl Parser {
                                     span,
                                 }));
                             }
-                            enable_extensions.add(extension);
+                            enable_extensions.add(span, extension, options.capabilities)?;
                             Ok(())
                         })?;
                     }
