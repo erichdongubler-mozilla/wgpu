@@ -471,17 +471,18 @@ impl From<EnableExtensionNotAvailableError> for Error<'_> {
             reason,
         } = value;
 
+        let extension = extension.into();
         match reason {
             EnableExtensionNotAvailableErrorReason::NotEnabled => {
                 Error::EnableExtensionNotEnabled {
                     span,
-                    kind: extension.into(),
+                    kind: extension,
                 }
             }
             EnableExtensionNotAvailableErrorReason::NotSupported => {
                 Error::EnableExtensionNotSupported {
                     span,
-                    kind: extension.into(),
+                    kind: extension,
                 }
             }
         }
