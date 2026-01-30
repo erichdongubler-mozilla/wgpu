@@ -9,7 +9,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use naga::compact::KeepUnused;
+use naga::{compact::KeepUnused, front::wgsl::TreatMissingCapabiltiesAsUnknown};
 use ron::de;
 
 bitflags::bitflags! {
@@ -79,12 +79,16 @@ where
 #[serde(default)]
 pub struct WgslInParameters {
     pub parse_doc_comments: bool,
+    pub treat_missing_capabilities_as_unknown: bool,
 }
 impl From<&WgslInParameters> for naga::front::wgsl::Options {
     fn from(value: &WgslInParameters) -> Self {
         Self {
             parse_doc_comments: value.parse_doc_comments,
             capabilities: naga::valid::Capabilities::all(),
+            treat_missing_capabilities_as_unknown: TreatMissingCapabiltiesAsUnknown::from_bool(
+                value.treat_missing_capabilities_as_unknown,
+            ),
         }
     }
 }

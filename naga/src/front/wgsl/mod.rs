@@ -12,7 +12,8 @@ mod parse;
 mod tests;
 
 pub use parse::directive::enable_extension::{
-    EnableExtension, ImplementedEnableExtension, UnimplementedEnableExtension,
+    EnableExtension, ImplementedEnableExtension, TreatMissingCapabiltiesAsUnknown,
+    UnimplementedEnableExtension,
 };
 
 pub use crate::front::wgsl::error::ParseError;

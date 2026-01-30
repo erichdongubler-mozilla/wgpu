@@ -6,7 +6,9 @@ use crate::diagnostic_filter::{
     ShouldConflictOnFullDuplicate, StandardFilterableTriggeringRule,
 };
 use crate::front::wgsl::error::{DiagnosticAttributeNotSupportedPosition, Error, ExpectedToken};
-use crate::front::wgsl::parse::directive::enable_extension::{EnableExtension, EnableExtensions};
+use crate::front::wgsl::parse::directive::enable_extension::{
+    self, EnableExtension, EnableExtensions,
+};
 use crate::front::wgsl::parse::directive::language_extension::LanguageExtension;
 use crate::front::wgsl::parse::directive::DirectiveKind;
 use crate::front::wgsl::parse::lexer::{Lexer, Token, TokenSpan};
@@ -275,6 +277,9 @@ impl<'a> BindingParser<'a> {
 pub struct Options {
     /// Controls whether the parser should parse doc comments.
     pub parse_doc_comments: bool,
+    /// Whether an unknown or unsupported diagnostic should be emitted for enable-extensions whose
+    /// capability is disabled.
+    pub treat_missing_capabilities_as_unknown: enable_extension::TreatMissingCapabiltiesAsUnknown,
     /// Capabilities to enable during parsing.
     pub capabilities: crate::valid::Capabilities,
 }
@@ -285,6 +290,8 @@ impl Options {
         Options {
             parse_doc_comments: false,
             capabilities: crate::valid::Capabilities::all(),
+            treat_missing_capabilities_as_unknown:
+                enable_extension::TreatMissingCapabiltiesAsUnknown::No,
         }
     }
 }
@@ -2247,7 +2254,12 @@ impl Parser {
                                     span,
                                 }));
                             }
-                            enable_extensions.add(span, extension, options.capabilities)?;
+                            enable_extensions.add(
+                                span,
+                                extension,
+                                options.capabilities,
+                                options.treat_missing_capabilities_as_unknown,
+                            )?;
                             Ok(())
                         })?;
                     }

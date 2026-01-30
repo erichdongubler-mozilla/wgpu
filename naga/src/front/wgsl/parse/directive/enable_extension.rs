@@ -49,6 +49,7 @@ impl EnableExtensions {
         span: Span,
         extension: ImplementedEnableExtension,
         capabilities: Capabilities,
+        treat_missing_capabilities_as_unknown: TreatMissingCapabiltiesAsUnknown,
     ) -> core::result::Result<(), EnableExtensionNotAvailableError> {
         let field = match extension {
             ImplementedEnableExtension::WgpuMeshShader => &mut self.wgpu_mesh_shader,
@@ -69,10 +70,11 @@ impl EnableExtensions {
         // Check if the required capability is supported
         let required_capability = extension.capability();
         if !capabilities.contains(required_capability) {
+            let treat_as_unknown = treat_missing_capabilities_as_unknown.to_bool();
             return Err(EnableExtensionNotAvailableError {
                 extension,
                 span,
-                reason: EnableExtensionNotAvailableErrorReason::NotSupported,
+                reason: EnableExtensionNotAvailableErrorReason::NotSupported { treat_as_unknown },
             });
         }
 
@@ -128,7 +130,32 @@ pub struct EnableExtensionNotAvailableError {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum EnableExtensionNotAvailableErrorReason {
     NotEnabled,
-    NotSupported,
+    NotSupported { treat_as_unknown: bool },
+}
+
+/// Whether calls to [`EnableExtensions::add`] should hide or inform the user of an unsupported
+/// capability behind an [`ImplementedEnableExtension`] when converted to an [`Error`].
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum TreatMissingCapabiltiesAsUnknown {
+    Yes,
+    #[default]
+    No,
+}
+
+impl TreatMissingCapabiltiesAsUnknown {
+    pub const fn to_bool(self) -> bool {
+        match self {
+            Self::Yes => true,
+            Self::No => false,
+        }
+    }
+
+    pub const fn from_bool(value: bool) -> Self {
+        match value {
+            true => Self::Yes,
+            false => Self::No,
+        }
+    }
 }
 
 /// An enable-extension not guaranteed to be present in all environments.

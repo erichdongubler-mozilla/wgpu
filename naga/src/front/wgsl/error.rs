@@ -479,10 +479,14 @@ impl From<EnableExtensionNotAvailableError> for Error<'_> {
                     kind: extension,
                 }
             }
-            EnableExtensionNotAvailableErrorReason::NotSupported => {
-                Error::EnableExtensionNotSupported {
-                    span,
-                    kind: extension,
+            EnableExtensionNotAvailableErrorReason::NotSupported { treat_as_unknown } => {
+                if treat_as_unknown {
+                    Error::UnknownEnableExtension(span, extension.to_ident())
+                } else {
+                    Error::EnableExtensionNotSupported {
+                        span,
+                        kind: extension,
+                    }
                 }
             }
         }

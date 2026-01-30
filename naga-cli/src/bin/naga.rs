@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context as _};
+use naga::front::wgsl::TreatMissingCapabiltiesAsUnknown;
 use std::fs;
 use std::{error::Error, fmt, io::Read, path::Path, str::FromStr};
 
@@ -152,6 +153,11 @@ struct Args {
     /// "67108864"), the string "none", or the string "all".
     #[argh(option, default = "CapabilitiesArg(naga::valid::Capabilities::all())")]
     capabilities: CapabilitiesArg,
+
+    /// whether diagnostics should recognize enable-extensions whose capabilities are missing, or
+    /// pretend that such an extension is unknown.
+    #[argh(switch)]
+    treat_missing_capabilities_as_unknown: bool,
 }
 
 /// Newtype so we can implement [`FromStr`] for `BoundsCheckPolicy`.
@@ -390,7 +396,7 @@ struct Parameters<'a> {
     shader_stage: Option<ShaderStage>,
     defines: FastHashMap<String, String>,
     capabilities: naga::valid::Capabilities,
-
+    treat_missing_capabilities_as_unknown: bool,
     /// We use this copy of `args.compact` to know whether we should pass the
     /// entrypoint to `process_overrides`, which will result in removal from
     /// the module of anything not reachable from that entry point.
@@ -543,7 +549,7 @@ fn run() -> anyhow::Result<()> {
     );
 
     params.compact = args.compact;
-    params.capabilities = args.capabilities.0;
+(??)
 
     if args.bulk_validate {
         return bulk_validate(&args, &params);
@@ -721,12 +727,7 @@ fn parse_input(input_path: &Path, input: Vec<u8>, params: &Parameters) -> anyhow
         },
         InputKind::Wgsl => {
             let input = String::from_utf8(input)?;
-            let options = naga::front::wgsl::Options {
-                parse_doc_comments: false,
-                capabilities: params.capabilities,
-            };
-            let mut frontend = naga::front::wgsl::Frontend::new_with_options(options);
-            let result = frontend.parse(&input);
+(??)            let result = naga::front::wgsl::parse_str(&input);
             match result {
                 Ok(v) => Parsed {
                     module: v,
