@@ -33,23 +33,23 @@ impl MaxVertexShaderOutputDeduction {
 /// [`StageError::FragmentInputLocationTooLarge`].
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MaxFragmentShaderInputDeduction {
-    InterStageBuiltIn(InterStageBuiltIn),
+    InterStageBuiltIn(InterStageFragmentInputBuiltIn),
 }
 
 impl MaxFragmentShaderInputDeduction {
     pub fn for_variables(self) -> u32 {
         match self {
             Self::InterStageBuiltIn(builtin) => match builtin {
-                InterStageBuiltIn::FrontFacing
-                | InterStageBuiltIn::SampleIndex
-                | InterStageBuiltIn::SampleMask
-                | InterStageBuiltIn::PrimitiveIndex
-                | InterStageBuiltIn::SubgroupInvocationId
-                | InterStageBuiltIn::SubgroupSize
-                | InterStageBuiltIn::ViewIndex
-                | InterStageBuiltIn::PointCoord => 1,
-                InterStageBuiltIn::Barycentric => 3,
-                InterStageBuiltIn::Position => 0,
+                InterStageFragmentInputBuiltIn::FrontFacing
+                | InterStageFragmentInputBuiltIn::SampleIndex
+                | InterStageFragmentInputBuiltIn::SampleMask
+                | InterStageFragmentInputBuiltIn::PrimitiveIndex
+                | InterStageFragmentInputBuiltIn::SubgroupInvocationId
+                | InterStageFragmentInputBuiltIn::SubgroupSize
+                | InterStageFragmentInputBuiltIn::ViewIndex
+                | InterStageFragmentInputBuiltIn::PointCoord => 1,
+                InterStageFragmentInputBuiltIn::Barycentric => 3,
+                InterStageFragmentInputBuiltIn::Position => 0,
             },
         }
     }
@@ -58,16 +58,16 @@ impl MaxFragmentShaderInputDeduction {
         use naga::BuiltIn;
 
         Some(Self::InterStageBuiltIn(match builtin {
-            BuiltIn::Position { .. } => InterStageBuiltIn::Position,
-            BuiltIn::FrontFacing => InterStageBuiltIn::FrontFacing,
-            BuiltIn::SampleIndex => InterStageBuiltIn::SampleIndex,
-            BuiltIn::SampleMask => InterStageBuiltIn::SampleMask,
-            BuiltIn::PrimitiveIndex => InterStageBuiltIn::PrimitiveIndex,
-            BuiltIn::SubgroupSize => InterStageBuiltIn::SubgroupSize,
-            BuiltIn::SubgroupInvocationId => InterStageBuiltIn::SubgroupInvocationId,
-            BuiltIn::PointCoord => InterStageBuiltIn::PointCoord,
-            BuiltIn::Barycentric { .. } => InterStageBuiltIn::Barycentric,
-            BuiltIn::ViewIndex => InterStageBuiltIn::ViewIndex,
+            BuiltIn::Position { .. } => InterStageFragmentInputBuiltIn::Position,
+            BuiltIn::FrontFacing => InterStageFragmentInputBuiltIn::FrontFacing,
+            BuiltIn::SampleIndex => InterStageFragmentInputBuiltIn::SampleIndex,
+            BuiltIn::SampleMask => InterStageFragmentInputBuiltIn::SampleMask,
+            BuiltIn::PrimitiveIndex => InterStageFragmentInputBuiltIn::PrimitiveIndex,
+            BuiltIn::SubgroupSize => InterStageFragmentInputBuiltIn::SubgroupSize,
+            BuiltIn::SubgroupInvocationId => InterStageFragmentInputBuiltIn::SubgroupInvocationId,
+            BuiltIn::PointCoord => InterStageFragmentInputBuiltIn::PointCoord,
+            BuiltIn::Barycentric { .. } => InterStageFragmentInputBuiltIn::Barycentric,
+            BuiltIn::ViewIndex => InterStageFragmentInputBuiltIn::ViewIndex,
             BuiltIn::BaseInstance
             | BuiltIn::BaseVertex
             | BuiltIn::ClipDistance
@@ -116,7 +116,7 @@ impl MaxFragmentShaderInputDeduction {
 ///
 /// See also <https://www.w3.org/TR/webgpu/#inter-stage-builtins>.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum InterStageBuiltIn {
+pub enum InterStageFragmentInputBuiltIn {
     // Standard for WebGPU
     Position,
     FrontFacing,
