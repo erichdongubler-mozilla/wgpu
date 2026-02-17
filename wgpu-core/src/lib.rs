@@ -67,6 +67,7 @@ extern crate wgpu_types as wgt;
 
 mod as_hal;
 pub mod binding_model;
+pub(crate) mod buffer_region_overrun;
 pub mod command;
 mod conv;
 pub mod device;

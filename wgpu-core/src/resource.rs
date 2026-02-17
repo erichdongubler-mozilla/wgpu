@@ -18,6 +18,7 @@ use wgt::{
 use crate::device::trace;
 use crate::{
     binding_model::{BindGroup, BindingError},
+    buffer_region_overrun::BufferRegionOverrunError,
     device::{
         queue, resource::DeferredDestroy, BufferMapPendingClosure, Device, DeviceError,
         DeviceMismatch, HostMap, MissingDownlevelFlags, MissingFeatures,
@@ -304,27 +305,13 @@ pub enum BufferAccessError {
     MapAborted,
     #[error(transparent)]
     InvalidResource(#[from] InvalidResourceError),
-    #[error("Map start offset ({offset}) is out-of-bounds for buffer of size {buffer_size}")]
-    MapStartOffsetOverrun {
-        offset: wgt::BufferAddress,
-        buffer_size: wgt::BufferAddress,
-    },
-    #[error(
-        "Map end offset (start at {} + size of {}) is out-of-bounds for buffer of size {}",
-        offset,
-        size,
-        buffer_size
-    )]
-    MapEndOffsetOverrun {
-        offset: wgt::BufferAddress,
-        size: wgt::BufferAddress,
-        buffer_size: wgt::BufferAddress,
-    },
+    #[error("Map {_0}")]
+    MapOverrun(BufferRegionOverrunError),
 }
 
 impl WebGpuError for BufferAccessError {
     fn webgpu_error_type(&self) -> ErrorType {
-        match self {
+         match self {
             Self::Device(e) => e.webgpu_error_type(),
             Self::InvalidResource(e) => e.webgpu_error_type(),
             Self::DestroyedResource(e) => e.webgpu_error_type(),
@@ -341,8 +328,7 @@ impl WebGpuError for BufferAccessError {
             | Self::OutOfBoundsStartOffsetOverrun { .. }
             | Self::OutOfBoundsEndOffsetOverrun { .. }
             | Self::MapAborted
-            | Self::MapStartOffsetOverrun { .. }
-            | Self::MapEndOffsetOverrun { .. } => ErrorType::Validation,
+            | Self::MapOverrun { .. } => ErrorType::Validation,
         }
     }
 }
@@ -612,27 +598,12 @@ impl Buffer {
             return Err((op, BufferAccessError::UnalignedRangeSize { range_size }));
         }
 
-        if offset > self.size {
-            return Err((
-                op,
-                BufferAccessError::MapStartOffsetOverrun {
-                    offset,
-                    buffer_size: self.size,
-                },
-            ));
-        }
-        // NOTE: Should never underflow because of our earlier check.
-        if range_size > self.size - offset {
-            return Err((
-                op,
-                BufferAccessError::MapEndOffsetOverrun {
-                    offset,
-                    size: range_size,
-                    buffer_size: self.size,
-                },
-            ));
-        }
-        let end_offset = offset + range_size;
+        let end_offset = match BufferRegionOverrunError::check(offset, range_size, self.size)
+            .map_err(BufferAccessError::MapOverrun)
+        {
+            Ok(ok) => ok,
+            Err(e) => return Err((op, e)),
+        };
 
         if !offset.is_multiple_of(wgt::MAP_ALIGNMENT)
             || !end_offset.is_multiple_of(wgt::COPY_BUFFER_ALIGNMENT)
@@ -725,20 +696,8 @@ impl Buffer {
         let map_state = &*self.map_state.lock();
         match *map_state {
             BufferMapState::Init { ref staging_buffer } => {
-                if offset > self.size {
-                    return Err(BufferAccessError::MapStartOffsetOverrun {
-                        offset,
-                        buffer_size: self.size,
-                    });
-                }
-                // NOTE: Should never underflow because of our earlier check.
-                if range_size > self.size - offset {
-                    return Err(BufferAccessError::MapEndOffsetOverrun {
-                        offset,
-                        size: range_size,
-                        buffer_size: self.size,
-                    });
-                }
+                let _ = BufferRegionOverrunError::check(offset, range_size, self.size)
+                    .map_err(BufferAccessError::MapOverrun)?;
                 let ptr = unsafe { staging_buffer.ptr() };
                 let ptr = unsafe { NonNull::new_unchecked(ptr.as_ptr().offset(offset as isize)) };
                 Ok((ptr, range_size))

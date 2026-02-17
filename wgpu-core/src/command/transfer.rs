@@ -10,6 +10,7 @@ use wgt::{
 
 use crate::{
     api_log,
+    buffer_region_overrun::BufferRegionOverrunError,
     command::{
         clear_texture, encoder::EncodingState, ArcCommand, CommandEncoderError, EncoderStateError,
     },
@@ -47,24 +48,8 @@ pub enum TransferError {
     MissingBufferUsage(#[from] MissingBufferUsageError),
     #[error(transparent)]
     MissingTextureUsage(#[from] MissingTextureUsageError),
-    #[error("Start offset ({offset}) is out-of-bounds for buffer of size {buffer_size}")]
-    BufferStartOffsetOverrun {
-        offset: BufferAddress,
-        buffer_size: BufferAddress,
-        side: CopySide,
-    },
-    #[error(
-        "End offset (start at {} + size of {}) is out-of-bounds for buffer of size {}",
-        offset,
-        size,
-        buffer_size
-    )]
-    BufferEndOffsetOverrun {
-        offset: BufferAddress,
-        size: BufferAddress,
-        buffer_size: BufferAddress,
-        side: CopySide,
-    },
+    #[error("Transfer {_0}")]
+    BufferOverrun(BufferRegionOverrunError),
     #[error("Copy of {dimension:?} {start_offset}..{end_offset} would end up overrunning the bounds of the {side:?} texture of {dimension:?} size {texture_size}")]
     TextureOverrun {
         start_offset: u32,
@@ -192,9 +177,8 @@ impl WebGpuError for TransferError {
             Self::MissingTextureUsage(e) => e.webgpu_error_type(),
             Self::MemoryInitFailure(e) => e.webgpu_error_type(),
 
-            Self::BufferEndOffsetOverrun { .. }
+            Self::BufferOverrun { .. }
             | Self::TextureOverrun { .. }
-            | Self::BufferStartOffsetOverrun { .. }
             | Self::UnsupportedPartialTransfer { .. }
             | Self::InvalidCopyWithinSameTexture { .. }
             | Self::InvalidTextureAspect { .. }
@@ -351,22 +335,9 @@ pub(crate) fn validate_linear_texture_data(
         return Err(TransferError::UnspecifiedRowsPerImage);
     };
 
-    if offset > buffer_size {
-        return Err(TransferError::BufferStartOffsetOverrun {
-            start_offset: offset,
-            buffer_size,
-            side: buffer_side,
-        });
-    }
-    // NOTE: Should never underflow because of our earlier check.
-    if bytes_in_copy > buffer_size - offset {
-        return Err(TransferError::BufferEndOffsetOverrun {
-            offset,
-            size: bytes_in_copy,
-            buffer_size,
-            side: buffer_side,
-        });
-    }
+    // Avoid underflow in the subtraction by checking bytes_in_copy against buffer_size first.
+    let _ = BufferRegionOverrunError::check(offset, bytes_in_copy, buffer_size)
+        .map_err(|e| e.to_transfer_error(buffer_side))?;
 
     let is_contiguous = (row_stride_bytes == row_bytes_dense || !requires_multiple_rows)
         && (image_stride_bytes == image_bytes_dense || !requires_multiple_images);
@@ -999,14 +970,10 @@ pub(super) fn copy_buffer_to_buffer(
         .map_err(TransferError::MissingBufferUsage)?;
     let dst_barrier = dst_pending.map(|pending| pending.into_hal(dst_buffer, state.snatch_guard));
 
-    if source_offset > src_buffer.size {
-        return Err(TransferError::BufferStartOffsetOverrun {
-            offset: source_offset,
-            buffer_size: src_buffer.size,
-            side: CopySide::Source,
-        }
-        .into());
-    }
+    let src_end_offset_checker =
+        BufferRegionOverrunError::check_start(source_offset, src_buffer.size)
+            .map_err(|e| e.to_transfer_error(CopySide::Source))?;
+
     let size = size.unwrap_or_else(|| {
         // NOTE: Should never underflow because of our earlier check.
         src_buffer.size - source_offset
@@ -1043,38 +1010,13 @@ pub(super) fn copy_buffer_to_buffer(
         }
     }
 
-    if size > src_buffer.size - source_offset {
-        return Err(TransferError::BufferEndOffsetOverrun {
-            offset: source_offset,
-            size,
-            buffer_size: src_buffer.size,
-            side: CopySide::Source,
-        }
-        .into());
-    }
-    // NOTE: Should never overflow because of our earlier check.
-    let source_end_offset = source_offset + size;
+    let source_end_offset = src_end_offset_checker
+        .check_end(size)
+        .map_err(|e| e.to_transfer_error(CopySide::Source))?;
 
-    if destination_offset > dst_buffer.size {
-        return Err(TransferError::BufferStartOffsetOverrun {
-            offset: destination_offset,
-            buffer_size: dst_buffer.size,
-            side: CopySide::Destination,
-        }
-        .into());
-    }
-    // NOTE: Should never underflow because of our earlier check.
-    if size > dst_buffer.size - destination_offset {
-        return Err(TransferError::BufferEndOffsetOverrun {
-            offset: destination_offset,
-            size,
-            buffer_size: dst_buffer.size,
-            side: CopySide::Destination,
-        }
-        .into());
-    }
-    // NOTE: Should never overflow because of our earlier check.
-    let destination_end_offset = destination_offset + size;
+    let destination_end_offset =
+        BufferRegionOverrunError::check(destination_offset, size, dst_buffer.size)
+            .map_err(|e| e.to_transfer_error(CopySide::Destination))?;
 
     // This must happen after parameter validation (so that errors are reported
     // as required by the spec), but before any side effects.

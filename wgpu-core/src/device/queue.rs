@@ -18,6 +18,7 @@ use super::{life::LifetimeTracker, Device};
 use crate::device::trace::{Action, IntoTrace};
 use crate::{
     api_log,
+    buffer_region_overrun::BufferRegionOverrunError,
     command::{
         extract_texture_selector, validate_linear_texture_data, validate_texture_buffer_copy,
         validate_texture_copy_dst_format, validate_texture_copy_range, ClearError,
@@ -657,21 +658,8 @@ impl Queue {
             return Err(TransferError::UnalignedBufferOffset(buffer_offset));
         }
 
-        if buffer_offset > buffer.size {
-            return Err(TransferError::BufferStartOffsetOverrun {
-                offset: buffer_offset,
-                buffer_size: buffer.size,
-                side: CopySide::Destination,
-            });
-        }
-        if buffer_size.get() > buffer.size - buffer_offset {
-            return Err(TransferError::BufferEndOffsetOverrun {
-                offset: buffer_offset,
-                size: buffer_size.get(),
-                buffer_size: buffer.size,
-                side: CopySide::Destination,
-            });
-        }
+        let _ = BufferRegionOverrunError::check(buffer_offset, buffer_size.get(), buffer.size)
+            .map_err(|e| e.to_transfer_error(CopySide::Destination))?;
 
         Ok(())
     }
