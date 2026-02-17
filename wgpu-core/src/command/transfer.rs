@@ -47,19 +47,20 @@ pub enum TransferError {
     MissingBufferUsage(#[from] MissingBufferUsageError),
     #[error(transparent)]
     MissingTextureUsage(#[from] MissingTextureUsageError),
-    #[error(
-        "Copy at offset {start_offset} bytes would end up overrunning the bounds of the {side:?} buffer of size {buffer_size}"
-    )]
+    #[error("Start offset ({offset}) is out-of-bounds for buffer of size {buffer_size}")]
     BufferStartOffsetOverrun {
-        start_offset: BufferAddress,
+        offset: BufferAddress,
         buffer_size: BufferAddress,
         side: CopySide,
     },
     #[error(
-        "Copy at offset {start_offset} for {size} bytes would end up overrunning the bounds of the {side:?} buffer of size {buffer_size}"
+        "End offset (start at {} + size of {}) is out-of-bounds for buffer of size {}",
+        offset,
+        size,
+        buffer_size
     )]
     BufferEndOffsetOverrun {
-        start_offset: BufferAddress,
+        offset: BufferAddress,
         size: BufferAddress,
         buffer_size: BufferAddress,
         side: CopySide,
@@ -360,7 +361,7 @@ pub(crate) fn validate_linear_texture_data(
     // NOTE: Should never underflow because of our earlier check.
     if bytes_in_copy > buffer_size - offset {
         return Err(TransferError::BufferEndOffsetOverrun {
-            start_offset: offset,
+            offset,
             size: bytes_in_copy,
             buffer_size,
             side: buffer_side,
@@ -1000,7 +1001,7 @@ pub(super) fn copy_buffer_to_buffer(
 
     if source_offset > src_buffer.size {
         return Err(TransferError::BufferStartOffsetOverrun {
-            start_offset: source_offset,
+            offset: source_offset,
             buffer_size: src_buffer.size,
             side: CopySide::Source,
         }
@@ -1044,7 +1045,7 @@ pub(super) fn copy_buffer_to_buffer(
 
     if size > src_buffer.size - source_offset {
         return Err(TransferError::BufferEndOffsetOverrun {
-            start_offset: source_offset,
+            offset: source_offset,
             size,
             buffer_size: src_buffer.size,
             side: CopySide::Source,
@@ -1056,7 +1057,7 @@ pub(super) fn copy_buffer_to_buffer(
 
     if destination_offset > dst_buffer.size {
         return Err(TransferError::BufferStartOffsetOverrun {
-            start_offset: destination_offset,
+            offset: destination_offset,
             buffer_size: dst_buffer.size,
             side: CopySide::Destination,
         }
@@ -1065,7 +1066,7 @@ pub(super) fn copy_buffer_to_buffer(
     // NOTE: Should never underflow because of our earlier check.
     if size > dst_buffer.size - destination_offset {
         return Err(TransferError::BufferEndOffsetOverrun {
-            start_offset: destination_offset,
+            offset: destination_offset,
             size,
             buffer_size: dst_buffer.size,
             side: CopySide::Destination,
