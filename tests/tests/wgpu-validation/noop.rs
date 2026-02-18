@@ -56,3 +56,18 @@ fn device_and_buffers() {
     device.poll(wgpu::PollType::wait_indefinitely()).unwrap();
     assert!(done2.load(Relaxed));
 }
+
+#[test]
+fn transfer_overflow() {
+    let (device, queue) = wgpu::Device::noop(&wgpu::DeviceDescriptor::default());
+
+    // Create a small buffer. We don't care about the size of this buffer, just that we can use it.
+    let buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some("hello world"),
+        size: 8,
+        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
+        mapped_at_creation: false,
+    });
+
+    buffer.map_async(wgpu::MapMode::Read, , callback);
+}
