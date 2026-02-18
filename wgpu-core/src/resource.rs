@@ -281,6 +281,8 @@ pub enum BufferAccessError {
     UnalignedOffset { offset: wgt::BufferAddress },
     #[error("Buffer range size invalid: range_size {range_size} must be multiple of 4")]
     UnalignedRangeSize { range_size: wgt::BufferAddress },
+    #[error("Mapped range ")]
+    OutOfBounds(BufferRegionOverrunError),
     #[error("Buffer access out of bounds: index {index} would underrun the buffer (limit: {min})")]
     OutOfBoundsStartOffsetUnderrun {
         index: wgt::BufferAddress,

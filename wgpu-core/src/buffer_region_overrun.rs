@@ -3,13 +3,49 @@ use wgt::BufferAddress;
 
 use crate::command::{CopySide, TransferError};
 
+#[derive(Clone, Debug, Error)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum BufferRegion {
+    Range(BufferRange),
+    Whole { buffer_size: BufferAddress },
+}
+
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct BufferRange {
+    pub start_offset: BufferAddress,
+    pub size: BufferAddress,
+}
+
+#[derive(Clone, Debug, Error)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct BufferRegionOutOfBoundsError {
+    pub range: BufferRange,
+    pub region: BufferRegion,
+    pub kind: BufferRegionOutOfBoundsErrorKind,
+}
+
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[non_exhaustive]
+pub enum BufferRegionOutOfBoundsErrorKind {
+    StartOffsetUnderrun,
+    StartOffsetOverrun,
+    EndOffsetOverrun,
+}
+
 /// Error encountered while checking offsets against a buffer.
 #[derive(Clone, Debug, Error)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[non_exhaustive]
 pub enum BufferRegionOverrunError {
+    #[error("start offset ({offset}) would underrun of size {buffer_size}")]
+    StartOffsetUnderrun {
+        start_offset: BufferAddress,
+        region: BufferRegion,
+    },
     #[error("start offset ({offset}) is out-of-bounds for buffer of size {buffer_size}")]
-    StartOffset {
+    StartOffsetOverrun {
         offset: BufferAddress,
         buffer_size: BufferAddress,
     },
@@ -19,7 +55,7 @@ pub enum BufferRegionOverrunError {
         size,
         buffer_size
     )]
-    EndOffset {
+    EndOffsetOverrun {
         offset: BufferAddress,
         size: BufferAddress,
         buffer_size: BufferAddress,
@@ -43,7 +79,7 @@ impl BufferRegionOverrunError {
         buffer_size: BufferAddress,
     ) -> Result<BufferOverrunEndOffsetChecker, Self> {
         if start_offset >= buffer_size {
-            return Err(Self::StartOffset {
+            return Err(Self::StartOffsetOverrun {
                 offset: start_offset,
                 buffer_size,
             });
@@ -74,7 +110,7 @@ impl BufferOverrunEndOffsetChecker {
 
         // NOTE: Should never underflow because of our earlier check.
         if size > buffer_size - start_offset {
-            return Err(BufferRegionOverrunError::EndOffset {
+            return Err(BufferRegionOverrunError::EndOffsetOverrun {
                 offset: start_offset,
                 size,
                 buffer_size,
