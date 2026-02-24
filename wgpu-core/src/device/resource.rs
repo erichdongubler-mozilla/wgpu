@@ -4833,17 +4833,17 @@ impl Device {
         // Variant of adapter.get_texture_format_features that takes device features into account
         use wgt::TextureFormatFeatureFlags as tfsc;
         let mut format_features = self.adapter.get_texture_format_features(format);
-        if (format == TextureFormat::R32Float
-            || format == TextureFormat::Rg32Float
-            || format == TextureFormat::Rgba32Float)
-            && !self.features.contains(wgt::Features::FLOAT32_FILTERABLE)
+        if matches!(
+            format,
+            TextureFormat::R32Float | TextureFormat::Rg32Float | TextureFormat::Rgba32Float
+        ) && !self.features.contains(wgt::Features::FLOAT32_FILTERABLE)
         {
             format_features.flags.set(tfsc::FILTERABLE, false);
         }
-        if (format == TextureFormat::R32Float
-            || format == TextureFormat::Rg32Float
-            || format == TextureFormat::Rgba32Float)
-            && !self.features.contains(wgt::Features::FLOAT32_BLENDABLE)
+        if matches!(
+            format,
+            TextureFormat::R32Float | TextureFormat::Rg32Float | TextureFormat::Rgba32Float
+        ) && !self.features.contains(wgt::Features::FLOAT32_BLENDABLE)
         {
             format_features.flags.set(tfsc::BLENDABLE, false);
         }
