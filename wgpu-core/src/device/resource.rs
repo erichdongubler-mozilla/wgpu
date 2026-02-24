@@ -4840,6 +4840,13 @@ impl Device {
         {
             format_features.flags.set(tfsc::FILTERABLE, false);
         }
+        if (format == TextureFormat::R32Float
+            || format == TextureFormat::Rg32Float
+            || format == TextureFormat::Rgba32Float)
+            && !self.features.contains(wgt::Features::FLOAT32_BLENDABLE)
+        {
+            format_features.flags.set(tfsc::BLENDABLE, false);
+        }
         format_features
     }
 
