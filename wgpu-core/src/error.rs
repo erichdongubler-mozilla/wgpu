@@ -62,3 +62,27 @@ impl Error for MultiError {
         self.inner[0].source()
     }
 }
+
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum MaybeOverflowed<T> {
+    WithinBounds(T),
+    Overflowed,
+}
+
+impl<T> MaybeOverflowed<T> {
+    pub fn from_opt(total: Option<T>) -> MaybeOverflowed<T> {
+        total.map(Self::WithinBounds).unwrap_or(Self::Overflowed)
+    }
+}
+
+impl<T> fmt::Display for MaybeOverflowed<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::WithinBounds(t) => fmt::Display::fmt(t, f),
+            Self::Overflowed => write!(f, "<OVERFLOWED>"),
+        }
+    }
+}

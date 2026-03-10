@@ -16,7 +16,8 @@ use wgt::{
 };
 
 use crate::{
-    command::ColorAttachmentError, device::bgl, resource::InvalidResourceError,
+    command::ColorAttachmentError, device::bgl, error::MaybeOverflowed,
+    resource::InvalidResourceError,
     validation::shader_io_deductions::MaxFragmentShaderInputDeduction, FastHashMap, FastHashSet,
 };
 
@@ -1952,15 +1953,16 @@ pub fn validate_color_attachment_bytes_per_sample(
 #[derive(Clone, Debug, Error)]
 pub enum InvalidWorkgroupSizeError {
     #[error(
-        "Workgroup size {dimensions:?} ({total} total invocations) must be less or equal to \
-        the per-dimension limit `Limits::{per_dimension_limits_desc}` of {per_dimension_limits:?} \
-        and the total invocation limit `Limits::{total_limit_desc}` of {total_limit}"
+        "Shader entry point's workgroup size {dimensions:?} ({total:?} total invocations) must be \
+        less or equal to the per-dimension limit `Limits::{per_dimension_limits_desc}` of \
+        {per_dimension_limits:?} and the total invocation limit `Limits::{total_limit_desc}` of \
+        {total_limit}"
     )]
     LimitExceeded {
         dimensions: [u32; 3],
         per_dimension_limits: [u32; 3],
         per_dimension_limits_desc: &'static str,
-        total: u32,
+        total: MaybeOverflowed<u32>,
         total_limit: u32,
         total_limit_desc: &'static str,
     },
@@ -1982,9 +1984,9 @@ pub(crate) fn check_workgroup_sizes(
 ) -> Result<u32, InvalidWorkgroupSizeError> {
     let total = sizes
         .iter()
-        .fold(1u32, |total, &dim| total.saturating_mul(dim));
+        .try_fold(1u32, |total, &dim| total.checked_mul(dim));
 
-    let invalid_total_invocations = total > total_limit;
+    let invalid_total_invocations = total.is_none_or(|t| t > total_limit);
 
     let dimension_too_large = sizes
         .iter()
@@ -1996,12 +1998,12 @@ pub(crate) fn check_workgroup_sizes(
             dimensions: *sizes,
             per_dimension_limits: *per_dimension_limits,
             per_dimension_limits_desc,
-            total,
+            total: MaybeOverflowed::from_opt(total),
             total_limit,
             total_limit_desc,
         })
     } else {
-        Ok(total)
+        Ok(total.unwrap())
     }
 }
 
