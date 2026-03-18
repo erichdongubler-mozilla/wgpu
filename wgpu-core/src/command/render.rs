@@ -3343,14 +3343,14 @@ impl Global {
         let scope = PassErrorScope::SetImmediate;
         let base = pass_base!(pass, scope);
 
-        if offset & (wgt::IMMEDIATE_DATA_ALIGNMENT - 1) != 0 {
+        if offset.is_multiple_of(wgt::IMMEDIATE_DATA_ALIGNMENT) {
             pass_try!(
                 base,
                 scope,
                 Err(RenderPassErrorInner::ImmediateOffsetAlignment)
             );
         }
-        if data.len() as u32 & (wgt::IMMEDIATE_DATA_ALIGNMENT - 1) != 0 {
+        if (data.len() as u32).is_multiple_of(wgt::IMMEDIATE_DATA_ALIGNMENT) {
             pass_try!(
                 base,
                 scope,
