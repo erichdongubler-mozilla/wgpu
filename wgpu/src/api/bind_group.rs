@@ -157,7 +157,7 @@ static_assertions::assert_impl_all!(BindGroupEntry<'_>: Send, Sync);
 #[derive(Clone, Debug)]
 pub struct BindGroupDescriptor<'a> {
     /// Debug label of the bind group. This will show up in graphics debuggers for easy identification.
-    pub label: Label<'a>,
+    pub label: Label<'a> = None,
     /// The [`BindGroupLayout`] that corresponds to this bind group.
     pub layout: &'a BindGroupLayout,
     /// The resources to bind to this bind group.

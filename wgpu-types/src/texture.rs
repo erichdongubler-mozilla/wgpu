@@ -449,30 +449,31 @@ pub enum StorageTextureAccess {
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct TextureViewDescriptor<L> {
     /// Debug label of the texture view. This will show up in graphics debuggers for easy identification.
+    // TODO: make optional to specify
     pub label: L,
     /// Format of the texture view. Either must be the same as the texture format or in the list
     /// of `view_formats` in the texture's descriptor.
-    pub format: Option<TextureFormat>,
+    pub format: Option<TextureFormat> = None,
     /// The dimension of the texture view. For 1D textures, this must be `D1`. For 2D textures it must be one of
     /// `D2`, `D2Array`, `Cube`, and `CubeArray`. For 3D textures it must be `D3`
-    pub dimension: Option<TextureViewDimension>,
+    pub dimension: Option<TextureViewDimension> = None,
     /// The allowed usage(s) for the texture view. Must be a subset of the usage flags of the texture.
     /// If not provided, defaults to the full set of usage flags of the texture.
-    pub usage: Option<TextureUsages>,
+    pub usage: Option<TextureUsages> = None,
     /// Aspect of the texture. Color textures must be [`TextureAspect::All`].
-    pub aspect: TextureAspect,
+    pub aspect: TextureAspect = TextureAspect::All,
     /// Base mip level.
-    pub base_mip_level: u32,
+    pub base_mip_level: u32 = 0,
     /// Mip level count.
     /// If `Some(count)`, `base_mip_level + count` must be less or equal to underlying texture mip count.
     /// If `None`, considered to include the rest of the mipmap levels, but at least 1 in total.
-    pub mip_level_count: Option<u32>,
+    pub mip_level_count: Option<u32> = None,
     /// Base array layer.
-    pub base_array_layer: u32,
+    pub base_array_layer: u32 = 0,
     /// Layer count.
     /// If `Some(count)`, `base_array_layer + count` must be less or equal to the underlying array count.
     /// If `None`, considered to include the rest of the array layers, but at least 1 in total.
-    pub array_layer_count: Option<u32>,
+    pub array_layer_count: Option<u32> = None,
 }
 
 /// Describes a [`Texture`](../wgpu/struct.Texture.html).
@@ -484,17 +485,18 @@ pub struct TextureViewDescriptor<L> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct TextureDescriptor<L, V> {
     /// Debug label of the texture. This will show up in graphics debuggers for easy identification.
+    // TODO: make optional to specify
     pub label: L,
     /// Size of the texture. All components must be greater than zero. For a
     /// regular 1D/2D texture, the unused sizes will be 1. For 2DArray textures,
     /// Z is the number of 2D textures in that array.
     pub size: Extent3d,
     /// Mip count of texture. For a texture with no extra mips, this must be 1.
-    pub mip_level_count: u32,
+    pub mip_level_count: u32 = 1,
     /// Sample count of texture. If this is not 1, texture must have [`BindingType::Texture::multisampled`] set to true.
-    pub sample_count: u32,
+    pub sample_count: u32 = 1,
     /// Dimensions of the texture.
-    pub dimension: TextureDimension,
+    pub dimension: TextureDimension = TextureDimension::D2,
     /// Format of the texture.
     pub format: TextureFormat,
     /// Allowed usages of the texture. If used in other ways, the operation will panic.
@@ -504,6 +506,7 @@ pub struct TextureDescriptor<L, V> {
     /// View formats of the same format as the texture are always allowed.
     ///
     /// Note: currently, only the srgb-ness is allowed to change. (ex: `Rgba8Unorm` texture + `Rgba8UnormSrgb` view)
+    // TODO: make optional to specify
     pub view_formats: V,
 }
 
@@ -641,44 +644,34 @@ pub struct SamplerDescriptor<L> {
     /// Debug label of the sampler. This will show up in graphics debuggers for easy identification.
     pub label: L,
     /// How to deal with out of bounds accesses in the u (i.e. x) direction
-    pub address_mode_u: AddressMode,
+    pub address_mode_u: AddressMode = AddressMode::ClampToEdge,
     /// How to deal with out of bounds accesses in the v (i.e. y) direction
-    pub address_mode_v: AddressMode,
+    pub address_mode_v: AddressMode = AddressMode::ClampToEdge,
     /// How to deal with out of bounds accesses in the w (i.e. z) direction
-    pub address_mode_w: AddressMode,
+    pub address_mode_w: AddressMode = AddressMode::ClampToEdge,
     /// How to filter the texture when it needs to be magnified (made larger)
-    pub mag_filter: FilterMode,
+    pub mag_filter: FilterMode = FilterMode::Nearest,
     /// How to filter the texture when it needs to be minified (made smaller)
-    pub min_filter: FilterMode,
+    pub min_filter: FilterMode = FilterMode::Nearest,
     /// How to filter between mip map levels
-    pub mipmap_filter: MipmapFilterMode,
+    pub mipmap_filter: MipmapFilterMode = MipmapFilterMode::Nearest,
     /// Minimum level of detail (i.e. mip level) to use
-    pub lod_min_clamp: f32,
+    pub lod_min_clamp: f32 = 0.0,
     /// Maximum level of detail (i.e. mip level) to use
-    pub lod_max_clamp: f32,
+    pub lod_max_clamp: f32 = 32.0,
     /// If this is enabled, this is a comparison sampler using the given comparison function.
-    pub compare: Option<crate::CompareFunction>,
+    pub compare: Option<crate::CompareFunction> = None,
     /// Must be at least 1. If this is not 1, all filter modes must be linear.
-    pub anisotropy_clamp: u16,
+    pub anisotropy_clamp: u16 = 1,
     /// Border color to use when `address_mode` is [`AddressMode::ClampToBorder`]
-    pub border_color: Option<SamplerBorderColor>,
+    pub border_color: Option<SamplerBorderColor> = None,
 }
 
 impl<L: Default> Default for SamplerDescriptor<L> {
     fn default() -> Self {
         Self {
             label: Default::default(),
-            address_mode_u: Default::default(),
-            address_mode_v: Default::default(),
-            address_mode_w: Default::default(),
-            mag_filter: Default::default(),
-            min_filter: Default::default(),
-            mipmap_filter: Default::default(),
-            lod_min_clamp: 0.0,
-            lod_max_clamp: 32.0,
-            compare: None,
-            anisotropy_clamp: 1,
-            border_color: None,
+            ..
         }
     }
 }
@@ -795,7 +788,7 @@ pub enum SamplerBorderColor {
 pub struct TexelCopyBufferLayout {
     /// Offset into the buffer that is the start of the texture. Must be a multiple of texture block size.
     /// For non-compressed textures, this is 1.
-    pub offset: crate::BufferAddress,
+    pub offset: crate::BufferAddress = 0,
     /// Bytes per "row" in an image.
     ///
     /// A row is one row of pixels or of compressed blocks in the x direction.
@@ -814,7 +807,7 @@ pub struct TexelCopyBufferLayout {
     #[doc = link_to_wgpu_docs!(["CEcbtt"]: "struct.CommandEncoder.html#method.copy_buffer_to_texture")]
     #[doc = link_to_wgpu_docs!(["CEcttb"]: "struct.CommandEncoder.html#method.copy_texture_to_buffer")]
     #[doc = link_to_wgpu_docs!(["Qwt"]: "struct.Queue.html#method.write_texture")]
-    pub bytes_per_row: Option<u32>,
+    pub bytes_per_row: Option<u32> = None,
     /// "Rows" that make up a single "image".
     ///
     /// A row is one row of pixels or of compressed blocks in the x direction.
@@ -824,7 +817,7 @@ pub struct TexelCopyBufferLayout {
     /// The amount of rows per image may be larger than the actual amount of rows of data.
     ///
     /// Required if there are multiple images (i.e. the depth is more than one).
-    pub rows_per_image: Option<u32>,
+    pub rows_per_image: Option<u32> = None,
 }
 
 /// View of a buffer which can be used to copy to/from a texture.
@@ -838,7 +831,7 @@ pub struct TexelCopyBufferInfo<B> {
     /// The buffer to be copied to/from.
     pub buffer: B,
     /// The layout of the texture data in this buffer.
-    pub layout: TexelCopyBufferLayout,
+    pub layout: TexelCopyBufferLayout = TexelCopyBufferLayout { .. },
 }
 
 /// View of a texture which can be used to copy to/from a buffer/texture.
@@ -852,15 +845,15 @@ pub struct TexelCopyTextureInfo<T> {
     /// The texture to be copied to/from.
     pub texture: T,
     /// The target mip level of the texture.
-    pub mip_level: u32,
+    pub mip_level: u32 = 0,
     /// The base texel of the texture in the selected `mip_level`. Together
     /// with the `copy_size` argument to copy functions, defines the
     /// sub-region of the texture to copy.
     #[cfg_attr(feature = "serde", serde(default))]
-    pub origin: Origin3d,
+    pub origin: Origin3d = Origin3d { .. },
     /// The copy aspect.
     #[cfg_attr(feature = "serde", serde(default))]
-    pub aspect: TextureAspect,
+    pub aspect: TextureAspect = TextureAspect::All,
 }
 
 impl<T> TexelCopyTextureInfo<T> {

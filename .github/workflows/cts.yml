@@ -14,7 +14,7 @@ on:
   merge_group:
 
 env:
-  REPO_MSRV: "1.93"
+  REPO_MSRV: "nightly-2026-03-11"
   CARGO_INCREMENTAL: false
   CARGO_TERM_COLOR: always
   DENO_WEBGPU_DX12_COMPILER: dynamicdxc
