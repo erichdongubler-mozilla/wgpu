@@ -352,12 +352,12 @@ impl RenderBundleEncoder {
                         .map_pass_err(scope)?;
                 }
                 &RenderCommand::SetImmediate {
-                    offset,
-                    size_bytes,
-                    values_offset,
+                    range_offset,
+                    contents_bytes,
+                    data_offset,
                 } => {
                     let scope = PassErrorScope::SetImmediate;
-                    set_immediates(&mut state, offset, size_bytes, values_offset)
+                    set_immediates(&mut state, range_offset, contents_bytes, data_offset)
                         .map_pass_err(scope)?;
                 }
                 &RenderCommand::Draw {
@@ -696,21 +696,21 @@ fn set_vertex_buffer(
 
 fn set_immediates(
     state: &mut State,
-    offset: u32,
-    size_bytes: u32,
-    values_offset: Option<u32>,
+    range_offset: u32,
+    contents_bytes: u32,
+    data_offset: Option<u32>,
 ) -> Result<(), RenderBundleErrorInner> {
     let pipeline_state = state.pipeline()?;
 
     pipeline_state
         .pipeline
         .layout
-        .validate_immediates_ranges(offset, size_bytes)?;
+        .validate_immediates_ranges(range_offset, contents_bytes)?;
 
     state.commands.push(ArcRenderCommand::SetImmediate {
-        offset,
-        size_bytes,
-        values_offset,
+        range_offset,
+        contents_bytes,
+        data_offset,
     });
     Ok(())
 }
@@ -1022,9 +1022,9 @@ impl RenderBundle {
                     unsafe { raw.set_vertex_buffer(*slot, bb) };
                 }
                 Cmd::SetImmediate {
-                    offset,
-                    size_bytes,
-                    values_offset,
+                    range_offset: offset,
+                    contents_bytes: size_bytes,
+                    data_offset: values_offset,
                 } => {
                     let pipeline_layout = pipeline_layout.as_ref().unwrap();
 
@@ -1301,9 +1301,9 @@ impl PipelineState {
         }
 
         Some(ArcRenderCommand::SetImmediate {
-            offset: 0,
-            size_bytes: self.immediate_size,
-            values_offset: None,
+            range_offset: 0,
+            contents_bytes: self.immediate_size,
+            data_offset: None,
         })
     }
 }
@@ -1639,9 +1639,9 @@ pub mod bundle_ffi {
         );
 
         pass.base.commands.push(RenderCommand::SetImmediate {
-            offset,
-            size_bytes,
-            values_offset: Some(value_offset),
+            range_offset: offset,
+            contents_bytes: size_bytes,
+            data_offset: Some(value_offset),
         });
     }
 

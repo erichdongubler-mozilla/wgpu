@@ -529,13 +529,13 @@ impl IntoTrace for ArcRenderCommand {
             },
             C::SetScissor(rect) => C::SetScissor(rect),
             C::SetImmediate {
-                offset,
-                size_bytes,
-                values_offset,
+                range_offset: offset,
+                contents_bytes: size_bytes,
+                data_offset: values_offset,
             } => C::SetImmediate {
-                offset,
-                size_bytes,
-                values_offset,
+                range_offset: offset,
+                contents_bytes: size_bytes,
+                data_offset: values_offset,
             },
             C::Draw {
                 vertex_count,

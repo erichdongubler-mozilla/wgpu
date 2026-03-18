@@ -32,10 +32,10 @@ pub struct BindGroupIndexOutOfRange {
 pub struct MissingPipeline;
 
 #[derive(Clone, Debug, Error)]
-#[error("Setting `values_offset` to be `None` is only for internal use in render bundles")]
-pub struct InvalidValuesOffset;
+#[error("Setting `data_offset` to be `None` is only for internal use in render bundles")]
+pub struct InvalidDataOffset;
 
-impl WebGpuError for InvalidValuesOffset {
+impl WebGpuError for InvalidDataOffset {
     fn webgpu_error_type(&self) -> ErrorType {
         ErrorType::Validation
     }
@@ -220,17 +220,17 @@ where
 pub(crate) fn set_immediates<E, F: FnOnce(&[u32])>(
     state: &mut PassState,
     immediates_data: &[u32],
-    offset: u32,
-    size_bytes: u32,
-    values_offset: Option<u32>,
+    range_offset: u32,
+    contents_bytes: u32,
+    data_offset: Option<u32>,
     f: F,
 ) -> Result<(), E>
 where
-    E: From<ImmediateUploadError> + From<InvalidValuesOffset> + From<MissingPipeline>,
+    E: From<ImmediateUploadError> + From<InvalidDataOffset> + From<MissingPipeline>,
 {
     api_log!("Pass::set_immediates");
 
-    let values_offset = values_offset.ok_or(InvalidValuesOffset)?;
+    let data_offset = data_offset.ok_or(InvalidDataOffset)?;
 
     let pipeline_layout = state
         .binder
@@ -238,34 +238,34 @@ where
         .as_ref()
         .ok_or(MissingPipeline)?;
 
-    pipeline_layout.validate_immediates_ranges(offset, size_bytes)?;
+    pipeline_layout.validate_immediates_ranges(range_offset, contents_bytes)?;
 
-    let values_offset_usize = usize::try_from(values_offset)
+    let data_offset_usize = usize::try_from(data_offset)
         .expect("`values_offset` is outside the bounds of `usize` (!?)");
-    if values_offset_usize > immediates_data.len() {
-        return Err(ImmediateUploadError::ValueStartIndexOverrun {
-            start_index: values_offset,
+    if data_offset_usize > immediates_data.len() {
+        return Err(ImmediateUploadError::DataStartIndexOverrun {
+            range_offset: data_offset,
             data_size: immediates_data.len(),
         }
         .into());
     }
 
     // NOTE: The `validate_immediates_ranges` call above validates `size_bytes` is aligned.
-    let size_immediate_elements = size_bytes / wgt::IMMEDIATE_DATA_ALIGNMENT;
+    let size_immediate_elements = contents_bytes / wgt::IMMEDIATE_DATA_ALIGNMENT;
     let size_immediate_elements_usize = usize::try_from(size_immediate_elements)
         .expect("`size_immediate_elements` is outside the bounds of `usize` (!?)");
-    if size_immediate_elements_usize > immediates_data.len() - values_offset_usize {
-        return Err(ImmediateUploadError::ValueEndIndexOverrun {
-            start_index: values_offset,
-            count: size_immediate_elements,
+    if size_immediate_elements_usize > immediates_data.len() - data_offset_usize {
+        return Err(ImmediateUploadError::DataEndIndexOverrun {
+            range_offset: data_offset,
+            contents_bytes: size_immediate_elements,
             data_size: immediates_data.len(),
         }
         .into());
     }
 
     // NOTE: These additions are will not overflow, because we've validated the range above.
-    let values_end_offset = values_offset_usize + size_immediate_elements_usize;
-    let data_slice = &immediates_data[(values_offset_usize)..values_end_offset];
+    let values_end_offset = data_offset_usize + size_immediate_elements_usize;
+    let data_slice = &immediates_data[(data_offset_usize)..values_end_offset];
 
     f(data_slice);
 
@@ -273,7 +273,7 @@ where
         state
             .base
             .raw_encoder
-            .set_immediates(pipeline_layout.raw(), offset, data_slice)
+            .set_immediates(pipeline_layout.raw(), range_offset, data_slice)
     }
     Ok(())
 }

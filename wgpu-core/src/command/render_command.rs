@@ -48,10 +48,10 @@ pub enum RenderCommand<R: ReferenceType> {
     SetImmediate {
         /// The byte offset within the immediate data storage to write to.  This
         /// must be a multiple of four.
-        offset: u32,
+        range_offset: u32,
 
         /// The number of bytes to write. This must be a multiple of four.
-        size_bytes: u32,
+        contents_bytes: u32,
 
         /// Index in [`BasePass::immediates_data`] of the start of the data
         /// to be written.
@@ -63,7 +63,7 @@ pub enum RenderCommand<R: ReferenceType> {
         /// there is no corresponding data in `immediates_data`. This is used
         /// by render bundles, which explicitly clear out any state that
         /// post-bundle code might see.
-        values_offset: Option<u32>,
+        data_offset: Option<u32>,
     },
     Draw {
         vertex_count: u32,

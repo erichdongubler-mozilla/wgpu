@@ -190,7 +190,7 @@ pub enum ComputePassErrorInner {
     TimestampWrites(#[from] TimestampWritesError),
     // This one is unreachable, but required for generic pass support
     #[error(transparent)]
-    InvalidValuesOffset(#[from] pass::InvalidValuesOffset),
+    InvalidValuesOffset(#[from] pass::InvalidDataOffset),
 }
 
 /// Error encountered when performing a compute pass, stored for later reporting

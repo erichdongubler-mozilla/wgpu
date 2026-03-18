@@ -749,7 +749,7 @@ pub enum RenderPassErrorInner {
     #[error("Unable to clear non-present/read-only stencil")]
     InvalidStencilOps,
     #[error(transparent)]
-    InvalidValuesOffset(#[from] pass::InvalidValuesOffset),
+    InvalidDataOffset(#[from] pass::InvalidDataOffset),
     #[error(transparent)]
     MissingFeatures(#[from] MissingFeatures),
     #[error(transparent)]
@@ -886,7 +886,7 @@ impl WebGpuError for RenderPassError {
             RenderPassErrorInner::IncompatibleBundleTargets(e) => e.webgpu_error_type(),
             RenderPassErrorInner::InvalidAttachment(e) => e.webgpu_error_type(),
             RenderPassErrorInner::TimestampWrites(e) => e.webgpu_error_type(),
-            RenderPassErrorInner::InvalidValuesOffset(e) => e.webgpu_error_type(),
+            RenderPassErrorInner::InvalidDataOffset(e) => e.webgpu_error_type(),
 
             RenderPassErrorInner::InvalidParentEncoder
             | RenderPassErrorInner::UnsupportedResolveTargetFormat { .. }
@@ -2019,17 +2019,17 @@ pub(super) fn encode_render_pass(
                     set_viewport(&mut state, rect, depth_min, depth_max).map_pass_err(scope)?;
                 }
                 ArcRenderCommand::SetImmediate {
-                    offset,
-                    size_bytes,
-                    values_offset,
+                    range_offset,
+                    contents_bytes,
+                    data_offset,
                 } => {
                     let scope = PassErrorScope::SetImmediate;
                     pass::set_immediates::<RenderPassErrorInner, _>(
                         &mut state.pass,
                         &base.immediates_data,
-                        offset,
-                        size_bytes,
-                        values_offset,
+                        range_offset,
+                        contents_bytes,
+                        data_offset,
                         |_| {},
                     )
                     .map_pass_err(scope)?;
@@ -3373,9 +3373,9 @@ impl Global {
         );
 
         base.commands.push(ArcRenderCommand::SetImmediate {
-            offset,
-            size_bytes: data.len() as u32,
-            values_offset: Some(value_offset),
+            range_offset: offset,
+            contents_bytes: data.len() as u32,
+            data_offset: Some(value_offset),
         });
 
         Ok(())

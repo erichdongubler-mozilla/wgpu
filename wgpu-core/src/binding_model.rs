@@ -880,27 +880,29 @@ pub enum ImmediateUploadError {
     #[error(
         "Provided immediate data start offset {} + size {} overruns the immediate data range \
         with a size of {}",
-        start_offset,
-        size,
+        range_offset,
+        contents_bytes,
         immediate_size
     )]
     EndOffsetOverrun {
-        start_offset: u32,
-        size: u32,
+        range_offset: u32,
+        contents_bytes: u32,
         immediate_size: u32,
     },
-    #[error("Start index {start_index} overruns the value data range with {data_size} element(s)")]
-    ValueStartIndexOverrun { start_index: u32, data_size: usize },
+    #[error(
+        "Start index {range_offset} overruns the value data range with {data_size} element(s)"
+    )]
+    DataStartIndexOverrun { range_offset: u32, data_size: usize },
     #[error(
         "Start index {} + count of {} overruns the value data range \
         with {} element(s)",
-        start_index,
-        count,
+        range_offset,
+        contents_bytes,
         data_size
     )]
-    ValueEndIndexOverrun {
-        start_index: u32,
-        count: u32,
+    DataEndIndexOverrun {
+        range_offset: u32,
+        contents_bytes: u32,
         data_size: usize,
     },
 }
@@ -1003,32 +1005,32 @@ impl PipelineLayout {
     /// Validate immediates match up with expected ranges.
     pub(crate) fn validate_immediates_ranges(
         &self,
-        offset: u32,
-        size_bytes: u32,
+        range_offset: u32,
+        contents_bytes: u32,
     ) -> Result<(), ImmediateUploadError> {
         // Don't need to validate size against the immediate data size limit here,
         // as immediate data ranges are already validated to be within bounds,
         // and we validate that they are within the ranges.
 
-        if !offset.is_multiple_of(wgt::IMMEDIATE_DATA_ALIGNMENT) {
-            return Err(ImmediateUploadError::StartOffsetUnaligned(offset));
+        if !range_offset.is_multiple_of(wgt::IMMEDIATE_DATA_ALIGNMENT) {
+            return Err(ImmediateUploadError::StartOffsetUnaligned(range_offset));
         }
 
-        if !size_bytes.is_multiple_of(wgt::IMMEDIATE_DATA_ALIGNMENT) {
-            return Err(ImmediateUploadError::SizeUnaligned(offset));
+        if !contents_bytes.is_multiple_of(wgt::IMMEDIATE_DATA_ALIGNMENT) {
+            return Err(ImmediateUploadError::SizeUnaligned(range_offset));
         }
 
-        if offset > self.immediate_size {
+        if range_offset > self.immediate_size {
             return Err(ImmediateUploadError::StartOffsetOverrun {
-                start_offset: offset,
+                start_offset: range_offset,
                 immediate_size: self.immediate_size,
             });
         }
 
-        if size_bytes > self.immediate_size - offset {
+        if contents_bytes > self.immediate_size - range_offset {
             return Err(ImmediateUploadError::EndOffsetOverrun {
-                start_offset: offset,
-                size: size_bytes,
+                range_offset,
+                contents_bytes,
                 immediate_size: self.immediate_size,
             });
         }
