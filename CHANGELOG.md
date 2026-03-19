@@ -42,6 +42,13 @@ Bottom level categories:
 
 ## Unreleased
 
+### Added/New Features
+
+#### General
+
+- Added `DeviceDescriptor::default_queue` of new type `QueueDescriptor`. By @ErichDonGubler in [#????](https://github.com/gfx-rs/wgpu/pull/????).
+  - `DeviceDescriptor::map_label` now takes a `FnMut`, instead of a `FnOnce`.
+
 ## v29.0.0 (2026-03-18)
 
 ### Major Changes

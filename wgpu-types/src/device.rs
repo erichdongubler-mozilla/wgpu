@@ -24,6 +24,8 @@ pub struct DeviceDescriptor<L> {
     /// Exactly the specified limits, and no better or worse,
     /// will be allowed in validation of API calls on the resulting device.
     pub required_limits: crate::Limits,
+    /// A descriptor for the default queue created with this device.
+    pub default_queue: QueueDescriptor<L>,
     /// Specifies whether `self.required_features` is allowed to contain experimental features.
     #[cfg_attr(feature = "serde", serde(skip))]
     pub experimental_features: crate::ExperimentalFeatures,
@@ -37,11 +39,13 @@ pub struct DeviceDescriptor<L> {
 impl<L> DeviceDescriptor<L> {
     /// Takes a closure and maps the label of the device descriptor into another.
     #[must_use]
-    pub fn map_label<K>(&self, fun: impl FnOnce(&L) -> K) -> DeviceDescriptor<K> {
+    pub fn map_label<K>(&self, fun: impl FnMut(&L) -> K) -> DeviceDescriptor<K> {
+        let mut fun = fun;
         DeviceDescriptor {
             label: fun(&self.label),
             required_features: self.required_features,
             required_limits: self.required_limits.clone(),
+            default_queue: self.default_queue.map_label(fun),
             experimental_features: self.experimental_features,
             memory_hints: self.memory_hints.clone(),
             trace: self.trace.clone(),
@@ -101,4 +105,25 @@ pub enum Trace {
     /// Store trace in memory.
     #[cfg(feature = "trace")]
     Memory,
+}
+
+/// Describes a [`Queue`](../wgpu/struct.Queue.html).
+///
+/// Corresponds to [WebGPU `GPUDeviceDescriptor`](
+/// https://gpuweb.github.io/gpuweb/#gpuqueuedescriptor).
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct QueueDescriptor<L> {
+    /// Debug label for the queue.
+    pub label: L,
+}
+
+impl<L> QueueDescriptor<L> {
+    /// Takes a closure and maps the label of the device descriptor into another.
+    #[must_use]
+    pub fn map_label<K>(&self, fun: impl FnOnce(&L) -> K) -> QueueDescriptor<K> {
+        QueueDescriptor {
+            label: fun(&self.label),
+        }
+    }
 }
