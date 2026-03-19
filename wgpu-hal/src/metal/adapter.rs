@@ -925,7 +925,7 @@ impl super::CapabilitiesQuery {
             {
                 31 // min(32 or 124, 124 / 4)
             } else {
-                15 // min(60, 60 / 4)
+                16 // min(64, 64 / 4)
             },
             // "Maximum threads per threadgroup"
             // https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf#page=6
