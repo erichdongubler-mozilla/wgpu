@@ -8,11 +8,8 @@
 
 import { primordials } from "ext:core/mod.js";
 import { GPUCanvasContext, UnsafeWindowSurface } from "ext:core/ops";
-const {
-  ObjectDefineProperty,
-  ObjectPrototypeIsPrototypeOf,
-  SymbolFor,
-} = primordials;
+const { ObjectDefineProperty, ObjectPrototypeIsPrototypeOf, SymbolFor } =
+  primordials;
 import { createFilteredInspectProxy } from "ext:deno_console/01_console.js";
 
 ObjectDefineProperty(GPUCanvasContext, SymbolFor("Deno.privateCustomInspect"), {
@@ -22,9 +19,7 @@ ObjectDefineProperty(GPUCanvasContext, SymbolFor("Deno.privateCustomInspect"), {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUCanvasContextPrototype, this),
-        keys: [
-          "canvas",
-        ],
+        keys: ["canvas"],
       }),
       inspectOptions,
     );

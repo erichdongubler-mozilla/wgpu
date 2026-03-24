@@ -82,9 +82,7 @@ class GPUError {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUErrorPrototype, this),
-        keys: [
-          "message",
-        ],
+        keys: ["message"],
       }),
       inspectOptions,
     );
@@ -157,8 +155,8 @@ class GPUUncapturedErrorEvent extends Event {
 
     const prefix = "Failed to construct 'GPUUncapturedErrorEvent'";
     webidl.requiredArguments(arguments.length, 2, prefix);
-    gpuUncapturedErrorEventInitDict = webidl.converters
-      .GPUUncapturedErrorEventInit(
+    gpuUncapturedErrorEventInitDict =
+      webidl.converters.GPUUncapturedErrorEventInit(
         gpuUncapturedErrorEventInitDict,
         prefix,
         "Argument 2",
@@ -190,11 +188,7 @@ ObjectDefineProperty(GPUAdapterPrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUAdapterPrototype, this),
-        keys: [
-          "features",
-          "limits",
-          "info",
-        ],
+        keys: ["features", "limits", "info"],
       }),
       inspectOptions,
     );
@@ -232,7 +226,8 @@ ObjectDefineProperty(GPUSupportedFeaturesPrototype, privateCustomInspect, {
     if (ObjectPrototypeIsPrototypeOf(GPUSupportedFeaturesPrototype, this)) {
       return `${this.constructor.name} ${
         // deno-lint-ignore prefer-primordials
-        inspect([...this], inspectOptions)}`;
+        inspect([...this], inspectOptions)
+      }`;
     } else {
       return `${this.constructor.name} ${inspect({}, inspectOptions)}`;
     }
@@ -247,7 +242,8 @@ ObjectDefineProperty(WGSLLanguageFeaturesPrototype, privateCustomInspect, {
     if (ObjectPrototypeIsPrototypeOf(WGSLLanguageFeaturesPrototype, this)) {
       return `${this.constructor.name} ${
         // deno-lint-ignore prefer-primordials
-        inspect([...this], inspectOptions)}`;
+        inspect([...this], inspectOptions)
+      }`;
     } else {
       return `${this.constructor.name} ${inspect({}, inspectOptions)}`;
     }
@@ -316,10 +312,7 @@ ObjectDefineProperty(GPUDeviceLostInfoPrototype, privateCustomInspect, {
           GPUDeviceLostInfoPrototype,
           this,
         ),
-        keys: [
-          "reason",
-          "message",
-        ],
+        keys: ["reason", "message"],
       }),
       inspectOptions,
     );
@@ -359,9 +352,7 @@ ObjectDefineProperty(GPUQueuePrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUQueuePrototype, this),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -376,12 +367,7 @@ ObjectDefineProperty(GPUBufferPrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUBufferPrototype, this),
-        keys: [
-          "label",
-          "mapState",
-          "size",
-          "usage",
-        ],
+        keys: ["label", "mapState", "size", "usage"],
       }),
       inspectOptions,
     );
@@ -493,9 +479,7 @@ ObjectDefineProperty(GPUTextureViewPrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUTextureViewPrototype, this),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -509,13 +493,8 @@ ObjectDefineProperty(GPUSamplerPrototype, privateCustomInspect, {
     return inspect(
       createFilteredInspectProxy({
         object: this,
-        evaluate: ObjectPrototypeIsPrototypeOf(
-          GPUSamplerPrototype,
-          this,
-        ),
-        keys: [
-          "label",
-        ],
+        evaluate: ObjectPrototypeIsPrototypeOf(GPUSamplerPrototype, this),
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -533,9 +512,7 @@ ObjectDefineProperty(GPUBindGroupLayout, privateCustomInspect, {
           GPUBindGroupLayoutPrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -553,9 +530,7 @@ ObjectDefineProperty(GPUPipelineLayoutPrototype, privateCustomInspect, {
           GPUPipelineLayoutPrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -570,9 +545,7 @@ ObjectDefineProperty(GPUBindGroupPrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUBindGroupPrototype, this),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -587,9 +560,7 @@ ObjectDefineProperty(GPUShaderModulePrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUShaderModulePrototype, this),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -606,9 +577,7 @@ ObjectDefineProperty(GPUCompilationInfo, privateCustomInspect, {
           GPUCompilationInfoPrototype,
           this,
         ),
-        keys: [
-          "messages",
-        ],
+        keys: ["messages"],
       }),
       inspectOptions,
     );
@@ -626,14 +595,7 @@ ObjectDefineProperty(GPUCompilationMessage, privateCustomInspect, {
           GPUCompilationMessagePrototype,
           this,
         ),
-        keys: [
-          "message",
-          "type",
-          "line_num",
-          "line_pos",
-          "offset",
-          "length",
-        ],
+        keys: ["message", "type", "line_num", "line_pos", "offset", "length"],
       }),
       inspectOptions,
     );
@@ -670,9 +632,7 @@ ObjectDefineProperty(GPUComputePipelinePrototype, privateCustomInspect, {
           GPUComputePipelinePrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -690,9 +650,7 @@ ObjectDefineProperty(GPURenderPipelinePrototype, privateCustomInspect, {
           GPURenderPipelinePrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -717,7 +675,7 @@ class GPUColorWrite {
     return 0x8;
   }
   static get ALL() {
-    return 0xF;
+    return 0xf;
   }
 }
 
@@ -732,9 +690,7 @@ ObjectDefineProperty(GPUCommandEncoderPrototype, privateCustomInspect, {
           GPUCommandEncoderPrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -752,9 +708,7 @@ ObjectDefineProperty(GPURenderPassEncoderPrototype, privateCustomInspect, {
           GPURenderPassEncoderPrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -772,9 +726,7 @@ ObjectDefineProperty(GPUComputePassEncoderPrototype, privateCustomInspect, {
           GPUComputePassEncoderPrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -789,9 +741,7 @@ ObjectDefineProperty(GPUCommandBufferPrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUCommandBufferPrototype, this),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -809,9 +759,7 @@ ObjectDefineProperty(GPURenderBundleEncoderPrototype, privateCustomInspect, {
           GPURenderBundleEncoderPrototype,
           this,
         ),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -826,9 +774,7 @@ ObjectDefineProperty(GPURenderBundlePrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPURenderBundlePrototype, this),
-        keys: [
-          "label",
-        ],
+        keys: ["label"],
       }),
       inspectOptions,
     );
@@ -843,11 +789,7 @@ ObjectDefineProperty(GPUQuerySetPrototype, privateCustomInspect, {
       createFilteredInspectProxy({
         object: this,
         evaluate: ObjectPrototypeIsPrototypeOf(GPUQuerySetPrototype, this),
-        keys: [
-          "label",
-          "type",
-          "count",
-        ],
+        keys: ["label", "type", "count"],
       }),
       inspectOptions,
     );
@@ -858,10 +800,7 @@ ObjectDefineProperty(GPUQuerySetPrototype, privateCustomInspect, {
 
 webidl.converters["GPUPipelineErrorReason"] = webidl.createEnumConverter(
   "GPUPipelineErrorReason",
-  [
-    "validation",
-    "internal",
-  ],
+  ["validation", "internal"],
 );
 
 webidl.converters["GPUPipelineErrorInit"] = webidl.createDictionaryConverter(
@@ -880,8 +819,8 @@ webidl.converters["GPUError"] = webidl.converters.any /* put union here! */;
 const dictMembersGPUUncapturedErrorEventInit = [
   { key: "error", converter: webidl.converters["GPUError"], required: true },
 ];
-webidl.converters["GPUUncapturedErrorEventInit"] = webidl
-  .createDictionaryConverter(
+webidl.converters["GPUUncapturedErrorEventInit"] =
+  webidl.createDictionaryConverter(
     "GPUUncapturedErrorEventInit",
     // dictMembersEventInit,
     dictMembersGPUUncapturedErrorEventInit,
