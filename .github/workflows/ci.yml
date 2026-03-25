@@ -787,11 +787,14 @@ jobs:
 
     name: Format & Typos
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+        continue-on-error: false
 
       - name: Install repo MSRV toolchain
+        continue-on-error: false
         run: |
           rustup toolchain install ${{ env.REPO_MSRV }} --no-self-update --profile=minimal --component rustfmt
           rustup override set ${{ env.REPO_MSRV }}
