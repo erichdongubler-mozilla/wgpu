@@ -234,6 +234,7 @@ windowOrWorkerGlobalScope.console.enumerable = false;
 //
 // Note that catching an error here _does not_ result in a non-zero exit status.
 let enableExternalTexture_ = false;
+let enableImmediates_ = false;
 const requestDevice = webgpu.GPUAdapter.prototype.requestDevice;
 webgpu.GPUAdapter.prototype.requestDevice = function (desc) {
   if (enableExternalTexture_) {
@@ -246,6 +247,19 @@ webgpu.GPUAdapter.prototype.requestDevice = function (desc) {
       desc.requiredFeatures = ["wgpu-external-texture"];
     } else {
       desc.requiredFeatures.push("wgpu-external-texture");
+    }
+  }
+
+  if (enableImmediates_) {
+    // Deno doesn't meaningfully support external textures, but we provide
+    // an option to enable it anyways to allow running some CTS tests that
+    // do pass.
+    if (!desc) {
+      desc = { requiredFeatures: ["immediates"] };
+    } else if (!desc.requiredFeatures) {
+      desc.requiredFeatures = ["immediates"];
+    } else {
+      desc.requiredFeatures.push("immediates");
     }
   }
 
