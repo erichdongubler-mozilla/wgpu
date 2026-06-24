@@ -437,11 +437,20 @@ fn compile_dxc(
 
     let len = unsafe { err_blob.GetStringLength() };
     if len != 0 {
+        // Work around <https://github.com/microsoft/DirectXShaderCompiler/issues/5107>.
+        static DXIL_SIGNING_LIBRARY_MISSING_ERR_MSG: &str = concat!(
+            "warning: DXIL signing library (dxil.dll,libdxil.so) not found.  ",
+            "Resulting DXIL will not be signed for use in release environments.\r\n\n"
+        );
         let err = as_err_str(&err_blob)?;
-        return Err(crate::PipelineError::Linkage(
-            stage_bit,
-            format!("DXC compile error: {err}"),
-        ));
+        if err == DXIL_SIGNING_LIBRARY_MISSING_ERR_MSG {
+            log::warn!("{err}");
+        } else {
+            return Err(crate::PipelineError::Linkage(
+                stage_bit,
+                format!("DXC compile error: {err}"),
+            ));
+        }
     }
 
     let blob = get_output::<Dxc::IDxcBlob>(&compile_res, Dxc::DXC_OUT_OBJECT)?;
