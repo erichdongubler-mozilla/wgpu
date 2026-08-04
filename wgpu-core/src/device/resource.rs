@@ -3435,7 +3435,7 @@ impl Device {
             count_validator.add_binding(entry);
         }
         // If a single bind group layout violates limits, the pipeline layout is
-        // definitely going to violate limits too, lets catch it now.
+        // definitely going to violate limits too, let's catch it now.
         count_validator
             .validate(&self.limits, self.instance_flags)
             .map_err(CreateBindGroupLayoutError::TooManyBindings)?;
