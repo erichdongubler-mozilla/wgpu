@@ -298,9 +298,7 @@ impl Input {
     pub fn new(subdirectory: &str, name: &str, extension: &str) -> Self {
         Self {
             subdirectory: PathBuf::from(subdirectory),
-            // Don't wipe out any extensions on `name`, as
-            // `with_extension` would do.
-            file_name: PathBuf::from(format!("{name}.{extension}")),
+            file_name: Path::new(name).with_added_extension(extension),
             keep_input_extension: false,
         }
     }
