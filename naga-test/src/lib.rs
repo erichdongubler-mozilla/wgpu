@@ -295,8 +295,8 @@ impl Input {
     /// The `input` path is interpreted relative to the `BASE_DIR_IN`
     /// subdirectory of the directory given by the `CARGO_MANIFEST_DIR`
     /// environment variable.
-    pub fn new(subdirectory: &str, name: &str, extension: &str) -> Input {
-        Input {
+    pub fn new(subdirectory: &str, name: &str, extension: &str) -> Self {
+        Self {
             subdirectory: PathBuf::from(subdirectory),
             // Don't wipe out any extensions on `name`, as
             // `with_extension` would do.
@@ -310,7 +310,7 @@ impl Input {
         subdirectory: &'a str,
         file_extensions: &'a [&'a str],
         dir_in: &str,
-    ) -> impl Iterator<Item = Input> + 'a {
+    ) -> impl Iterator<Item = Self> + 'a {
         let input_directory = Path::new(dir_in).join(subdirectory);
 
         let entries = match std::fs::read_dir(&input_directory) {
@@ -343,7 +343,7 @@ impl Input {
                 }
             }
 
-            let input = Input::new(
+            let input = Self::new(
                 subdirectory,
                 file_name.file_stem().unwrap().to_str().unwrap(),
                 extension.to_str().unwrap(),
