@@ -313,7 +313,7 @@ impl Input {
     ) -> impl Iterator<Item = Self> + 'a {
         let input_directory = Path::new(dir_in).join(subdirectory);
 
-        let entries = match std::fs::read_dir(&input_directory) {
+        let entries = match fs::read_dir(&input_directory) {
             Ok(entries) => entries,
             Err(err) => panic!(
                 "Error opening directory '{}': {}",
@@ -431,7 +431,7 @@ impl Input {
 
     pub fn bytes(&self, dir_in: &str) -> u64 {
         let input_path = self.input_path(dir_in);
-        std::fs::metadata(input_path).unwrap().len()
+        fs::metadata(input_path).unwrap().len()
     }
 
     /// Return this input's parameter file, parsed.
