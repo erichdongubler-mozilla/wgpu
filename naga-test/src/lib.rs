@@ -303,6 +303,67 @@ impl Input {
         }
     }
 
+    /// Return an iterator that produces an `Input` for each entry in the `subdirectory` under
+    /// `dir_in`, deleting children under the `subdirectory` in `dir_out`.
+    ///
+    /// Intended for use with snapshot generation, which will restore snapshot output that is meant
+    /// to stay in `dir_out`.
+    pub fn snapshot_inputs<'a>(
+        subdirectory: &'a str,
+        file_extensions: &'a [&'a str],
+        dir_in: &str,
+        dir_out: &str,
+    ) -> impl Iterator<Item = Self> + 'a {
+        let output_directory = Path::new(dir_out).join(subdirectory);
+
+        let entries = match fs::read_dir(&output_directory) {
+            Ok(ok) => ok,
+            Err(err) => panic!(
+                "Failed to read entries of output directory '{}' for cleaning: {}",
+                output_directory.display(),
+                err
+            ),
+        };
+        println!(
+            "Cleaning existing snapshot output from '{}'…",
+            output_directory.display()
+        );
+        for entry in entries {
+            let entry = match entry {
+                Ok(ok) => ok,
+                Err(err) => panic!(
+                    "unable to read entry for output directory '{}': {}",
+                    output_directory.display(),
+                    err
+                ),
+            };
+            let path = entry.path();
+            let metadata = match entry.metadata() {
+                Ok(ok) => ok,
+                Err(err) => panic!(
+                    "failed to read metadata for output directory entry '{}': {}",
+                    path.display(),
+                    err
+                ),
+            };
+            let res = if metadata.file_type().is_dir() {
+                fs::remove_dir_all(&path)
+            } else {
+                fs::remove_file(&path)
+            };
+            match res {
+                Ok(()) => (),
+                Err(err) => panic!(
+                    "failed to remove output directory entry '{}': {}",
+                    path.display(),
+                    err
+                ),
+            }
+        }
+
+        Self::files_in_dir(subdirectory, file_extensions, dir_in)
+    }
+
     /// Return an iterator that produces an `Input` for each entry in `subdirectory`.
     pub fn files_in_dir<'a>(
         subdirectory: &'a str,
@@ -314,7 +375,7 @@ impl Input {
         let entries = match fs::read_dir(&input_directory) {
             Ok(entries) => entries,
             Err(err) => panic!(
-                "Error opening directory '{}': {}",
+                "Error opening input directory '{}': {}",
                 input_directory.display(),
                 err
             ),

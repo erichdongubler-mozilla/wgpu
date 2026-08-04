@@ -546,7 +546,7 @@ fn write_output_wgsl(
 fn convert_snapshots_wgsl() {
     let _ = env_logger::try_init();
 
-    for input in Input::files_in_dir("wgsl", &["wgsl"], DIR_IN) {
+    for input in Input::snapshot_inputs("wgsl", &["wgsl"], DIR_IN, DIR_OUT) {
         let source = input.read_source(DIR_IN, true);
         // crlf will make the large split output different on different platform
         let source = source.replace('\r', "");
@@ -575,7 +575,7 @@ fn convert_snapshots_spv() {
 
     let _ = env_logger::try_init();
 
-    for input in Input::files_in_dir("spv", &["spvasm"], DIR_IN) {
+    for input in Input::snapshot_inputs("spv", &["spvasm"], DIR_IN, DIR_OUT) {
         println!("Assembling '{}'", input.file_name.display());
 
         let command = Command::new("spirv-as")
@@ -614,7 +614,7 @@ fn convert_snapshots_spv() {
 fn convert_snapshots_glsl() {
     let _ = env_logger::try_init();
 
-    for input in Input::files_in_dir("glsl", &["vert", "frag", "comp"], DIR_IN) {
+    for input in Input::snapshot_inputs("glsl", &["vert", "frag", "comp"], DIR_IN, DIR_OUT) {
         let input = Input {
             keep_input_extension: true,
             ..input
