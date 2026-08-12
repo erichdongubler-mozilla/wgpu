@@ -250,7 +250,7 @@ pub enum ImplementedEnableExtension {
 
 impl ImplementedEnableExtension {
     /// A slice of all variants of [`ImplementedEnableExtension`].
-    pub const VARIANTS: &'static [Self] = &[
+    const VARIANTS: &'static [Self] = &[
         Self::F16,
         Self::DualSourceBlending,
         Self::ClipDistances,
