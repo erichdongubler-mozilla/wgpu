@@ -303,7 +303,7 @@ impl ImplementedEnableExtension {
 #[test]
 /// Asserts that the manual implementation of VARIANTS is the same as the derived strum version would be
 /// while still allowing strum to be a dev-only dependency
-fn test_manual_variants_array_is_correct() {
+fn test_manual_variants_array_is_correct_implemented() {
     assert_eq!(
         <ImplementedEnableExtension as strum::VariantArray>::VARIANTS,
         ImplementedEnableExtension::VARIANTS
@@ -312,6 +312,7 @@ fn test_manual_variants_array_is_correct() {
 
 /// A variant of [`EnableExtension::Unimplemented`].
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
+#[cfg_attr(test, derive(strum::VariantArray))]
 pub enum UnimplementedEnableExtension {
     /// Enables subgroup built-ins in all languages.
     ///
@@ -322,9 +323,27 @@ pub enum UnimplementedEnableExtension {
 }
 
 impl UnimplementedEnableExtension {
+    /// A slice of all variants of [`UnimplementedEnableExtension`].
+    const VARIANTS: &'static [Self] = &[Self::Subgroups, Self::SubgroupSizeControl];
+
+    /// Returns slice of all variants of [`UnimplementedEnableExtension`].
+    pub const fn all() -> &'static [Self] {
+        Self::VARIANTS
+    }
+
     pub(crate) const fn tracking_issue_num(self) -> u16 {
         match self {
             Self::Subgroups => 5555,
         }
     }
+}
+
+#[test]
+/// Asserts that the manual implementation of VARIANTS is the same as the derived strum version would be
+/// while still allowing strum to be a dev-only dependency
+fn test_manual_variants_array_is_correct_unimplemented() {
+    assert_eq!(
+        <UnimplementedEnableExtension as strum::VariantArray>::VARIANTS,
+        UnimplementedEnableExtension::VARIANTS
+    );
 }
