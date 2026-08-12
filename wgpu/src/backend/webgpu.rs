@@ -1061,7 +1061,7 @@ fn future_request_device(
             )
         })
         .map_err(|error_value| crate::RequestDeviceError {
-            // wasm-bindgen provides a reasonable error stringification via `Debug` impl
+            // `wasm-bindgen` provides a reasonable error stringification via `Debug` impl
             inner: crate::RequestDeviceErrorKind::WebGpu(format!("{error_value:?}")),
         })
 }
@@ -1190,7 +1190,7 @@ impl ContextWebGpu {
         };
 
         /* Use unchecked_into instead of dyn_into: the instanceof check that dyn_into
-         * performs for GpuCanvasContext fails in some wasm-bindgen configurations even
+         * performs for GpuCanvasContext fails in some `wasm-bindgen` configurations even
          * when the object is correct (e.g. certain browser extensions or cross-realm
          * scenarios interfere with the JS prototype chain). getContext("webgpu") already
          * guarantees the returned object is a GPUCanvasContext when it succeeds, so the
