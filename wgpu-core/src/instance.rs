@@ -1423,6 +1423,10 @@ fn filter_features_and_limits(
         *features &= wgt::Features::all_webgpu_mask() | limits::EXEMPT_FEATURES;
         limits.zero_native_only();
     }
+
+    if features.contains(wgt::Features::SUBGROUP_SIZE_CONTROL) {
+        *features |= wgt::Features::SUBGROUP;
+    }
 }
 
 #[cfg(test)]

@@ -4593,6 +4593,16 @@ error: the `subgroups` enable-extension is not yet supported
   = note: Let Naga maintainers know that you ran into this at <https://github.com/gfx-rs/wgpu/issues/5555>, so they can prioritize it!
 
 ",
+                naga::front::wgsl::UnimplementedEnableExtension::SubgroupSizeControl => "\
+error: the `subgroups` enable-extension is not yet supported
+  ┌─ wgsl:1:8
+  │
+1 │ enable subgroup_size_control;
+  │        ^^^^^^^^^ this enable-extension specifies standard functionality which is not yet implemented in Naga
+  │
+  = note: Let Naga maintainers know that you ran into this at <https://github.com/gfx-rs/wgpu/issues/10049>, so they can prioritize it!
+
+",
             };
 
         let shader = {

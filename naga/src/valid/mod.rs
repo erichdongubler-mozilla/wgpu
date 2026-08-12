@@ -224,6 +224,8 @@ bitflags::bitflags! {
         ///
         /// [`Interpolation::Linear`]: crate::Interpolation::Linear
         const LINEAR_INTERPOLATION = 1 << 44;
+        /// Support for `@subgroup_size(…)` for computer shaders.
+        const SUBGROUP_SIZE_CONTROL = 1 << 45;
     }
 }
 

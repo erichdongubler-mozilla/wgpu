@@ -25,6 +25,7 @@ pub(crate) struct EnableExtensions {
     primitive_index: bool,
     per_vertex: bool,
     wgpu_binding_array: bool,
+    subgroup_size_control: bool,
 }
 
 impl EnableExtensions {
@@ -43,6 +44,7 @@ impl EnableExtensions {
             primitive_index: false,
             per_vertex: false,
             wgpu_binding_array: false,
+            subgroup_size_control: false,
         }
     }
 
@@ -143,6 +145,7 @@ impl EnableExtension {
     const PER_VERTEX: &'static str = "wgpu_per_vertex";
     const BINDING_ARRAY: &'static str = "wgpu_binding_array";
     const INT16: &'static str = "wgpu_int16";
+    const SUBGROUP_SIZE_CONTROL: &'static str = "subgroup_size_control";
 
     /// Convert from a sentinel word in WGSL into its associated [`EnableExtension`], if possible.
     pub(crate) fn from_ident(word: &str, span: Span) -> Result<'_, Self> {
@@ -169,6 +172,9 @@ impl EnableExtension {
             Self::PER_VERTEX => Self::Implemented(ImplementedEnableExtension::WgpuPerVertex),
             Self::BINDING_ARRAY => Self::Implemented(ImplementedEnableExtension::WgpuBindingArray),
             Self::INT16 => Self::Implemented(ImplementedEnableExtension::WgpuInt16),
+            Self::SUBGROUP_SIZE_CONTROL => {
+                Self::Unimplemented(UnimplementedEnableExtension::SubgroupSizeControl)
+            }
             _ => return Err(Box::new(Error::UnknownEnableExtension(span, word))),
         })
     }
@@ -195,6 +201,7 @@ impl EnableExtension {
             },
             Self::Unimplemented(kind) => match kind {
                 UnimplementedEnableExtension::Subgroups => Self::SUBGROUPS,
+                UnimplementedEnableExtension::SubgroupSizeControl => Self::SUBGROUP_SIZE_CONTROL,
             },
         }
     }
@@ -320,6 +327,12 @@ pub enum UnimplementedEnableExtension {
     ///
     /// [`enable subgroups;`]: https://www.w3.org/TR/WGSL/#extension-subgroups
     Subgroups,
+    /// Enables subgroup built-ins in all languages.
+    ///
+    /// In the WGSL standard, this corresponds to [`enable subgroup_size_control;`].
+    ///
+    /// [`enable subgroups;`]: https://www.w3.org/TR/WGSL/#extension-subgroups
+    SubgroupSizeControl,
 }
 
 impl UnimplementedEnableExtension {
@@ -334,6 +347,7 @@ impl UnimplementedEnableExtension {
     pub(crate) const fn tracking_issue_num(self) -> u16 {
         match self {
             Self::Subgroups => 5555,
+            Self::SubgroupSizeControl => 10049,
         }
     }
 }

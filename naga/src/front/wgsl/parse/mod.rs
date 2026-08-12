@@ -2013,6 +2013,14 @@ impl Parser {
                     }
                     workgroup_size.set(new_workgroup_size, name_span)?;
                 }
+                "subgroup_size" => {
+                    return Err(Box::new(Error::EnableExtensionNotEnabled {
+                        kind: EnableExtension::Unimplemented(
+                            super::UnimplementedEnableExtension::SubgroupSizeControl,
+                        ),
+                        span: name_span,
+                    }))
+                }
                 "early_depth_test" => {
                     lexer.expect(Token::Paren('('))?;
                     let (ident, ident_span) = lexer.next_ident_with_span()?;

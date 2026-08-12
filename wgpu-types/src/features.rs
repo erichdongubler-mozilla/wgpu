@@ -91,6 +91,9 @@ mod webgpu_impl {
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_TEXTURE_COMPONENT_SWIZZLE: u64 = 1 << 18;
+
+    #[doc(hidden)]
+    pub const WEBGPU_FEATURE_SUBGROUP_SIZE_CONTROL: u64 = 1 << 19;
 }
 
 macro_rules! bitflags_array_impl {
@@ -1842,6 +1845,15 @@ bitflags_array! {
         #[doc = link_to_wgpu_docs!(["`TEXTURE_BINDING`"]: "struct.TextureUsages.html#associatedconstant.TEXTURE_BINDING")]
         #[name("texture-component-swizzle")]
         const TEXTURE_COMPONENT_SWIZZLE = WEBGPU_FEATURE_TEXTURE_COMPONENT_SWIZZLE;
+
+        /// Enables `@subgroup_size(…)` in compute shaders to control compute pipeline subgroup
+        /// size. Implies [`Self::SUBGROUP`].
+        ///
+        /// Not yet supported on any platforms (see <https://github.com/gfx-rs/wgpu/issues/10049>).
+        ///
+        /// This is a web and native feature. `subgroup-size-control` is its WebGPU-defined name.
+        #[name("subgroup-size-control")]
+        const SUBGROUP_SIZE_CONTROL = WEBGPU_FEATURE_SUBGROUP_SIZE_CONTROL;
     }
 }
 
