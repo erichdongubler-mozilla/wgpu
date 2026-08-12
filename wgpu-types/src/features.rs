@@ -88,6 +88,9 @@ mod webgpu_impl {
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_PRIMITIVE_INDEX: u64 = 1 << 17;
+
+    #[doc(hidden)]
+    pub const WEBGPU_FEATURE_TEXTURE_COMPONENT_SWIZZLE: u64 = 1 << 18;
 }
 
 macro_rules! bitflags_array_impl {
@@ -1827,6 +1830,18 @@ bitflags_array! {
         /// remain compatible with previous wgpu behavior.
         #[name("primitive-index", "shader-primitive-index")]
         const PRIMITIVE_INDEX = WEBGPU_FEATURE_PRIMITIVE_INDEX;
+
+        /// Allows [`GPUTextureView`]s to rearrange or replace the color components from their
+        /// texture's RGBA channels when used as a [`TEXTURE_BINDING`].
+        ///
+        /// Not yet supported on any platforms (see <https://github.com/gfx-rs/wgpu/issues/1028>).
+        ///
+        /// This is a web and native feature. `texture-component-swizzle` is its WebGPU-defined
+        /// name.
+        #[doc = link_to_wgpu_docs!(["`GPUTextureView`"]: "struct.TextureView.html")]
+        #[doc = link_to_wgpu_docs!(["`TEXTURE_BINDING`"]: "struct.TextureUsages.html#associatedconstant.TEXTURE_BINDING")]
+        #[name("texture-component-swizzle")]
+        const TEXTURE_COMPONENT_SWIZZLE = WEBGPU_FEATURE_TEXTURE_COMPONENT_SWIZZLE;
     }
 }
 
