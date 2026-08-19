@@ -242,7 +242,7 @@ impl VaryingContext<'_> {
         ep: &crate::EntryPoint,
         ty: Handle<crate::Type>,
         binding: &crate::Binding,
-        _position: EntryPointIoPosition,
+        position: EntryPointIoPosition,
     ) -> Result<(), VaryingError> {
         use crate::{BuiltIn as Bi, ShaderStage as St, TypeInner as Ti, VectorSize as Vs};
 
@@ -851,69 +851,110 @@ impl VaryingContext<'_> {
         binding: Option<&crate::Binding>,
         position: EntryPointIoPosition,
     ) -> Result<(), WithSpan<VaryingError>> {
-        let span_context = self.types.get_span_context(ty);
-        match binding {
-            Some(binding) => self
-                .validate_impl(ep, ty, binding, position)
-                .map_err(|e| e.with_span_context(span_context)),
-            None => {
-                let crate::TypeInner::Struct { ref members, .. } = self.types[ty].inner else {
-                    if self.flags.contains(super::ValidationFlags::BINDINGS) {
-                        return Err(VaryingError::MissingBinding.with_span());
-                    } else {
-                        return Ok(());
-                    }
-                };
+        let mut do_validation = || {
+            let span_context = self.types.get_span_context(ty);
+            match binding {
+                Some(binding) => self
+                    .validate_impl(ep, ty, binding, position)
+                    .map_err(|e| e.with_span_context(span_context)),
+                None => {
+                    let crate::TypeInner::Struct { ref members, .. } = self.types[ty].inner else {
+                        if self.flags.contains(super::ValidationFlags::BINDINGS) {
+                            return Err(VaryingError::MissingBinding.with_span());
+                        } else {
+                            return Ok(());
+                        }
+                    };
 
-                if self.type_info[ty.index()]
-                    .flags
-                    .contains(super::TypeFlags::IO_SHAREABLE)
-                {
-                    // `@blend_src` is the only case where `IO_SHAREABLE` is set on a struct (as
-                    // opposed to members of a struct). The struct definition is validated during
-                    // type validation.
-                    if self.stage != crate::ShaderStage::Fragment {
-                        return Err(
-                            VaryingError::InvalidAttributeInStage("blend_src", self.stage)
-                                .with_span(),
-                        );
-                    }
-                    if !self.output {
-                        return Err(VaryingError::InvalidInputAttributeInStage(
-                            "blend_src",
-                            self.stage,
-                        )
-                        .with_span());
-                    }
-                    // Dual blend sources must always be at location 0.
-                    if !self.location_mask.insert(0)
-                        && self.flags.contains(super::ValidationFlags::BINDINGS)
+                    if self.type_info[ty.index()]
+                        .flags
+                        .contains(super::TypeFlags::IO_SHAREABLE)
                     {
-                        return Err(VaryingError::BindingCollision { location: 0 }.with_span());
-                    }
+                        // `@blend_src` is the only case where `IO_SHAREABLE` is set on a struct (as
+                        // opposed to members of a struct). The struct definition is validated during
+                        // type validation.
+                        if self.stage != crate::ShaderStage::Fragment {
+                            return Err(VaryingError::InvalidAttributeInStage(
+                                "blend_src",
+                                self.stage,
+                            )
+                            .with_span());
+                        }
+                        if !self.output {
+                            return Err(VaryingError::InvalidInputAttributeInStage(
+                                "blend_src",
+                                self.stage,
+                            )
+                            .with_span());
+                        }
+                        // Dual blend sources must always be at location 0.
+                        if !self.location_mask.insert(0)
+                            && self.flags.contains(super::ValidationFlags::BINDINGS)
+                        {
+                            return Err(VaryingError::BindingCollision { location: 0 }.with_span());
+                        }
 
-                    **self
-                        .dual_source_blending
-                        .as_mut()
-                        .expect("unexpected dual source blending") = true;
-                } else {
-                    for (index, member) in members.iter().enumerate() {
-                        let span_context = self.types.get_span_context(ty);
-                        match member.binding {
-                            None => {
-                                if self.flags.contains(super::ValidationFlags::BINDINGS) {
-                                    return Err(VaryingError::MemberMissingBinding(index as u32)
+                        **self
+                            .dual_source_blending
+                            .as_mut()
+                            .expect("unexpected dual source blending") = true;
+                    } else {
+                        for (index, member) in members.iter().enumerate() {
+                            let span_context = self.types.get_span_context(ty);
+                            match member.binding {
+                                None => {
+                                    if self.flags.contains(super::ValidationFlags::BINDINGS) {
+                                        return Err(VaryingError::MemberMissingBinding(
+                                            index as u32,
+                                        )
                                         .with_span_context(span_context));
+                                    }
                                 }
+                                Some(ref binding) => self
+                                    .validate_impl(ep, member.ty, binding, position)
+                                    .map_err(|e| e.with_span_context(span_context))?,
                             }
-                            Some(ref binding) => self
-                                .validate_impl(ep, member.ty, binding, position)
-                                .map_err(|e| e.with_span_context(span_context))?,
                         }
                     }
+                    Ok(())
                 }
-                Ok(())
             }
+        };
+        match position {
+            EntryPointIoPosition::Argument { .. } => match ep.stage {
+                nt::ShaderStage::Vertex => {
+                    do_validation()?;
+                    if !self
+                        .result_built_ins
+                        .contains(&crate::BuiltIn::Position { invariant: false })
+                    {
+                        return Err(EntryPointError::MissingVertexOutputPosition.with_span());
+                    }
+                }
+                nt::ShaderStage::Mesh => {
+                    return Err(EntryPointError::UnexpectedMeshShaderEntryResult.with_span())
+                }
+                nt::ShaderStage::Task => {
+                    let ok = self.types[ty].inner
+                        == crate::TypeInner::Vector {
+                            size: crate::VectorSize::Tri,
+                            scalar: crate::Scalar::U32,
+                        };
+                    if !ok {
+                        return Err(EntryPointError::WrongTaskShaderEntryResult.with_span());
+                    }
+                    do_validation()?
+                }
+                nt::ShaderStage::Compute => {
+                    return Err(EntryPointError::UnexpectedComputeShaderEntryResult.with_span())
+                }
+                nt::ShaderStage::Fragment
+                | nt::ShaderStage::RayGeneration
+                | nt::ShaderStage::Miss
+                | nt::ShaderStage::AnyHit
+                | nt::ShaderStage::ClosestHit => do_validation()?,
+            },
+            EntryPointIoPosition::Return => todo!(),
         }
     }
 }
@@ -1430,34 +1471,6 @@ impl super::Validator {
             let position = EntryPointIoPosition::Return;
             ctx.validate(ep, fr.ty, fr.binding.as_ref(), position)
                 .map_err_inner(|e| EntryPointError::Result(e).with_span())?;
-            match ep.stage {
-                nt::ShaderStage::Vertex => {
-                    if !result_built_ins.contains(&crate::BuiltIn::Position { invariant: false }) {
-                        return Err(EntryPointError::MissingVertexOutputPosition.with_span());
-                    }
-                }
-                nt::ShaderStage::Mesh => {
-                    return Err(EntryPointError::UnexpectedMeshShaderEntryResult.with_span())
-                }
-                nt::ShaderStage::Task => {
-                    let ok = module.types[fr.ty].inner
-                        == crate::TypeInner::Vector {
-                            size: crate::VectorSize::Tri,
-                            scalar: crate::Scalar::U32,
-                        };
-                    if !ok {
-                        return Err(EntryPointError::WrongTaskShaderEntryResult.with_span());
-                    }
-                }
-                nt::ShaderStage::Compute => {
-                    return Err(EntryPointError::UnexpectedComputeShaderEntryResult.with_span())
-                }
-                nt::ShaderStage::Fragment
-                | nt::ShaderStage::RayGeneration
-                | nt::ShaderStage::Miss
-                | nt::ShaderStage::AnyHit
-                | nt::ShaderStage::ClosestHit => {}
-            }
         } else {
             match ep.stage {
                 nt::ShaderStage::Vertex => {
