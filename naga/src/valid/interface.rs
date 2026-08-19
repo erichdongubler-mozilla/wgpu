@@ -94,8 +94,10 @@ pub enum VaryingError {
     UnsupportedCapability(Capabilities),
     #[error("The attribute {0:?} is only valid as an output for stage {1:?}")]
     InvalidInputAttributeInStage(&'static str, crate::ShaderStage),
-    #[error("The attribute {0:?} is not valid for stage {1:?}")]
-    InvalidAttributeInStage(&'static str, crate::ShaderStage),
+    /// NOTE: The stage mentioned here is presumed to be part of the context in an
+    /// [`EntryPointError`].
+    #[error("The attribute {0:?} is not valid for this stage")]
+    InvalidAttributeInStage(&'static str),
     #[error("`@blend_src` can only be used at location 0, indices 0 and 1. Found `@location({location}) @blend_src({blend_src})`.")]
     InvalidBlendSrcIndex { location: u32, blend_src: u32 },
     #[error(
@@ -688,7 +690,7 @@ impl VaryingContext<'_> {
             } => {
                 match ep.stage {
                     nt::ShaderStage::Compute | nt::ShaderStage::Mesh | nt::ShaderStage::Task => {
-                        return Err(VaryingError::InvalidAttributeInStage("location", ep.stage));
+                        return Err(VaryingError::InvalidAttributeInStage("location"));
                     }
                     nt::ShaderStage::Vertex
                     | nt::ShaderStage::Fragment
@@ -874,10 +876,7 @@ impl VaryingContext<'_> {
                     // opposed to members of a struct). The struct definition is validated during
                     // type validation.
                     if self.stage != crate::ShaderStage::Fragment {
-                        return Err(
-                            VaryingError::InvalidAttributeInStage("blend_src", self.stage)
-                                .with_span(),
-                        );
+                        return Err(VaryingError::InvalidAttributeInStage("blend_src").with_span());
                     }
                     if !self.output {
                         return Err(VaryingError::InvalidInputAttributeInStage(
@@ -1236,27 +1235,30 @@ impl super::Validator {
         let position = EntryPointIoPosition::Return;
         ctx.validate(ep, ty, None, position)
             .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
-        if mesh_output_type == MeshOutputType::PrimitiveOutput {
-            let mut num_indices_builtins = 0;
-            if result_built_ins.contains(&crate::BuiltIn::PointIndex) {
-                num_indices_builtins += 1;
+        match mesh_output_type {
+            MeshOutputType::PrimitiveOutput => {
+                let mut num_indices_builtins = 0;
+                if result_built_ins.contains(&crate::BuiltIn::PointIndex) {
+                    num_indices_builtins += 1;
+                }
+                if result_built_ins.contains(&crate::BuiltIn::LineIndices) {
+                    num_indices_builtins += 1;
+                }
+                if result_built_ins.contains(&crate::BuiltIn::TriangleIndices) {
+                    num_indices_builtins += 1;
+                }
+                if num_indices_builtins != 1 {
+                    return Err(EntryPointError::InvalidMeshPrimitiveOutputType
+                        .with_span_handle(ty, &module.types));
+                }
             }
-            if result_built_ins.contains(&crate::BuiltIn::LineIndices) {
-                num_indices_builtins += 1;
-            }
-            if result_built_ins.contains(&crate::BuiltIn::TriangleIndices) {
-                num_indices_builtins += 1;
-            }
-            if num_indices_builtins != 1 {
-                return Err(EntryPointError::InvalidMeshPrimitiveOutputType
+            MeshOutputType::VertexOutput
+                if !result_built_ins.contains(&crate::BuiltIn::Position { invariant: false }) =>
+            {
+                return Err(EntryPointError::MissingVertexOutputPosition
                     .with_span_handle(ty, &module.types));
             }
-        } else if mesh_output_type == MeshOutputType::VertexOutput
-            && !result_built_ins.contains(&crate::BuiltIn::Position { invariant: false })
-        {
-            return Err(
-                EntryPointError::MissingVertexOutputPosition.with_span_handle(ty, &module.types)
-            );
+            _ => {}
         }
 
         Ok(())
