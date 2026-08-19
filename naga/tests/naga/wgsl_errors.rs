@@ -2201,7 +2201,7 @@ fn invalid_blend_src() {
             ValidationError::EntryPoint {
                 stage: naga::ShaderStage::Vertex,
                 source: naga::valid::EntryPointError::Result(
-                    VaryingError::InvalidAttributeInStage("blend_src", naga::ShaderStage::Vertex),
+                    VaryingError::InvalidAttributeInStage("blend_src"),
                 ),
                 ..
             },
@@ -5677,7 +5677,9 @@ fn compute_shaders_dont_accept_result_types() {
         Err(
             naga::valid::ValidationError::EntryPoint {
                 stage: naga::ShaderStage::Compute,
-                source: naga::valid::EntryPointError::UnexpectedComputeShaderEntryResult,
+                source: naga::valid::EntryPointError::Result(
+                    naga::valid::VaryingError::InvalidAttributeInStage("location"),
+                ),
                 ..
             },
         )
@@ -5695,7 +5697,9 @@ fn compute_shaders_dont_accept_result_types() {
         Err(
             naga::valid::ValidationError::EntryPoint {
                 stage: naga::ShaderStage::Compute,
-                source: naga::valid::EntryPointError::UnexpectedComputeShaderEntryResult,
+                source: naga::valid::EntryPointError::Result(
+                    naga::valid::VaryingError::InvalidAttributeInStage("location"),
+                ),
                 ..
             },
         )
@@ -5714,10 +5718,7 @@ fn user_locations_not_accepted_in_compute_entry_point_arguments() {
                 stage: naga::ShaderStage::Compute,
                 source: naga::valid::EntryPointError::Argument(
                     0,
-                    naga::valid::VaryingError::InvalidAttributeInStage(
-                        "location",
-                        naga::ShaderStage::Compute,
-                    ),
+                    naga::valid::VaryingError::InvalidAttributeInStage("location"),
                 ),
                 ..
             },
@@ -5738,10 +5739,7 @@ fn user_locations_not_accepted_in_compute_entry_point_arguments() {
                 stage: naga::ShaderStage::Compute,
                 source: naga::valid::EntryPointError::Argument(
                     0,
-                    naga::valid::VaryingError::InvalidAttributeInStage(
-                        "location",
-                        naga::ShaderStage::Compute
-                    ),
+                    naga::valid::VaryingError::InvalidAttributeInStage("location"),
                 ),
                 ..
             },
