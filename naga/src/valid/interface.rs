@@ -146,10 +146,11 @@ pub enum EntryPointError {
     MoreThanOneImmediateUsed,
     #[error("Bindings for {0:?} conflict with other resource")]
     BindingCollision(Handle<crate::GlobalVariable>),
-    #[error("Argument {0} varying error")]
-    Argument(u32, #[source] VaryingError),
-    #[error(transparent)]
-    Result(#[from] VaryingError),
+    #[error("Varying error for {position:?}")]
+    Io {
+        position: EntryPointIoPosition,
+        source: VaryingError,
+    },
     #[error(transparent)]
     Function(#[from] FunctionError),
     #[error("Capability {0:?} is not supported")]
@@ -216,6 +217,12 @@ enum MeshOutputType {
     PrimitiveOutput,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EntryPointIoPosition {
+    Argument { index: u32 },
+    Return,
+}
+
 struct VaryingContext<'a> {
     stage: crate::ShaderStage,
     output: bool,
@@ -236,6 +243,7 @@ impl VaryingContext<'_> {
         ep: &crate::EntryPoint,
         ty: Handle<crate::Type>,
         binding: &crate::Binding,
+        position: EntryPointIoPosition,
     ) -> Result<(), VaryingError> {
         use crate::{BuiltIn as Bi, ShaderStage as St, TypeInner as Ti, VectorSize as Vs};
 
@@ -842,11 +850,12 @@ impl VaryingContext<'_> {
         ep: &crate::EntryPoint,
         ty: Handle<crate::Type>,
         binding: Option<&crate::Binding>,
+        position: EntryPointIoPosition,
     ) -> Result<(), WithSpan<VaryingError>> {
         let span_context = self.types.get_span_context(ty);
         match binding {
             Some(binding) => self
-                .validate_impl(ep, ty, binding)
+                .validate_impl(ep, ty, binding, position)
                 .map_err(|e| e.with_span_context(span_context)),
             None => {
                 let crate::TypeInner::Struct { ref members, .. } = self.types[ty].inner else {
@@ -899,7 +908,7 @@ impl VaryingContext<'_> {
                                 }
                             }
                             Some(ref binding) => self
-                                .validate_impl(ep, member.ty, binding)
+                                .validate_impl(ep, member.ty, binding, position)
                                 .map_err(|e| e.with_span_context(span_context))?,
                         }
                     }
@@ -1224,8 +1233,9 @@ impl super::Validator {
             mesh_output_type,
             has_task_payload: ep.task_payload.is_some(),
         };
-        ctx.validate(ep, ty, None)
-            .map_err_inner(|e| EntryPointError::Result(e).with_span())?;
+        let position = EntryPointIoPosition::Return;
+        ctx.validate(ep, ty, None, position)
+            .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
         if mesh_output_type == MeshOutputType::PrimitiveOutput {
             let mut num_indices_builtins = 0;
             if result_built_ins.contains(&crate::BuiltIn::PointIndex) {
@@ -1284,10 +1294,11 @@ impl super::Validator {
         if ep.early_depth_test.is_some() {
             let required = Capabilities::EARLY_DEPTH_TEST;
             if !self.capabilities.contains(required) {
-                return Err(
-                    EntryPointError::Result(VaryingError::UnsupportedCapability(required))
-                        .with_span(),
-                );
+                return Err(EntryPointError::Io {
+                    position: EntryPointIoPosition::Return,
+                    source: VaryingError::UnsupportedCapability(required),
+                }
+                .with_span());
             }
 
             if ep.stage != crate::ShaderStage::Fragment {
@@ -1396,8 +1407,10 @@ impl super::Validator {
                 mesh_output_type: MeshOutputType::None,
                 has_task_payload: ep.task_payload.is_some(),
             };
-            ctx.validate(ep, fa.ty, fa.binding.as_ref())
-                .map_err_inner(|e| EntryPointError::Argument(index as u32, e).with_span())?;
+            let index = index as u32;
+            let position = EntryPointIoPosition::Argument { index };
+            ctx.validate(ep, fa.ty, fa.binding.as_ref(), position)
+                .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
         }
 
         self.location_mask.make_empty();
@@ -1418,7 +1431,7 @@ impl super::Validator {
             };
             let mut validate_result = || {
                 ctx.validate(ep, fr.ty, fr.binding.as_ref())
-                    .map_err_inner(|e| EntryPointError::Result(e).with_span())
+                    .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())
             };
             match ep.stage {
                 nt::ShaderStage::Vertex => {
