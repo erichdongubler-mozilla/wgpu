@@ -146,10 +146,11 @@ pub enum EntryPointError {
     MoreThanOneImmediateUsed,
     #[error("Bindings for {0:?} conflict with other resource")]
     BindingCollision(Handle<crate::GlobalVariable>),
-    #[error("Argument {0} varying error")]
-    Argument(u32, #[source] VaryingError),
-    #[error(transparent)]
-    Result(#[from] VaryingError),
+    #[error("Varying error for {position:?}")]
+    Io {
+        position: EntryPointIoPosition,
+        source: VaryingError,
+    },
     #[error(transparent)]
     Function(#[from] FunctionError),
     #[error("Capability {0:?} is not supported")]
@@ -217,7 +218,7 @@ enum MeshOutputType {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum EntryPointIoPosition {
+pub enum EntryPointIoPosition {
     Argument { index: u32 },
     Return,
 }
@@ -242,7 +243,7 @@ impl VaryingContext<'_> {
         ep: &crate::EntryPoint,
         ty: Handle<crate::Type>,
         binding: &crate::Binding,
-        _position: EntryPointIoPosition,
+        position: EntryPointIoPosition,
     ) -> Result<(), VaryingError> {
         use crate::{BuiltIn as Bi, ShaderStage as St, TypeInner as Ti, VectorSize as Vs};
 
@@ -1234,7 +1235,7 @@ impl super::Validator {
         };
         let position = EntryPointIoPosition::Return;
         ctx.validate(ep, ty, None, position)
-            .map_err_inner(|e| EntryPointError::Result(e).with_span())?;
+            .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
         if mesh_output_type == MeshOutputType::PrimitiveOutput {
             let mut num_indices_builtins = 0;
             if result_built_ins.contains(&crate::BuiltIn::PointIndex) {
@@ -1293,10 +1294,11 @@ impl super::Validator {
         if ep.early_depth_test.is_some() {
             let required = Capabilities::EARLY_DEPTH_TEST;
             if !self.capabilities.contains(required) {
-                return Err(
-                    EntryPointError::Result(VaryingError::UnsupportedCapability(required))
-                        .with_span(),
-                );
+                return Err(EntryPointError::Io {
+                    position: EntryPointIoPosition::Return,
+                    source: VaryingError::UnsupportedCapability(required),
+                }
+                .with_span());
             }
 
             if ep.stage != crate::ShaderStage::Fragment {
@@ -1408,7 +1410,7 @@ impl super::Validator {
             let index = index as u32;
             let position = EntryPointIoPosition::Argument { index };
             ctx.validate(ep, fa.ty, fa.binding.as_ref(), position)
-                .map_err_inner(|e| EntryPointError::Argument(index as u32, e).with_span())?;
+                .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
         }
 
         self.location_mask.make_empty();
@@ -1429,7 +1431,7 @@ impl super::Validator {
             };
             let position = EntryPointIoPosition::Return;
             ctx.validate(ep, fr.ty, fr.binding.as_ref(), position)
-                .map_err_inner(|e| EntryPointError::Result(e).with_span())?;
+                .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
             match ep.stage {
                 nt::ShaderStage::Vertex => {
                     if !result_built_ins.contains(&crate::BuiltIn::Position { invariant: false }) {
