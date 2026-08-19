@@ -94,8 +94,10 @@ pub enum VaryingError {
     UnsupportedCapability(Capabilities),
     #[error("The attribute {0:?} is only valid as an output for stage {1:?}")]
     InvalidInputAttributeInStage(&'static str, crate::ShaderStage),
-    #[error("The attribute {0:?} is not valid for stage {1:?}")]
-    InvalidAttributeInStage(&'static str, crate::ShaderStage),
+    /// NOTE: The stage mentioned here is presumed to be part of the context in an
+    /// [`EntryPointError`].
+    #[error("The attribute {0:?} is not valid for this stage")]
+    InvalidAttributeInStage(&'static str),
     #[error("`@blend_src` can only be used at location 0, indices 0 and 1. Found `@location({location}) @blend_src({blend_src})`.")]
     InvalidBlendSrcIndex { location: u32, blend_src: u32 },
     #[error(
@@ -680,7 +682,7 @@ impl VaryingContext<'_> {
             } => {
                 match ep.stage {
                     nt::ShaderStage::Compute | nt::ShaderStage::Mesh | nt::ShaderStage::Task => {
-                        return Err(VaryingError::InvalidAttributeInStage("location", ep.stage));
+                        return Err(VaryingError::InvalidAttributeInStage("location"));
                     }
                     nt::ShaderStage::Vertex
                     | nt::ShaderStage::Fragment
@@ -865,10 +867,7 @@ impl VaryingContext<'_> {
                     // opposed to members of a struct). The struct definition is validated during
                     // type validation.
                     if self.stage != crate::ShaderStage::Fragment {
-                        return Err(
-                            VaryingError::InvalidAttributeInStage("blend_src", self.stage)
-                                .with_span(),
-                        );
+                        return Err(VaryingError::InvalidAttributeInStage("blend_src").with_span());
                     }
                     if !self.output {
                         return Err(VaryingError::InvalidInputAttributeInStage(
