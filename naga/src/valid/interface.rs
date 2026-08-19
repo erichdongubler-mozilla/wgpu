@@ -1231,27 +1231,30 @@ impl super::Validator {
         let position = EntryPointIoPosition::Return;
         ctx.validate(ep, ty, None, position)
             .map_err_inner(|source| EntryPointError::Io { position, source }.with_span())?;
-        if mesh_output_type == MeshOutputType::PrimitiveOutput {
-            let mut num_indices_builtins = 0;
-            if result_built_ins.contains(&crate::BuiltIn::PointIndex) {
-                num_indices_builtins += 1;
+        match mesh_output_type {
+            MeshOutputType::PrimitiveOutput => {
+                let mut num_indices_builtins = 0;
+                if result_built_ins.contains(&crate::BuiltIn::PointIndex) {
+                    num_indices_builtins += 1;
+                }
+                if result_built_ins.contains(&crate::BuiltIn::LineIndices) {
+                    num_indices_builtins += 1;
+                }
+                if result_built_ins.contains(&crate::BuiltIn::TriangleIndices) {
+                    num_indices_builtins += 1;
+                }
+                if num_indices_builtins != 1 {
+                    return Err(EntryPointError::InvalidMeshPrimitiveOutputType
+                        .with_span_handle(ty, &module.types));
+                }
             }
-            if result_built_ins.contains(&crate::BuiltIn::LineIndices) {
-                num_indices_builtins += 1;
-            }
-            if result_built_ins.contains(&crate::BuiltIn::TriangleIndices) {
-                num_indices_builtins += 1;
-            }
-            if num_indices_builtins != 1 {
-                return Err(EntryPointError::InvalidMeshPrimitiveOutputType
+            MeshOutputType::VertexOutput
+                if !result_built_ins.contains(&crate::BuiltIn::Position { invariant: false }) =>
+            {
+                return Err(EntryPointError::MissingVertexOutputPosition
                     .with_span_handle(ty, &module.types));
             }
-        } else if mesh_output_type == MeshOutputType::VertexOutput
-            && !result_built_ins.contains(&crate::BuiltIn::Position { invariant: false })
-        {
-            return Err(
-                EntryPointError::MissingVertexOutputPosition.with_span_handle(ty, &module.types)
-            );
+            _ => {}
         }
 
         Ok(())
