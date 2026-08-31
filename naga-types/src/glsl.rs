@@ -220,14 +220,14 @@ pub enum GlslUniformType {
 impl GlslUniformType {
     pub fn size(&self) -> u32 {
         match self {
-            Self::Scalar(scalar) => scalar.width as u32,
-            Self::Vector { size, scalar } => *size as u32 * scalar.width as u32,
+            Self::Scalar(scalar) => scalar.width.into(),
+            Self::Vector { size, scalar } => *size as u32 * u32::from(scalar.width),
             // matrices are treated as arrays of aligned columns
             Self::Matrix {
                 columns,
                 rows,
                 scalar,
-            } => rows.alignment() * scalar.width as u32 * *columns as u32,
+            } => rows.alignment() * u32::from(scalar.width) * *columns as u32,
         }
     }
 }

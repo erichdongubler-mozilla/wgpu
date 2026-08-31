@@ -4,6 +4,7 @@ use alloc::vec::Vec;
 #[cfg(wgpu_core)]
 use core::ops::Deref;
 use core::ops::{Index, IndexMut, Range};
+use wgt::size::{u32_from_external_usize, u32_from_internal_usize, usize_from_u32};
 use wgt::WasmNotSendSync;
 
 /// Descriptor to create top level acceleration structures.
@@ -103,8 +104,8 @@ impl Tlas {
         if range.end > self.instances.len() {
             return None;
         }
-        if range.end as u32 > self.lowest_unmodified {
-            self.lowest_unmodified = range.end as u32;
+        if range.end > usize_from_u32(self.lowest_unmodified) {
+            self.lowest_unmodified = u32_from_external_usize(range.end).unwrap();
         }
         Some(&mut self.instances[range])
     }
@@ -120,8 +121,9 @@ impl Tlas {
         if index >= self.instances.len() {
             return None;
         }
-        if index as u32 + 1 > self.lowest_unmodified {
-            self.lowest_unmodified = index as u32 + 1;
+        let new_lowest_unmodified = u32_from_external_usize(index.checked_add(1).unwrap()).unwrap();
+        if new_lowest_unmodified > self.lowest_unmodified {
+            self.lowest_unmodified = new_lowest_unmodified;
         }
         Some(&mut self.instances[index])
     }
@@ -163,8 +165,10 @@ impl IndexMut<usize> for Tlas {
 impl IndexMut<Range<usize>> for Tlas {
     fn index_mut(&mut self, index: Range<usize>) -> &mut Self::Output {
         let idx = self.instances.index_mut(index.clone());
-        if index.end > self.lowest_unmodified as usize {
-            self.lowest_unmodified = index.end as u32;
+        let new_lowest_unmodified =
+            u32_from_external_usize(index.end.checked_add(1).unwrap()).unwrap();
+        if new_lowest_unmodified > self.lowest_unmodified {
+            self.lowest_unmodified = new_lowest_unmodified;
         }
         idx
     }

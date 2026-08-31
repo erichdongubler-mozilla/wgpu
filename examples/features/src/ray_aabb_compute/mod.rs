@@ -173,7 +173,7 @@ impl crate::framework::Example for Example {
         });
 
         let aabb_size_desc = wgpu::BlasAABBGeometrySizeDescriptor {
-            primitive_count: aabb_data.len() as u32,
+            primitive_count: aabb_data.len().try_into().unwrap(),
             flags: wgpu::AccelerationStructureGeometryFlags::OPAQUE,
         };
 

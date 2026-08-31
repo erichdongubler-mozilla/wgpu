@@ -23,7 +23,10 @@ use core::{
     task::{self, Poll},
 };
 use wgpu_sync::atomic::{AtomicU8, Ordering};
-use wgt::Backends;
+use wgt::{
+    size::{u32_from_external_usize, usize_from_u32},
+    Backends,
+};
 
 use js_sys::Promise;
 use wasm_bindgen::{prelude::*, JsCast};
@@ -149,18 +152,21 @@ enum WebShaderCompilationInfo {
 
 fn map_utf16_to_utf8_offset(utf16_offset: u32, text: &str) -> u32 {
     let mut utf16_i = 0;
-    for (utf8_index, c) in text.char_indices() {
-        if utf16_i >= utf16_offset {
-            return utf8_index as u32;
+    let offset_usize = 'value: {
+        for (utf8_index, c) in text.char_indices() {
+            if utf16_i >= utf16_offset {
+                break 'value utf8_index;
+            }
+            utf16_i += c.len_utf16();
         }
-        utf16_i += c.len_utf16() as u32;
-    }
-    if utf16_i >= utf16_offset {
-        text.len() as u32
-    } else {
-        log::error!("UTF16 offset {utf16_offset} is out of bounds for string {text}");
-        u32::MAX
-    }
+        if utf16_i >= utf16_offset {
+            text.len()
+        } else {
+            log::error!("UTF16 offset {utf16_offset} is out of bounds for string {text}");
+            return u32::MAX;
+        }
+    };
+    offset_usize.try_into().unwrap()
 }
 
 impl crate::CompilationMessage {
@@ -176,16 +182,17 @@ impl crate::CompilationMessage {
             webgpu_sys::GpuCompilationMessageType::Info => crate::CompilationMessageType::Info,
             _ => crate::CompilationMessageType::Error,
         };
-        let utf16_offset = js_message.offset() as u32;
-        let utf16_length = js_message.length() as u32;
+        let utf16_offset = u32_from_external_usize(js_message.offset()).unwrap();
+        let utf16_length = u32_from_external_usize(js_message.length()).unwrap();
         let span = match compilation_info {
             WebShaderCompilationInfo::Wgsl { .. } if utf16_offset == 0 && utf16_length == 0 => None,
             WebShaderCompilationInfo::Wgsl { source } => {
                 let offset = map_utf16_to_utf8_offset(utf16_offset, source);
-                let length = map_utf16_to_utf8_offset(utf16_length, &source[offset as usize..]);
-                let line_number = js_message.line_num() as u32; // That's legal, because we're counting lines the same way
+                let length =
+                    map_utf16_to_utf8_offset(utf16_length, &source[usize_from_u32(offset)..]);
+                let line_number = u32_from_external_usize(js_message.line_num()).unwrap(); // That's legal, because we're counting lines the same way
 
-                let prefix = &source[..offset as usize];
+                let prefix = &source[..usize_from_u32(offset)];
                 let line_start = prefix.rfind('\n').map(|pos| pos + 1).unwrap_or(0) as u32;
                 let line_position = offset - line_start + 1; // Counting UTF-8 byte indices
 
