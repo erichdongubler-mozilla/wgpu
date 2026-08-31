@@ -101,6 +101,7 @@ impl Tlas {
     /// This can be done by ordering instances from the most to the least used. It is recommended
     /// to use [`Self::index_mut`] unless the option if out of bounds is required
     pub fn get_mut_slice(&mut self, range: Range<usize>) -> Option<&mut [Option<TlasInstance>]> {
+        // TODO: WTF, why is this not shared logic with `IndexMut` impls?
         if range.end > self.instances.len() {
             return None;
         }
