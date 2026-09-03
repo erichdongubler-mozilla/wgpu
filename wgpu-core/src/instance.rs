@@ -1224,16 +1224,19 @@ impl Adapter {
         &self,
         desc: &mut DeviceDescriptor,
     ) -> Result<(), RequestDeviceError> {
+        let mut normalized_features = desc.required_features;
+        let mut normalized_limits = desc.required_limits.clone();
+
         filter_features_and_limits(
             self.instance.flags,
-            &mut desc.required_features,
-            &mut desc.required_limits,
+            &mut normalized_features,
+            &mut normalized_limits,
         );
 
         // Verify all features were exposed by the adapter
-        if !self.raw.features.contains(desc.required_features) {
+        if !self.raw.features.contains(normalized_features) {
             return Err(RequestDeviceError::UnsupportedFeature(
-                desc.required_features - self.raw.features,
+                normalized_features - self.raw.features,
             ));
         }
 
@@ -1244,8 +1247,7 @@ impl Adapter {
             && !desc.experimental_features.is_enabled()
         {
             return Err(RequestDeviceError::ExperimentalFeaturesNotEnabled(
-                desc.required_features
-                    .intersection(wgt::Features::all_experimental_mask()),
+                normalized_features.intersection(wgt::Features::all_experimental_mask()),
             ));
         }
 
@@ -1259,9 +1261,7 @@ impl Adapter {
         }
 
         // Verify feature preconditions
-        if desc
-            .required_features
-            .contains(wgt::Features::MAPPABLE_PRIMARY_BUFFERS)
+        if normalized_features.contains(wgt::Features::MAPPABLE_PRIMARY_BUFFERS)
             && self.raw.info.device_type == wgt::DeviceType::DiscreteGpu
         {
             log::warn!(
@@ -1270,11 +1270,15 @@ impl Adapter {
             );
         }
 
-        if let Some(failed) = check_limits(&desc.required_limits, &caps.limits).pop() {
+        if let Some(failed) = check_limits(&normalized_limits, &caps.limits).pop() {
             return Err(RequestDeviceError::LimitsExceeded(failed));
         }
 
-        normalize_max_resource_per_shader_stage_limits(&mut desc.required_limits);
+        normalize_max_resource_per_shader_stage_limits(&mut normalized_limits);
+
+        // NOTE: Only commit these once we're definitely successful.
+        desc.required_features = normalized_features;
+        desc.required_limits = normalized_limits;
 
         Ok(())
     }
