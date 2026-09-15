@@ -3,6 +3,67 @@ name: cts-triage
 description: Run CTS test suites and investigate failures
 ---
 
+# CTS Query Anatomy
+
+Every selector in this skill is a CTS query. Get the syntax right before running
+anything; a malformed query is a hard parse error, not a zero-match run.
+
+```
+webgpu:api,validation,buffer,create:usage:usage1=0;usage2=0
+```
+
+| level | component   | value in example               | where it comes from                                   |
+| ----- | ----------- | ------------------------------ | ----------------------------------------------------- |
+| 1     | suite       | `webgpu`                       | `cts/src/webgpu/`                                     |
+| 2     | file path   | `api,validation,buffer,create` | `cts/src/webgpu/api/validation/buffer/create.spec.ts` |
+| 3     | test path   | `usage`                        | `g.test('usage')` in that file                        |
+| 4     | case params | `usage1=0;usage2=0`            | `.params(…)` on that test                             |
+
+```
+query      := suite ":" filePath ":" testPath ":" caseParams
+filePath   := part ("," part)*   # directories; last part is the .spec.ts basename
+testPath   := part ("," part)*   # the literal string passed to g.test()
+caseParams := kv (";" kv)*
+kv         := key "=" jsonValue
+part, key  := /^[a-zA-Z0-9_]+$/
+```
+
+- `:` divides the four levels. `,` divides parts _within_ the file path or test
+  path. `;` divides case params. `=` divides a param key from its value.
+- Derivation: `<suite>:<a>,<b>,<c>` → `cts/src/<suite>/<a>/<b>/<c>.spec.ts`.
+- Param values are JSON, so strings are quoted: `format="stencil8"`.
+
+## Truncating a query with `*`
+
+A query may stop at any level to match many tests, but `*` must be the
+**complete final part**. `foo*` and `*,foo` are errors.
+
+| query                                                         | matches                       |
+| ------------------------------------------------------------- | ----------------------------- |
+| `webgpu:api,validation,*`                                     | every file under that dir     |
+| `webgpu:api,validation,buffer,create:*`                       | every test in that file       |
+| `webgpu:api,validation,buffer,create:usage:*`                 | every case of that test       |
+| `webgpu:api,validation,buffer,create:usage:usage1=0;*`        | cases matching a param prefix |
+| `webgpu:api,validation,buffer,create:usage:usage1=0;usage2=0` | exactly one case              |
+
+Omitting the trailing `*` at level 2 or 3 is an **error**, not an implicit
+wildcard. CTS's parse error names both candidate fixes; pick the level you
+actually meant.
+
+## Mistakes to avoid
+
+- **Level 3 is a path, not a name.** Test paths routinely contain commas:
+  `g.test('mapAsync,state,mapped')` becomes
+  `webgpu:api,validation,buffer,mapping:mapAsync,state,mapped:*`.
+- **`,*` and `:*` are not interchangeable.** If one file contains tests `test`,
+  `test,foo`, and `test,bar`, then `test,*` matches all three, while `test:*`
+  matches only `test`. Prefer `,*` when collapsing selectors.
+- **`:` cannot appear inside a suite, file path, or test path.** It is reserved
+  as the level divider, and path parts are restricted to `[a-zA-Z0-9_]+`.
+- **Subcase parameters are not addressable.** The narrowest query CTS can
+  express is a single case, which always runs every subcase it contains. You
+  cannot select, skip, or list an individual subcase.
+
 # Triage Process
 
 When working on a category of CTS tests, follow this systematic process to identify issues, prioritize fixes, and document findings.
@@ -33,11 +94,20 @@ This gives you the pass rate and number of failures. Document this as your basel
 
 ## Step 2: Identify Test Subcategories
 
-Review the output from the running the CTS (with or without `--list`) to
-identify any subcategories that may exist within the suite being analyzed.
-Subcategories typically have an additional `:`- or `,`-delimited word in the
-test name. Running tests by subcategory may be more manageable than running
-with the entire suite at once or running individual tests.
+Review the output from running the CTS (with or without `--list`) to identify
+any subcategories that may exist within the suite being analyzed. Subcategories
+show up in one of two places:
+
+- **As extra `,`-delimited parts of the test path** (level 3) — e.g. the tests
+  `mapAsync,read,typedArrayAccess` and `mapAsync,write,typedArrayAccess` share
+  the `mapAsync` subcategory, selectable as `…:mapAsync,*`.
+- **As case parameters** (level 4) — e.g. `isAsync=false;*` or `format="*"`-ish
+  groupings, selectable as a param prefix like `…:usage:isAsync=false;*`.
+
+Never use `:` to reach a subcategory; `:` only ever divides the four levels.
+
+Running tests by subcategory is usually more manageable than running the whole
+suite at once or running individual tests.
 
 ## Step 3: Run Each Subcategory
 
@@ -68,11 +138,20 @@ Look for patterns:
 
 ## Step 5: Examine Specific Failures
 
-Pick a representative failing test and run it individually to see the error:
+Pick a representative failing test and run it individually to see the error.
+Copy the selector verbatim from the `[fail]` line — do not hand-assemble it, and
+remember that a test-level selector needs a trailing `:*`:
 
 ```bash
-cargo xtask cts 'webgpu:api,validation,category:subcategory:specific_test' 2>&1 | tail -30
+# All cases of one test (note the `:*`):
+cargo xtask cts 'webgpu:api,validation,category:subcategory,specific_test:*' 2>&1 | tail -30
+
+# One exact case, params included:
+cargo xtask cts 'webgpu:api,validation,category:subcategory,specific_test:foo=false;bar="value"' 2>&1 | tail -30
 ```
+
+Dropping the `:*` from the first form makes CTS read `specific_test` as a case
+parameter and fail with `Param in a query must be of form key=value`.
 
 Look for:
 
@@ -86,8 +165,12 @@ Look for:
 To understand what the test expects, read the TypeScript source:
 
 ```bash
-grep -A 40 "test_name" cts/src/webgpu/api/validation/path/file.spec.ts
+grep -A 40 "g\.test('test_name'" cts/src/webgpu/api/validation/path/file.spec.ts
 ```
+
+Anchor the search on `g.test('…'` rather than the bare name: test paths are
+substrings of each other (`mapAsync` matches `mapAsync,state,mapped`), so a
+bare pattern will land you in the wrong test.
 
 The test source shows:
 
