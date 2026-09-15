@@ -1,6 +1,6 @@
 ---
 name: cts-triage
-description: Run CTS test suites and investigate failures
+description: Run WebGPU CTS test suites against wgpu, investigate failures, write triage reports, and maintain cts_runner/{test,fail,skip}.lst. Use for CTS selectors, `cargo xtask cts`, validation gaps, and CTS query syntax.
 ---
 
 # CTS Query Anatomy
@@ -321,8 +321,44 @@ Use a higher-level wildcard only when all tests that it matches belong in the
 same result list. Do not use a wildcard that also matches tests from another
 result list.
 
-Keep the selectors in the order that the `lst_files_are_sorted` integration
-test requires. This rule also applies to selectors in comments.
+Prefer `,*` over `:*` when collapsing: given tests `test`, `test,foo`, and
+`test,bar` in one file, `test,*` covers all three, so listing both `test:*` and
+`test,*` is redundant.
+
+### `fails-if(…)` annotations
+
+A selector line may be prefixed with `fails-if(<backend>[,<backend>…])`, which
+tells the runner to **skip** that selector on those backends:
+
+```
+fails-if(vulkan) webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth16unorm"
+fails-if(dx12,vulkan,metal) webgpu:api,operation,command_buffer,image_copy:offsets_and_sizes:*
+```
+
+The runner only honors the clause when `--backend` is passed; without it the
+clause is ignored and a warning is logged. Reach for this when a selector is
+platform-dependent, so you can keep the passing cases in `test.lst` instead of
+demoting the whole selector to `fail.lst`.
+
+Comment lines start with `//` or `#`.
+
+### Sorting
+
+Keep selectors in the order `lst_files_are_sorted` requires — including
+selectors that appear inside comments. It is **not** a plain ASCII sort. The
+test normalizes each line before comparing:
+
+- uppercase → lowercase (so the sort is case-insensitive)
+- `_` → space
+- `:` → `-`
+
+which yields the effective order `_` < `,` < `:` < digits < letters. Note that
+`_` sorts **first**, the opposite of its ASCII position. Do not sort these files
+with `sort`; verify with the test itself:
+
+```bash
+cargo test --package cts_runner --test integration lst_files_are_sorted
+```
 
 ## Step 12: Verify and Build
 
