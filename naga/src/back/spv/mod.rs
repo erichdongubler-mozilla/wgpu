@@ -412,6 +412,9 @@ impl NumericType {
             crate::TypeInner::Scalar(scalar) | crate::TypeInner::Atomic(scalar) => {
                 Some(NumericType::Scalar(scalar))
             }
+            // An atomic vector is a surrogate for a 64-bit unsigned integer,
+            // which is what SPIR-V operates on directly.
+            crate::TypeInner::AtomicVector { .. } => Some(NumericType::Scalar(crate::Scalar::U64)),
             crate::TypeInner::Vector { size, scalar } => Some(NumericType::Vector { size, scalar }),
             crate::TypeInner::Matrix {
                 columns,
@@ -1228,4 +1231,5 @@ pub fn supported_capabilities() -> crate::valid::Capabilities {
         | Caps::MEMORY_DECORATION_VOLATILE
         | Caps::LINEAR_INTERPOLATION
         | Caps::DEBUG_PRINTF
+        | Caps::ATOMIC_VEC2U_MIN_MAX
 }

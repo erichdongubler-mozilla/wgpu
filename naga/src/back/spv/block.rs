@@ -3994,10 +3994,34 @@ impl BlockContext<'_> {
                     let value_id = self.cached[value];
                     let value_inner = self.fun_info[value].ty.inner_with(&self.ir_module.types);
 
-                    let crate::TypeInner::Scalar(scalar) = *value_inner else {
-                        return Err(Error::FeatureNotImplemented(
-                            "Atomics with non-scalar values",
+                    // An `AtomicVector` value is a surrogate for a 64-bit
+                    // unsigned integer, which is what SPIR-V operates on
+                    // directly, so reinterpret the vector before using it.
+                    let (scalar, is_surrogate) = match *value_inner {
+                        crate::TypeInner::Scalar(scalar) => (scalar, false),
+                        crate::TypeInner::Vector {
+                            size: crate::VectorSize::Bi,
+                            scalar: crate::Scalar::U32,
+                        } => (crate::Scalar::U64, true),
+                        _ => {
+                            return Err(Error::FeatureNotImplemented(
+                                "Atomics with non-scalar values",
+                            ))
+                        }
+                    };
+                    let (value_id, result_type_id) = if is_surrogate {
+                        let surrogate_type_id =
+                            self.get_numeric_type_id(NumericType::Scalar(scalar));
+                        let bitcast_id = self.gen_id();
+                        block.body.push(Instruction::unary(
+                            spirv::Op::Bitcast,
+                            surrogate_type_id,
+                            bitcast_id,
+                            value_id,
                         ));
+                        (bitcast_id, surrogate_type_id)
+                    } else {
+                        (value_id, result_type_id)
                     };
 
                     let instruction = match *fun {

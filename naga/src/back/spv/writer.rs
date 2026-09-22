@@ -475,7 +475,6 @@ impl Writer {
         Some(match *inner {
             crate::TypeInner::Scalar(_)
             | crate::TypeInner::Atomic(_)
-            | crate::TypeInner::AtomicVector { .. }
             | crate::TypeInner::Vector { .. }
             | crate::TypeInner::Matrix { .. } => {
                 // We expect `NumericType::from_inner` to handle all
@@ -2057,13 +2056,9 @@ impl Writer {
             crate::TypeInner::RayQuery { .. } => {
                 self.require_any("Ray Query", &[spirv::Capability::RayQueryKHR])?;
             }
-            crate::TypeInner::Atomic(crate::Scalar { width: 8, kind: _ }) => {
+            crate::TypeInner::Atomic(crate::Scalar { width: 8, kind: _ })
+            | crate::TypeInner::AtomicVector { .. } => {
                 self.require_any("64 bit integer atomics", &[spirv::Capability::Int64Atomics])?;
-            }
-            crate::TypeInner::AtomicVector { .. } => {
-                return Err(Error::FeatureNotImplemented(
-                    "atomic vectors are not supported",
-                ))
             }
             crate::TypeInner::Atomic(crate::Scalar {
                 width: 4,
@@ -2286,12 +2281,12 @@ impl Writer {
                 // handled by `write_type_declaration_local` above.
                 crate::TypeInner::Scalar(_)
                 | crate::TypeInner::Atomic(_)
-                | crate::TypeInner::AtomicVector { .. }
                 | crate::TypeInner::Vector { .. }
                 | crate::TypeInner::Matrix { .. }
                 | crate::TypeInner::CooperativeMatrix { .. }
                 | crate::TypeInner::Pointer { .. }
                 | crate::TypeInner::ValuePointer { .. }
+                | crate::TypeInner::AtomicVector { .. }
                 | crate::TypeInner::Image { .. }
                 | crate::TypeInner::Sampler { .. }
                 | crate::TypeInner::AccelerationStructure { .. }
