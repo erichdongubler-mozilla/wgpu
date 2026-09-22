@@ -88,6 +88,9 @@ mod webgpu_impl {
 
     #[doc(hidden)]
     pub const WEBGPU_FEATURE_TEXTURE_COMPONENT_SWIZZLE: u64 = 1 << 18;
+
+    #[doc(hidden)]
+    pub const WEBGPU_FEATURE_ATOMIC_VEC2U_MIN_MAX: u64 = 1 << 19;
 }
 
 /// Prefer `From<(FeaturesWGPU, FeaturesWebGPU)>` instead, which protects against swapping
@@ -1548,6 +1551,21 @@ features! {
         #[name("texture-component-swizzle")]
         #[web(allow)]
         const TEXTURE_COMPONENT_SWIZZLE = WEBGPU_FEATURE_TEXTURE_COMPONENT_SWIZZLE;
+
+        /// Allows shaders to use `atomic<vec2<u32>>` storage buffer variables
+        /// with the `atomicStoreMin` and `atomicStoreMax` built-ins, via
+        /// `enable atomic_vec2u_min_max;`.
+        ///
+        /// `vec2<u32>` denotes an unsigned 64-bit integer, which WGSL has no
+        /// type for. Component 0 holds the 32 least significant bits, and
+        /// component 1 the 32 most significant.
+        ///
+        /// Supported platforms:
+        ///
+        /// This is a web and native feature.
+        #[name("atomic-vec2u-min-max")]
+        #[web(allow)]
+        const ATOMIC_VEC2U_MIN_MAX = WEBGPU_FEATURE_ATOMIC_VEC2U_MIN_MAX;
     }
 }
 

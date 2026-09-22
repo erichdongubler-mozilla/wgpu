@@ -96,6 +96,10 @@ pub fn features_to_naga_capabilities(
         features.contains(wgt::Features::SHADER_INT64_ATOMIC_ALL_OPS),
     );
     caps.set(
+        Caps::ATOMIC_VEC2U_MIN_MAX,
+        features.contains(wgt::Features::ATOMIC_VEC2U_MIN_MAX),
+    );
+    caps.set(
         Caps::TEXTURE_ATOMIC,
         features.contains(wgt::Features::TEXTURE_ATOMIC),
     );
