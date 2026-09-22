@@ -394,6 +394,13 @@ pub(crate) enum Error<'a> {
 
     InvalidAddrOfOperand(Span),
     InvalidAtomicPointer(Span),
+    /// An `atomic<vec2<u32>>` was passed to a built-in that doesn't accept one,
+    /// or vice versa.
+    MismatchedAtomicVectorPointer {
+        span: Span,
+        /// Whether the built-in called was `atomicStoreMin` or `atomicStoreMax`.
+        expected_atomic_vector: bool,
+    },
     InvalidAtomicOperandType(Span),
     InvalidAtomicAccess(Span),
     InvalidRayQueryPointer(Span),
@@ -715,6 +722,7 @@ impl<'a> Error<'a> {
                 | Error::TypeNotInferable(span)
                 | Error::InvalidAddrOfOperand(span)
                 | Error::InvalidAtomicPointer(span)
+                | Error::MismatchedAtomicVectorPointer { span, .. }
                 | Error::InvalidAtomicOperandType(span)
                 | Error::InvalidAtomicAccess(span)
                 | Error::InvalidRayQueryPointer(span)
@@ -778,6 +786,14 @@ impl<'a> Error<'a> {
                     ),
                     Error::InvalidAtomicPointer(_) => (
                         "atomic operation is done on a pointer to a non-atomic",
+                        "atomic pointer is invalid"
+                    ),
+                    Error::MismatchedAtomicVectorPointer { expected_atomic_vector: true, .. } => (
+                        "`atomicStoreMin` and `atomicStoreMax` require a pointer to an `atomic<vec2<u32>>`",
+                        "atomic pointer is invalid"
+                    ),
+                    Error::MismatchedAtomicVectorPointer { expected_atomic_vector: false, .. } => (
+                        "`atomic<vec2<u32>>` supports only `atomicStoreMin` and `atomicStoreMax`",
                         "atomic pointer is invalid"
                     ),
                     Error::InvalidAtomicOperandType(_) => (

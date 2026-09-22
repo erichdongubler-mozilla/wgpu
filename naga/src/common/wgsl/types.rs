@@ -263,6 +263,11 @@ where
             ctx.write_scalar(scalar, out)?;
             out.write_str(">")?;
         }
+        TypeInner::AtomicVec2U32 => {
+            out.write_str("atomic<vec2<")?;
+            ctx.write_scalar(Scalar::U32, out)?;
+            out.write_str(">>")?;
+        }
         TypeInner::Array {
             base,
             size,

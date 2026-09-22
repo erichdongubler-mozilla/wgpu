@@ -26,6 +26,7 @@ pub(crate) struct EnableExtensions {
     per_vertex: bool,
     wgpu_binding_array: bool,
     debug_printf: bool,
+    atomic_vec2u_min_max: bool,
 }
 
 impl EnableExtensions {
@@ -45,6 +46,7 @@ impl EnableExtensions {
             per_vertex: false,
             wgpu_binding_array: false,
             debug_printf: false,
+            atomic_vec2u_min_max: false,
         }
     }
 
@@ -69,6 +71,7 @@ impl EnableExtensions {
             ImplementedEnableExtension::WgpuPerVertex => &mut self.per_vertex,
             ImplementedEnableExtension::WgpuBindingArray => &mut self.wgpu_binding_array,
             ImplementedEnableExtension::WgpuDebugPrintf => &mut self.debug_printf,
+            ImplementedEnableExtension::AtomicVec2UMinMax => &mut self.atomic_vec2u_min_max,
         };
         *field = true;
     }
@@ -92,6 +95,7 @@ impl EnableExtensions {
             ImplementedEnableExtension::WgpuPerVertex => self.per_vertex,
             ImplementedEnableExtension::WgpuBindingArray => self.wgpu_binding_array,
             ImplementedEnableExtension::WgpuDebugPrintf => self.debug_printf,
+            ImplementedEnableExtension::AtomicVec2UMinMax => self.atomic_vec2u_min_max,
         }
     }
 
@@ -177,7 +181,7 @@ impl EnableExtension {
             Self::INT16 => Self::Implemented(ImplementedEnableExtension::WgpuInt16),
             Self::DEBUG_PRINTF => Self::Implemented(ImplementedEnableExtension::WgpuDebugPrintf),
             Self::ATOMIC_VEC2U_MIN_MAX => {
-                Self::Unimplemented(UnimplementedEnableExtension::AtomicVec2UMinMax)
+                Self::Implemented(ImplementedEnableExtension::AtomicVec2UMinMax)
             }
             _ => return Err(Box::new(Error::UnknownEnableExtension(span, word))),
         })
@@ -203,10 +207,10 @@ impl EnableExtension {
                 ImplementedEnableExtension::WgpuBindingArray => Self::BINDING_ARRAY,
                 ImplementedEnableExtension::WgpuInt16 => Self::INT16,
                 ImplementedEnableExtension::WgpuDebugPrintf => Self::DEBUG_PRINTF,
+                ImplementedEnableExtension::AtomicVec2UMinMax => Self::ATOMIC_VEC2U_MIN_MAX,
             },
             Self::Unimplemented(kind) => match kind {
                 UnimplementedEnableExtension::Subgroups => Self::SUBGROUPS,
-                UnimplementedEnableExtension::AtomicVec2UMinMax => Self::ATOMIC_VEC2U_MIN_MAX,
             },
         }
     }
@@ -260,6 +264,13 @@ pub enum ImplementedEnableExtension {
     WgpuInt16,
     /// Enables the `wgpu_debug_printf` extension, allows using `debugPrintf`, native only.
     WgpuDebugPrintf,
+    /// Enables the `atomic<vec2<u32>>` type and the `atomicStoreMin` and
+    /// `atomicStoreMax` built-ins.
+    ///
+    /// In the WGSL standard, this corresponds to [`enable atomic_vec2u_min_max;`].
+    ///
+    /// [`enable atomic_vec2u_min_max;`]: https://www.w3.org/TR/WGSL/#extension-atomic_vec2u_min_max
+    AtomicVec2UMinMax,
 }
 
 impl ImplementedEnableExtension {
@@ -279,6 +290,7 @@ impl ImplementedEnableExtension {
         Self::WgpuBindingArray,
         Self::WgpuInt16,
         Self::WgpuDebugPrintf,
+        Self::AtomicVec2UMinMax,
     ];
 
     /// Returns slice of all variants of [`ImplementedEnableExtension`].
@@ -312,6 +324,7 @@ impl ImplementedEnableExtension {
                 .union(C::ACCELERATION_STRUCTURE_BINDING_ARRAY),
             Self::WgpuInt16 => C::SHADER_INT16,
             Self::WgpuDebugPrintf => C::DEBUG_PRINTF,
+            Self::AtomicVec2UMinMax => C::ATOMIC_VEC2U_MIN_MAX,
         }
     }
 }
@@ -335,20 +348,12 @@ pub enum UnimplementedEnableExtension {
     ///
     /// [`enable subgroups;`]: https://www.w3.org/TR/WGSL/#extension-subgroups
     Subgroups,
-    /// Enables the `atomic<vec2<u32>>` type and the `atomicStoreMin` and
-    /// `atomicStoreMax` built-ins.
-    ///
-    /// In the WGSL standard, this corresponds to [`enable atomic_vec2u_min_max;`].
-    ///
-    /// [`enable atomic_vec2u_min_max;`]: https://www.w3.org/TR/WGSL/#extension-atomic_vec2u_min_max
-    AtomicVec2UMinMax,
 }
 
 impl UnimplementedEnableExtension {
     pub(crate) const fn tracking_issue_num(self) -> u16 {
         match self {
             Self::Subgroups => 5555,
-            Self::AtomicVec2UMinMax => 10435,
         }
     }
 }

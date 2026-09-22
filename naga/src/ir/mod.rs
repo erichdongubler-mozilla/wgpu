@@ -871,6 +871,19 @@ pub enum TypeInner {
     },
     /// Atomic scalar.
     Atomic(Scalar),
+    /// Atomic `vec2<u32>`.
+    ///
+    /// This [denotes an unsigned 64-bit integer][spec]: component 0 holds the
+    /// 32 least significant bits, and component 1 the 32 most significant.
+    /// Backends lower this to their native 64-bit atomic type.
+    ///
+    /// [spec]: https://www.w3.org/TR/WGSL/#atomic-types
+    ///
+    /// Requires [`Capabilities::ATOMIC_VEC2U_MIN_MAX`], which also restricts the
+    /// operations that may be applied; see [`Statement::Atomic`].
+    ///
+    /// [`Capabilities::ATOMIC_VEC2U_MIN_MAX`]: crate::valid::Capabilities::ATOMIC_VEC2U_MIN_MAX
+    AtomicVec2U32,
     /// Pointer to another type.
     ///
     /// Pointers to scalars and vectors should be treated as equivalent to
@@ -2254,14 +2267,24 @@ pub enum Statement {
         /// [`AtomicFunction::Exchange { compare: None }`]: AtomicFunction::Exchange
         /// [`pointer`]: Statement::Atomic::pointer
         /// [`Storage`]: AddressSpace::Storage
+        /// If [`pointer`] refers to an [`AtomicVec2U32`] value, then the
+        /// [`ATOMIC_VEC2U_MIN_MAX`] capability allows [`AtomicFunction::Min`]
+        /// and [`AtomicFunction::Max`] in the [`Storage`] address space, with
+        /// no [`result`]. Nothing else is allowed.
+        ///
         /// [`SHADER_INT64_ATOMIC_MIN_MAX`]: crate::valid::Capabilities::SHADER_INT64_ATOMIC_MIN_MAX
         /// [`SHADER_INT64_ATOMIC_ALL_OPS`]: crate::valid::Capabilities::SHADER_INT64_ATOMIC_ALL_OPS
         /// [`SHADER_FLOAT32_ATOMIC`]: crate::valid::Capabilities::SHADER_FLOAT32_ATOMIC
+        /// [`ATOMIC_VEC2U_MIN_MAX`]: crate::valid::Capabilities::ATOMIC_VEC2U_MIN_MAX
+        /// [`AtomicVec2U32`]: TypeInner::AtomicVec2U32
+        /// [`result`]: Statement::Atomic::result
         fun: AtomicFunction,
 
         /// Value to use in the function.
         ///
-        /// This must be a scalar of the same type as [`pointer`]'s atomic's scalar type.
+        /// This must be a scalar of the same type as [`pointer`]'s atomic's
+        /// scalar type, or, if [`pointer`] refers to an
+        /// [`AtomicVec2U32`][TypeInner::AtomicVec2U32], a `vec2<u32>`.
         ///
         /// [`pointer`]: Statement::Atomic::pointer
         value: Handle<Expression>,

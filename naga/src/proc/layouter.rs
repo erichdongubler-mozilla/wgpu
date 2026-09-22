@@ -196,6 +196,10 @@ impl Layouter {
                         .ok_or(LayoutErrorInner::NonPowerOfTwoWidth.with(ty_handle))?;
                     TypeLayout { size, alignment }
                 }
+                Ti::AtomicVec2U32 => TypeLayout {
+                    size,
+                    alignment: Alignment::EIGHT,
+                },
                 Ti::Vector {
                     size: vec_size,
                     scalar,

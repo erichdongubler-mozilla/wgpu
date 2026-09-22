@@ -475,6 +475,7 @@ impl Writer {
         Some(match *inner {
             crate::TypeInner::Scalar(_)
             | crate::TypeInner::Atomic(_)
+            | crate::TypeInner::AtomicVec2U32
             | crate::TypeInner::Vector { .. }
             | crate::TypeInner::Matrix { .. } => {
                 // We expect `NumericType::from_inner` to handle all
@@ -2083,6 +2084,11 @@ impl Writer {
             crate::TypeInner::Atomic(crate::Scalar { width: 8, kind: _ }) => {
                 self.require_any("64 bit integer atomics", &[spirv::Capability::Int64Atomics])?;
             }
+            crate::TypeInner::AtomicVec2U32 => {
+                return Err(Error::FeatureNotImplemented(
+                    "atomic vectors are not supported",
+                ))
+            }
             crate::TypeInner::Atomic(crate::Scalar {
                 width: 4,
                 kind: crate::ScalarKind::Float,
@@ -2304,6 +2310,7 @@ impl Writer {
                 // handled by `write_type_declaration_local` above.
                 crate::TypeInner::Scalar(_)
                 | crate::TypeInner::Atomic(_)
+                | crate::TypeInner::AtomicVec2U32
                 | crate::TypeInner::Vector { .. }
                 | crate::TypeInner::Matrix { .. }
                 | crate::TypeInner::CooperativeMatrix { .. }

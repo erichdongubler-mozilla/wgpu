@@ -18,6 +18,7 @@ impl TypeTracer<'_> {
             | Ti::Matrix { .. }
             | Ti::CooperativeMatrix { .. }
             | Ti::Atomic { .. }
+            | Ti::AtomicVec2U32
             | Ti::ValuePointer { .. }
             | Ti::Image { .. }
             | Ti::Sampler { .. }
@@ -69,6 +70,7 @@ impl ModuleMap {
             | Ti::Matrix { .. }
             | Ti::CooperativeMatrix { .. }
             | Ti::Atomic(_)
+            | Ti::AtomicVec2U32
             | Ti::ValuePointer { .. }
             | Ti::Image { .. }
             | Ti::Sampler { .. }

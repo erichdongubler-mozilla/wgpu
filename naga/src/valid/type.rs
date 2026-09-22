@@ -512,6 +512,23 @@ impl super::Validator {
                     Alignment::from_width(scalar.width),
                 )
             }
+            Ti::AtomicVec2U32 => {
+                if !self
+                    .capabilities
+                    .contains(Capabilities::ATOMIC_VEC2U_MIN_MAX)
+                {
+                    return Err(TypeError::MissingCapability(
+                        Capabilities::ATOMIC_VEC2U_MIN_MAX,
+                    ));
+                }
+                TypeInfo::new(
+                    TypeFlags::DATA
+                        | TypeFlags::SIZED
+                        | TypeFlags::HOST_SHAREABLE
+                        | TypeFlags::CREATION_RESOLVED,
+                    Alignment::EIGHT,
+                )
+            }
             Ti::Pointer { base, space } => {
                 use crate::AddressSpace as As;
 

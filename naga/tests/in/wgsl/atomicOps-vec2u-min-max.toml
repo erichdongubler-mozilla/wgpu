@@ -1,0 +1,2 @@
+capabilities = "ATOMIC_VEC2U_MIN_MAX"
+targets = "WGSL"
