@@ -632,6 +632,7 @@ impl super::Adapter {
         // Check for Int64 atomic support on buffers. This is very convoluted, but is based on a conservative reading
         // of https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_Int64_and_Float_Atomics.html#integer-64-bit-capabilities.
         let atomic_int64_buffers;
+        let atomic_int64_storage_buffers;
         let atomic_int64_textures;
         {
             let mut features9 = Direct3D12::D3D12_FEATURE_DATA_D3D12_OPTIONS9::default();
@@ -654,7 +655,7 @@ impl super::Adapter {
             }
             .is_ok();
 
-            atomic_int64_buffers = hr9 && hr11 && hr.is_ok()
+            atomic_int64_storage_buffers = hr9 && hr11 && hr.is_ok()
                 // Int64 atomics show up in SM6.6.
                 && shader_model >= naga::back::hlsl::ShaderModel::V6_6
                 // They require Int64 to be available in the shader at all.
@@ -662,7 +663,9 @@ impl super::Adapter {
                 // As our RWByteAddressBuffers can exist on both descriptor heaps and
                 // as root descriptors, we need to ensure that both cases are supported.
                 // base SM6.6 only guarantees Int64 atomics on resources in root descriptors.
-                && features11.AtomicInt64OnDescriptorHeapResourceSupported.as_bool()
+                && features11.AtomicInt64OnDescriptorHeapResourceSupported.as_bool();
+
+            atomic_int64_buffers = atomic_int64_storage_buffers
                 // Our Int64 atomic caps currently require groupshared. This
                 // prevents Intel or Qcomm from using Int64 currently.
                 // https://github.com/gfx-rs/wgpu/issues/8666
@@ -683,6 +686,12 @@ impl super::Adapter {
         features.set(
             wgt::Features::SHADER_INT64_ATOMIC_ALL_OPS | wgt::Features::SHADER_INT64_ATOMIC_MIN_MAX,
             atomic_int64_buffers,
+        );
+        // `ATOMIC_VEC2U_MIN_MAX` is restricted to storage buffers, so it
+        // doesn't need groupshared Int64 atomics.
+        features.set(
+            wgt::Features::ATOMIC_VEC2U_MIN_MAX,
+            atomic_int64_storage_buffers,
         );
         features.set(wgt::Features::TEXTURE_INT64_ATOMIC, atomic_int64_textures);
         let mesh_shader_supported = {

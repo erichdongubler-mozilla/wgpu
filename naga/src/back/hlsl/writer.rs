@@ -1564,6 +1564,10 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
             TypeInner::Scalar(scalar) | TypeInner::Atomic(scalar) => {
                 write!(self.out, "{}", scalar.to_hlsl_str()?)?;
             }
+            // An atomic vector is a surrogate for a 64-bit unsigned integer.
+            TypeInner::AtomicVector { .. } => {
+                write!(self.out, "{}", Scalar::U64.to_hlsl_str()?)?;
+            }
             TypeInner::Vector { size, scalar } => {
                 write!(
                     self.out,
@@ -2729,6 +2733,25 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
                 result,
             } => {
                 write!(self.out, "{level}")?;
+
+                // A `vec2<u32>` value is a surrogate for a 64-bit unsigned
+                // integer. HLSL can't reinterpret one as the other in a single
+                // expression, so bind the vector to a local and assemble the
+                // integer from its halves, low half first.
+                let surrogate_name = match *func_ctx.resolve_type(value, &module.types) {
+                    TypeInner::Vector {
+                        size: crate::VectorSize::Bi,
+                        scalar: Scalar::U32,
+                    } => {
+                        let name = self.namer.call("atomic_value");
+                        write!(self.out, "uint2 {name} = ")?;
+                        self.write_expr(module, value, func_ctx)?;
+                        write!(self.out, "; ")?;
+                        Some(name)
+                    }
+                    _ => None,
+                };
+
                 let res_var_info = if let Some(res_handle) = result {
                     let name = Baked(res_handle).to_string();
                     match func_ctx.info[res_handle].ty {
@@ -2762,6 +2785,7 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
                             fun,
                             compare_expr,
                             value,
+                            surrogate_name.as_deref(),
                             &res_var_info,
                         )?;
                     }
@@ -2770,6 +2794,7 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
                         let var_name = &self.names[&NameKey::GlobalVariable(var_handle)];
                         let width = match func_ctx.resolve_type(value, &module.types) {
                             &TypeInner::Scalar(Scalar { width: 8, .. }) => "64",
+                            _ if surrogate_name.is_some() => "64",
                             _ => "",
                         };
                         write!(self.out, "{var_name}.Interlocked{fun_str}{width}(")?;
@@ -2782,6 +2807,7 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
                             fun,
                             compare_expr,
                             value,
+                            surrogate_name.as_deref(),
                             &res_var_info,
                         )?;
                     }
@@ -4910,6 +4936,7 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
     }
 
     /// Helper to emit the shared tail of an HLSL atomic call (arguments, value, result)
+    #[allow(clippy::too_many_arguments)]
     fn emit_hlsl_atomic_tail(
         &mut self,
         module: &Module,
@@ -4917,6 +4944,7 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
         fun: &crate::AtomicFunction,
         compare_expr: Option<Handle<crate::Expression>>,
         value: Handle<crate::Expression>,
+        surrogate_name: Option<&str>,
         res_var_info: &Option<(Handle<crate::Expression>, String)>,
     ) -> BackendResult {
         if let Some(cmp) = compare_expr {
@@ -4928,7 +4956,11 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
             // we just wrote `InterlockedAdd`, so negate the argument
             write!(self.out, "-")?;
         }
-        self.write_expr(module, value, func_ctx)?;
+        if let Some(name) = surrogate_name {
+            write!(self.out, "(uint64_t({name}.y) << 32) | uint64_t({name}.x)")?;
+        } else {
+            self.write_expr(module, value, func_ctx)?;
+        }
         if let Some(&(_res_handle, ref res_name)) = res_var_info.as_ref() {
             write!(self.out, ", ")?;
             if compare_expr.is_some() {
