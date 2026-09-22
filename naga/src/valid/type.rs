@@ -111,6 +111,8 @@ pub enum TypeError {
     MissingCapability(Capabilities),
     #[error("The {0:?} scalar width {1} is not supported for an atomic")]
     InvalidAtomicWidth(crate::ScalarKind, crate::Bytes),
+    #[error("`vec2<u32>` is the only vector type supported for an atomic")]
+    InvalidAtomicVector,
     #[error("Invalid type for pointer target {0:?}")]
     InvalidPointerBase(Handle<crate::Type>),
     #[error("Unsized types like {base:?} must be in the `Storage` address space, not `{space:?}`")]
@@ -510,6 +512,26 @@ impl super::Validator {
                         | TypeFlags::HOST_SHAREABLE
                         | TypeFlags::CREATION_RESOLVED,
                     Alignment::from_width(scalar.width),
+                )
+            }
+            Ti::AtomicVector { size, scalar } => {
+                if size != crate::VectorSize::Bi || scalar != crate::Scalar::U32 {
+                    return Err(TypeError::InvalidAtomicVector);
+                }
+                if !self
+                    .capabilities
+                    .contains(Capabilities::ATOMIC_VEC2U_MIN_MAX)
+                {
+                    return Err(TypeError::MissingCapability(
+                        Capabilities::ATOMIC_VEC2U_MIN_MAX,
+                    ));
+                }
+                TypeInfo::new(
+                    TypeFlags::DATA
+                        | TypeFlags::SIZED
+                        | TypeFlags::HOST_SHAREABLE
+                        | TypeFlags::CREATION_RESOLVED,
+                    Alignment::from_width(size as u8 * scalar.width),
                 )
             }
             Ti::Pointer { base, space } => {

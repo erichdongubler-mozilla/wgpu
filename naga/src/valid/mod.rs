@@ -30,7 +30,7 @@ pub use analyzer::{ExpressionInfo, FunctionInfo, GlobalUse, Uniformity, Uniformi
 pub use compose::ComposeError;
 pub use expression::{check_literal_value, LiteralError};
 pub use expression::{ConstExpressionError, ExpressionError};
-pub use function::{CallError, FunctionError, LocalVariableError, SubgroupError};
+pub use function::{AtomicError, CallError, FunctionError, LocalVariableError, SubgroupError};
 pub use immediates::{ImmediateSlots, ImmediateSlotsOverflowError, ImmediateUsage};
 pub use interface::{EntryPointError, GlobalVariableError, VaryingError};
 pub use r#type::{Disalignment, ImmediateError, TypeError, TypeFlags, WidthError};
@@ -226,6 +226,15 @@ bitflags::bitflags! {
         const LINEAR_INTERPOLATION = 1 << 44;
         /// Support for `debugPrintf`.
         const DEBUG_PRINTF = 1 << 45;
+        /// Support for [`AtomicFunction::Min`] and [`AtomicFunction::Max`] on
+        /// [`TypeInner::AtomicVector`] values in the [`Storage`] address space,
+        /// when the return value is not used.
+        ///
+        /// [`AtomicFunction::Min`]: crate::AtomicFunction::Min
+        /// [`AtomicFunction::Max`]: crate::AtomicFunction::Max
+        /// [`TypeInner::AtomicVector`]: crate::TypeInner::AtomicVector
+        /// [`Storage`]: crate::AddressSpace::Storage
+        const ATOMIC_VEC2U_MIN_MAX = 1 << 46;
     }
 }
 
@@ -249,6 +258,7 @@ impl Capabilities {
             Self::COOPERATIVE_MATRIX => Some(Ext::WgpuCooperativeMatrix),
             Self::RAY_TRACING_PIPELINE => Some(Ext::WgpuRayTracingPipeline),
             Self::PER_VERTEX => Some(Ext::WgpuPerVertex),
+            Self::ATOMIC_VEC2U_MIN_MAX => Some(Ext::AtomicVec2UMinMax),
             Self::BUFFER_BINDING_ARRAY
             | Self::BUFFER_BINDING_ARRAY_NON_UNIFORM_INDEXING
             | Self::STORAGE_BUFFER_BINDING_ARRAY
@@ -547,6 +557,7 @@ impl crate::TypeInner {
                 ..
             }
             | Self::Atomic { .. }
+            | Self::AtomicVector { .. }
             | Self::Pointer { .. }
             | Self::ValuePointer { .. }
             | Self::Struct { .. } => true,

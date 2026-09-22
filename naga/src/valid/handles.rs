@@ -401,6 +401,7 @@ impl super::Validator {
             | crate::TypeInner::CooperativeMatrix { .. }
             | crate::TypeInner::ValuePointer { .. }
             | crate::TypeInner::Atomic { .. }
+            | crate::TypeInner::AtomicVector { .. }
             | crate::TypeInner::Image { .. }
             | crate::TypeInner::Sampler { .. }
             | crate::TypeInner::AccelerationStructure { .. }

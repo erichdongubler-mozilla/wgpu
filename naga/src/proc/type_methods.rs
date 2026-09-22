@@ -220,7 +220,7 @@ impl crate::TypeInner {
     pub fn is_atomic_pointer(&self, types: &crate::UniqueArena<crate::Type>) -> bool {
         match *self {
             Self::Pointer { base, .. } => match types[base].inner {
-                Self::Atomic { .. } => true,
+                Self::Atomic { .. } | Self::AtomicVector { .. } => true,
                 _ => false,
             },
             _ => false,
@@ -232,7 +232,9 @@ impl crate::TypeInner {
     pub fn try_size(&self, gctx: super::GlobalCtx) -> Option<u32> {
         match *self {
             Self::Scalar(scalar) | Self::Atomic(scalar) => Some(scalar.width as u32),
-            Self::Vector { size, scalar } => Some(size as u32 * scalar.width as u32),
+            Self::Vector { size, scalar } | Self::AtomicVector { size, scalar } => {
+                Some(size as u32 * scalar.width as u32)
+            }
             // matrices are treated as arrays of aligned columns
             Self::Matrix {
                 columns,
@@ -419,6 +421,7 @@ impl crate::TypeInner {
                 .iter()
                 .all(|member| types[member.ty].inner.is_constructible(types)),
             Ti::Atomic(_)
+            | Ti::AtomicVector { .. }
             | Ti::Pointer { .. }
             | Ti::ValuePointer { .. }
             | Ti::Image { .. }
@@ -473,6 +476,7 @@ impl crate::TypeInner {
             crate::TypeInner::Matrix { .. }
             | crate::TypeInner::CooperativeMatrix { .. }
             | crate::TypeInner::Atomic(_)
+            | crate::TypeInner::AtomicVector { .. }
             | crate::TypeInner::Pointer { .. }
             | crate::TypeInner::ValuePointer { .. }
             | crate::TypeInner::Array { .. }
@@ -494,7 +498,8 @@ impl crate::TypeInner {
             crate::TypeInner::Scalar(scalar)
             | crate::TypeInner::Vector { scalar, .. }
             | crate::TypeInner::Matrix { scalar, .. }
-            | crate::TypeInner::Atomic(scalar) => scalar.is_abstract(),
+            | crate::TypeInner::Atomic(scalar)
+            | crate::TypeInner::AtomicVector { scalar, .. } => scalar.is_abstract(),
             crate::TypeInner::Array { base, .. } => types[base].inner.is_abstract(types),
             crate::TypeInner::CooperativeMatrix { .. }
             | crate::TypeInner::ValuePointer { .. }

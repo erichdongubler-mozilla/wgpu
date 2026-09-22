@@ -506,5 +506,6 @@ pub fn supported_capabilities() -> valid::Capabilities {
         | Caps::MEMORY_DECORATION_COHERENT
         | Caps::MEMORY_DECORATION_VOLATILE
         | Caps::STORAGE_TEXTURE_16BIT_NORM_FORMATS
+        // No ATOMIC_VEC2U_MIN_MAX
         | Caps::LINEAR_INTERPOLATION
 }

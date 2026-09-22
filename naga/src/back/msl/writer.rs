@@ -229,6 +229,9 @@ impl Display for TypeContext<'_> {
             crate::TypeInner::Atomic(scalar) => {
                 write!(out, "{}::atomic_{}", NAMESPACE, scalar.to_msl_name())
             }
+            crate::TypeInner::AtomicVector { .. } => {
+                unimplemented!("atomic vectors are not supported")
+            }
             crate::TypeInner::Vector { size, scalar } => put_numeric_type(out, scalar, &[size]),
             crate::TypeInner::Matrix {
                 columns,
@@ -704,6 +707,7 @@ impl crate::Type {
             | Ti::Matrix { .. }
             | Ti::CooperativeMatrix { .. }
             | Ti::Atomic(_)
+            | Ti::AtomicVector { .. }
             | Ti::Pointer { .. }
             | Ti::ValuePointer { .. } => self.name.is_some(),
             // composite types are better to be aliased, regardless of the name

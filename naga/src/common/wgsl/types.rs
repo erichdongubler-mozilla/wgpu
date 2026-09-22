@@ -263,6 +263,11 @@ where
             ctx.write_scalar(scalar, out)?;
             out.write_str(">")?;
         }
+        TypeInner::AtomicVector { size, scalar } => {
+            write!(out, "atomic<vec{}<", common::vector_size_str(size))?;
+            ctx.write_scalar(scalar, out)?;
+            out.write_str(">>")?;
+        }
         TypeInner::Array {
             base,
             size,

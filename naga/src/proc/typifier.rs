@@ -472,13 +472,13 @@ impl<'a> ResolveContext<'a> {
                 })
             }
             crate::Expression::Load { pointer } => match *past(pointer)?.inner_with(types) {
-                Ti::Pointer { base, space: _ } => {
-                    if let Ti::Atomic(scalar) = types[base].inner {
-                        TypeResolution::Value(Ti::Scalar(scalar))
-                    } else {
-                        TypeResolution::Handle(base)
+                Ti::Pointer { base, space: _ } => match types[base].inner {
+                    Ti::Atomic(scalar) => TypeResolution::Value(Ti::Scalar(scalar)),
+                    Ti::AtomicVector { size, scalar } => {
+                        TypeResolution::Value(Ti::Vector { size, scalar })
                     }
-                }
+                    _ => TypeResolution::Handle(base),
+                },
                 Ti::ValuePointer {
                     size,
                     scalar,

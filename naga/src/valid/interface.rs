@@ -916,6 +916,20 @@ impl VaryingContext<'_> {
     }
 }
 
+/// Whether `ty` is, or contains, an [`AtomicVector`].
+///
+/// [`AtomicVector`]: crate::TypeInner::AtomicVector
+fn contains_atomic_vector(ty: Handle<crate::Type>, types: &UniqueArena<crate::Type>) -> bool {
+    match types[ty].inner {
+        crate::TypeInner::AtomicVector { .. } => true,
+        crate::TypeInner::Array { base, .. } => contains_atomic_vector(base, types),
+        crate::TypeInner::Struct { ref members, .. } => members
+            .iter()
+            .any(|member| contains_atomic_vector(member.ty, types)),
+        _ => false,
+    }
+}
+
 impl super::Validator {
     pub(super) fn validate_global_var(
         &self,
@@ -1094,7 +1108,14 @@ impl super::Validator {
                 TypeFlags::CONSTRUCTIBLE | TypeFlags::CREATION_RESOLVED,
                 false,
             ),
-            crate::AddressSpace::WorkGroup => (TypeFlags::DATA | TypeFlags::SIZED, false),
+            crate::AddressSpace::WorkGroup => {
+                // A type that is or contains `atomic<vec2<u32>>` may only be
+                // instantiated in the `storage` address space.
+                if contains_atomic_vector(inner_ty, gctx.types) {
+                    return Err(GlobalVariableError::InvalidUsage(var.space));
+                }
+                (TypeFlags::DATA | TypeFlags::SIZED, false)
+            }
             crate::AddressSpace::TaskPayload => {
                 if !self.capabilities.contains(Capabilities::MESH_SHADER) {
                     return Err(GlobalVariableError::UnsupportedCapability(

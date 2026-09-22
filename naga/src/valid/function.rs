@@ -421,6 +421,76 @@ impl super::Validator {
         }
     }
 
+    /// Validate a [`Statement::Atomic`] whose pointer refers to an
+    /// [`AtomicVector`].
+    ///
+    /// `ATOMIC_VEC2U_MIN_MAX` permits far less than ordinary atomics do: only
+    /// `min` and `max`, only in the `Storage` address space, and only when the
+    /// result is discarded. That matches the narrowest backend, Metal, which
+    /// exposes 64-bit atomics solely as `atomic_{min,max}_explicit`.
+    ///
+    /// [`Statement::Atomic`]: crate::Statement::Atomic
+    /// [`AtomicVector`]: crate::TypeInner::AtomicVector
+    #[allow(clippy::too_many_arguments)]
+    fn validate_atomic_vector(
+        &mut self,
+        size: crate::VectorSize,
+        scalar: crate::Scalar,
+        fun: &crate::AtomicFunction,
+        value: Handle<crate::Expression>,
+        result: Option<Handle<crate::Expression>>,
+        pointer_space: crate::AddressSpace,
+        pointer: Handle<crate::Expression>,
+        context: &BlockContext,
+    ) -> Result<(), WithSpan<FunctionError>> {
+        if !self
+            .capabilities
+            .contains(super::Capabilities::ATOMIC_VEC2U_MIN_MAX)
+        {
+            return Err(
+                AtomicError::MissingCapability(super::Capabilities::ATOMIC_VEC2U_MIN_MAX)
+                    .with_span_handle(pointer, context.expressions)
+                    .into_other(),
+            );
+        }
+
+        if !matches!(
+            *fun,
+            crate::AtomicFunction::Min | crate::AtomicFunction::Max
+        ) {
+            log::error!("Atomic vector operation {fun:?} is not supported");
+            return Err(AtomicError::InvalidOperator(*fun)
+                .with_span_handle(value, context.expressions)
+                .into_other());
+        }
+
+        if !matches!(pointer_space, crate::AddressSpace::Storage { .. }) {
+            log::error!("Atomic vector operations are only supported in the Storage address space");
+            return Err(AtomicError::InvalidAddressSpace(pointer_space)
+                .with_span_handle(pointer, context.expressions)
+                .into_other());
+        }
+
+        // No backend can return the previous value of a 64-bit `min`/`max`, so
+        // the statement must discard it.
+        if let Some(result) = result {
+            log::error!("Atomic vector operations cannot produce a result");
+            return Err(AtomicError::InvalidResultExpression(result)
+                .with_span_handle(result, context.expressions)
+                .into_other());
+        }
+
+        let value_inner = context.resolve_type_inner(value, &self.valid_expression_set)?;
+        if *value_inner != (crate::TypeInner::Vector { size, scalar }) {
+            log::error!("Atomic vector operand type {:?}", *value_inner);
+            return Err(AtomicError::InvalidOperand(value)
+                .with_span_handle(value, context.expressions)
+                .into_other());
+        }
+
+        Ok(())
+    }
+
     fn validate_atomic(
         &mut self,
         pointer: Handle<crate::Expression>,
@@ -442,6 +512,18 @@ impl super::Validator {
                 .with_span_handle(pointer, context.expressions)
                 .into_other());
         };
+        if let crate::TypeInner::AtomicVector { size, scalar } = context.types[pointer_base].inner {
+            return self.validate_atomic_vector(
+                size,
+                scalar,
+                fun,
+                value,
+                result,
+                pointer_space,
+                pointer,
+                context,
+            );
+        }
         let crate::TypeInner::Atomic(pointer_scalar) = context.types[pointer_base].inner else {
             log::error!(
                 "Atomic pointer to type {:?}",

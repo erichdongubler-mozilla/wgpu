@@ -4,7 +4,7 @@ use crate::{
     front::wgsl::{
         error::Error,
         lower::{ExpressionContext, Lowerer, Result},
-        parse::{ast, conv},
+        parse::{ast, conv, directive::enable_extension::ImplementedEnableExtension},
     },
     ir, Handle, Span,
 };
@@ -109,13 +109,12 @@ impl<'iter, 'source> TemplateListIter<'iter, 'source> {
         match ctx.module.types[ty].inner {
             ir::TypeInner::Scalar(scalar) => Ok(ir::TypeInner::Atomic(scalar)),
             ir::TypeInner::Vector {
-                size: ir::VectorSize::Bi,
-                scalar: ir::Scalar::U32,
+                size: size @ ir::VectorSize::Bi,
+                scalar: scalar @ ir::Scalar::U32,
             } => {
-                return Err(Box::new(Error::EnableExtensionNotYetImplemented {
-                    kind: crate::front::wgsl::UnimplementedEnableExtension::AtomicVec2UMinMax,
-                    span,
-                }));
+                ctx.enable_extensions
+                    .require(ImplementedEnableExtension::AtomicVec2UMinMax, span)?;
+                Ok(ir::TypeInner::AtomicVector { size, scalar })
             }
             _ => Err(Box::new(Error::UnknownScalarType(span))),
         }

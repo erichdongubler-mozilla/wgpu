@@ -499,6 +499,10 @@ impl<'a, W: Write> Writer<'a, W> {
                 scalar,
                 space: _,
             } => write!(self.out, "{}", glsl_scalar(scalar)?.full)?,
+            // The GLSL backend never reports `Capabilities::ATOMIC_VEC2U_MIN_MAX`.
+            TypeInner::AtomicVector { .. } => {
+                return Err(Error::Custom("atomic vectors are not supported".into()))
+            }
             // Vectors are just `gvecN` where `g` is the scalar prefix and `N` is the vector size
             TypeInner::Vector { size, scalar }
             | TypeInner::ValuePointer {

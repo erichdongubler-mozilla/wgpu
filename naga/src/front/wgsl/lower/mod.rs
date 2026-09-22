@@ -4438,6 +4438,12 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
         match *resolve_inner!(ctx, pointer) {
             ir::TypeInner::Pointer { base, .. } => match ctx.module.types[base].inner {
                 ir::TypeInner::Atomic(scalar) => Ok((pointer, scalar)),
+                ir::TypeInner::AtomicVector { .. } => {
+                    Err(Box::new(Error::MismatchedAtomicVectorPointer {
+                        span,
+                        expected_atomic_vector: false,
+                    }))
+                }
                 ref other => {
                     log::error!("Pointer type to {other:?} passed to atomic op");
                     Err(Box::new(Error::InvalidAtomicPointer(span)))
@@ -4460,14 +4466,61 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
     fn atomic_vector_helper(
         &mut self,
         span: Span,
-        _fun: ir::AtomicFunction,
-        _args: &[Handle<ast::Expression<'source>>],
-        _ctx: &mut ExpressionContext<'source, '_, '_>,
+        fun: ir::AtomicFunction,
+        args: &[Handle<ast::Expression<'source>>],
+        ctx: &mut ExpressionContext<'source, '_, '_>,
     ) -> Result<'source, ()> {
-        Err(Box::new(Error::EnableExtensionNotYetImplemented {
-            kind: crate::front::wgsl::UnimplementedEnableExtension::AtomicVec2UMinMax,
+        ctx.enable_extensions
+            .require(ImplementedEnableExtension::AtomicVec2UMinMax, span)?;
+
+        let mut args = ctx.prepare_args(args, 2, span);
+
+        let pointer_expr = args.next()?;
+        let pointer_span = ctx.ast_expressions.get_span(pointer_expr);
+        let pointer = self.expression(pointer_expr, ctx)?;
+        let is_atomic_vector = match *resolve_inner!(ctx, pointer) {
+            ir::TypeInner::Pointer { base, .. } => matches!(
+                ctx.module.types[base].inner,
+                ir::TypeInner::AtomicVector { .. }
+            ),
+            _ => false,
+        };
+        if !is_atomic_vector {
+            return Err(Box::new(Error::MismatchedAtomicVectorPointer {
+                span: pointer_span,
+                expected_atomic_vector: true,
+            }));
+        }
+
+        let value_expr = args.next()?;
+        let value_span = ctx.ast_expressions.get_span(value_expr);
+        let value = self.expression_with_leaf_scalar(value_expr, ir::Scalar::U32, ctx)?;
+        if *resolve_inner!(ctx, value)
+            != (ir::TypeInner::Vector {
+                size: ir::VectorSize::Bi,
+                scalar: ir::Scalar::U32,
+            })
+        {
+            return Err(Box::new(Error::InvalidAtomicOperandType(value_span)));
+        }
+
+        args.finish()?;
+
+        let rctx = ctx.runtime_expression_ctx(span)?;
+        rctx.block
+            .extend(rctx.emitter.finish(&rctx.function.expressions));
+        rctx.emitter.start(&rctx.function.expressions);
+        rctx.block.push(
+            ir::Statement::Atomic {
+                pointer,
+                fun,
+                value,
+                result: None,
+            },
             span,
-        }))
+        );
+
+        Ok(())
     }
 
     fn atomic_helper(

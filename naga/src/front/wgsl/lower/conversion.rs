@@ -393,6 +393,7 @@ impl crate::TypeInner {
             Ti::CooperativeMatrix { .. } => None,
             Ti::Array { base, .. } => types[base].inner.automatically_convertible_scalar(types),
             Ti::Atomic(_)
+            | Ti::AtomicVector { .. }
             | Ti::Pointer { .. }
             | Ti::ValuePointer { .. }
             | Ti::Struct { .. }
@@ -417,7 +418,7 @@ impl crate::TypeInner {
                 Some(scalar)
             }
             Ti::CooperativeMatrix { .. } => None,
-            Ti::Atomic(_) => None,
+            Ti::Atomic(_) | Ti::AtomicVector { .. } => None,
             Ti::Pointer { base, .. } | Ti::Array { base, .. } => {
                 types[base].inner.automatically_convertible_scalar(types)
             }
