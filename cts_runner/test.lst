@@ -328,6 +328,8 @@ webgpu:compat,api,validation,render_pipeline,vertex_state:maxVertexAttributesVer
 
 fails-if(dx12) webgpu:shader,execution,expression,call,builtin,atan2:f16:*
 webgpu:shader,execution,expression,call,builtin,atan2:f32:*
+webgpu:shader,execution,expression,call,builtin,atomics,atomicStoreMax:*
+webgpu:shader,execution,expression,call,builtin,atomics,atomicStoreMin:*
 webgpu:shader,execution,expression,call,builtin,dot:abstract_int_vec2:*
 webgpu:shader,execution,expression,call,builtin,dot:abstract_int_vec3:*
 webgpu:shader,execution,expression,call,builtin,dot:abstract_int_vec4:*
