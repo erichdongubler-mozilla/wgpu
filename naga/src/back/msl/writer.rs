@@ -230,7 +230,7 @@ impl Display for TypeContext<'_> {
                 write!(out, "{}::atomic_{}", NAMESPACE, scalar.to_msl_name())
             }
             crate::TypeInner::AtomicVector { .. } => {
-                unimplemented!("atomic vectors are not supported")
+                write!(out, "{NAMESPACE}::atomic_ulong")
             }
             crate::TypeInner::Vector { size, scalar } => put_numeric_type(out, scalar, &[size]),
             crate::TypeInner::Matrix {
@@ -4222,6 +4222,17 @@ impl<W: Write> Writer<W> {
                 } => {
                     let context = &context.expression;
 
+                    // A `vec2<u32>` value is a surrogate for a 64-bit unsigned
+                    // integer, which is what MSL's atomics operate on directly.
+                    let value_ty = context.resolve_type(value);
+                    let surrogate = matches!(
+                        *value_ty,
+                        crate::TypeInner::Vector {
+                            size: crate::VectorSize::Bi,
+                            scalar: crate::Scalar::U32,
+                        }
+                    );
+
                     // This backend supports `SHADER_INT64_ATOMIC_MIN_MAX` but not
                     // `SHADER_INT64_ATOMIC_ALL_OPS`, so we can assume that if `result` is
                     // `Some`, we are not operating on a 64-bit value, and that if we are
@@ -4232,7 +4243,7 @@ impl<W: Write> Writer<W> {
                         self.start_baking_expression(result, context, &res_name)?;
                         self.named_expressions.insert(result, res_name);
                         fun.to_msl()
-                    } else if context.resolve_type(value).scalar_width() == Some(8) {
+                    } else if surrogate || value_ty.scalar_width() == Some(8) {
                         fun.to_msl_64_bit()?
                     } else {
                         fun.to_msl()
@@ -4268,7 +4279,13 @@ impl<W: Write> Writer<W> {
                             )?;
                             self.put_access_chain(pointer, policy, context)?;
                             write!(self.out, ", ")?;
+                            if surrogate {
+                                write!(self.out, "as_type<ulong>(")?;
+                            }
                             self.put_expression(value, context, true)?;
+                            if surrogate {
+                                write!(self.out, ")")?;
+                            }
                             write!(self.out, ", {NAMESPACE}::memory_order_relaxed)")?;
                         }
                     }

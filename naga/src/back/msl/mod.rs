@@ -880,6 +880,7 @@ pub fn supported_capabilities() -> crate::valid::Capabilities {
         | Caps::MEMORY_DECORATION_COHERENT
         | Caps::LINEAR_INTERPOLATION
         | Caps::DEBUG_PRINTF
+        | Caps::ATOMIC_VEC2U_MIN_MAX
 }
 
 #[test]

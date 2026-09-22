@@ -1330,6 +1330,10 @@ impl super::CapabilitiesQuery {
             self.int64_atomics_min_max && self.msl_version >= MTLLanguageVersion::Version2_4,
         );
         features.set(
+            F::ATOMIC_VEC2U_MIN_MAX,
+            self.int64_atomics_min_max && self.msl_version >= MTLLanguageVersion::Version2_4,
+        );
+        features.set(
             F::TEXTURE_INT64_ATOMIC,
             self.int64_atomics && self.msl_version >= MTLLanguageVersion::Version3_1,
         );
