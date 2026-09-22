@@ -119,6 +119,7 @@ By @sagudev in [#10109](https://github.com/gfx-rs/wgpu/pull/10109).
   By @jinleili in [#10308](https://github.com/gfx-rs/wgpu/pull/10308).
 
 - Added `Utf16SourceLocation` which is analogue to `SourceLocation` but using UTF-16 code units. Added `Utf16SourceLocation::to_utf8` and `SourceLocation::to_utf16` to convert between them. By @sagudev in [#10294](https://github.com/gfx-rs/wgpu/pull/10294).
+- Add [`Features::ATOMIC_VEC2U_MIN_MAX`] and support it on native platforms. By @ErichDonGubler in [#?????](https://github.com/gfx-rs/wgpu/issues/?????).
 
 #### Naga
 
