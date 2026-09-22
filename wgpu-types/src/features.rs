@@ -1561,6 +1561,7 @@ features! {
         /// component 1 the 32 most significant.
         ///
         /// Supported platforms:
+        /// - Vulkan (with `shaderBufferInt64Atomics`)
         ///
         /// This is a web and native feature.
         #[name("atomic-vec2u-min-max")]

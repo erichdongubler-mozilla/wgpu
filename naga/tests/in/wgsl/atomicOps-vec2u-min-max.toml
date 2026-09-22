@@ -1,2 +1,5 @@
 capabilities = "ATOMIC_VEC2U_MIN_MAX"
-targets = "WGSL"
+targets = "SPIRV | WGSL"
+
+[spv]
+version = [1, 0]
