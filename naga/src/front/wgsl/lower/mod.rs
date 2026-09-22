@@ -9,7 +9,9 @@ use core::{matches, num::NonZeroU32};
 
 use crate::front::wgsl::error::{Error, ExpectedToken, InvalidAssignmentType};
 use crate::front::wgsl::index::Index;
-use crate::front::wgsl::parse::directive::enable_extension::EnableExtensions;
+use crate::front::wgsl::parse::directive::enable_extension::{
+    EnableExtensions, ImplementedEnableExtension,
+};
 use crate::front::wgsl::parse::number::Number;
 use crate::front::wgsl::parse::{ast, conv};
 use crate::front::wgsl::Result;
@@ -3945,12 +3947,11 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 "debugPrintf" => {
                     if !ctx
                         .enable_extensions
-                        .contains(crate::front::wgsl::ImplementedEnableExtension::WgpuDebugPrintf)
+                        .contains(ImplementedEnableExtension::WgpuDebugPrintf)
                     {
                         return Err(Box::new(Error::EnableExtensionNotEnabled {
                             span: function_span,
-                            kind: crate::front::wgsl::ImplementedEnableExtension::WgpuDebugPrintf
-                                .into(),
+                            kind: ImplementedEnableExtension::WgpuDebugPrintf.into(),
                         }));
                     }
 
