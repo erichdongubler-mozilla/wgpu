@@ -580,6 +580,7 @@ mod tests {
                 .union(Features::PRIMITIVE_INDEX)
                 .union(Features::TEXTURE_COMPONENT_SWIZZLE)
                 .union(Features::IMMEDIATES)
+                .union(Features::ATOMIC_VEC2U_MIN_MAX)
                 .union(Features::DEBUG_PRINTF),
         );
         assert!(
