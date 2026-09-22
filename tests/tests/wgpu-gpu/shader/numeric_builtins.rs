@@ -8,6 +8,7 @@ pub fn all_tests(vec: &mut Vec<GpuTestInitializer>) {
         NUMERIC_BUILTINS,
         INT64_ATOMIC_MIN_MAX,
         INT64_ATOMIC_ALL_OPS,
+        ATOMIC_VEC2U_MIN_MAX,
         FLOAT32_ATOMIC,
     ]);
 }
@@ -102,6 +103,74 @@ static INT64_ATOMIC_MIN_MAX: GpuTestConfiguration = GpuTestConfiguration::new()
             ctx,
             InputStorageType::Storage,
             create_int64_atomic_min_max_test(),
+        )
+    });
+
+fn create_atomic_vec2u_min_max_test() -> Vec<ShaderTest> {
+    const HEADER: &str = "enable atomic_vec2u_min_max;";
+    const OUTPUT_TYPE: &str = "atomic<vec2<u32>>";
+
+    let mut tests = Vec::new();
+
+    let test = ShaderTest::new(
+        "atomicStoreMax".into(),
+        "value: u32".into(),
+        "atomicStoreMin(&output, vec2u(0u, 0u)); atomicStoreMax(&output, vec2u(2u, 0u));".into(),
+        &[0_u32],
+        &[2_u32, 0],
+    )
+    .header(HEADER.into())
+    .output_type(OUTPUT_TYPE.into());
+
+    tests.push(test);
+
+    let test = ShaderTest::new(
+        "atomicStoreMin".into(),
+        "value: u32".into(),
+        "atomicStoreMax(&output, vec2u(100u, 0u)); atomicStoreMin(&output, vec2u(4u, 0u));".into(),
+        &[0_u32],
+        &[4_u32, 0],
+    )
+    .header(HEADER.into())
+    .output_type(OUTPUT_TYPE.into());
+
+    tests.push(test);
+
+    // The first component is the low half of the surrogate 64-bit integer, so
+    // the second component decides the comparison on its own.
+    let test = ShaderTest::new(
+        "atomicStoreMax component order".into(),
+        "value: u32".into(),
+        concat!(
+            "atomicStoreMin(&output, vec2u(0u, 0u)); ",
+            "atomicStoreMax(&output, vec2u(0xFFFFFFFFu, 0u)); ",
+            "atomicStoreMax(&output, vec2u(0u, 1u));",
+        )
+        .into(),
+        &[0_u32],
+        &[0_u32, 1],
+    )
+    .header(HEADER.into())
+    .output_type(OUTPUT_TYPE.into());
+
+    tests.push(test);
+
+    tests
+}
+
+#[apply(gpu_test!)]
+static ATOMIC_VEC2U_MIN_MAX: GpuTestConfiguration = GpuTestConfiguration::new()
+    .parameters(
+        TestParameters::default()
+            .features(wgpu::Features::ATOMIC_VEC2U_MIN_MAX)
+            .downlevel_flags(DownlevelFlags::COMPUTE_SHADERS)
+            .limits(Limits::downlevel_defaults()),
+    )
+    .run_async(|ctx| {
+        shader_input_output_test(
+            ctx,
+            InputStorageType::Storage,
+            create_atomic_vec2u_min_max_test(),
         )
     });
 
