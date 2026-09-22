@@ -1563,6 +1563,7 @@ features! {
         /// Supported platforms:
         /// - Vulkan (with `shaderBufferInt64Atomics`)
         /// - DX12 (with SM 6.6+ and `Int64ShaderOps`)
+        /// - Metal (with MSL 2.4+ on Apple9)
         ///
         /// This is a web and native feature.
         #[name("atomic-vec2u-min-max")]

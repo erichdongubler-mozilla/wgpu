@@ -1,5 +1,11 @@
 capabilities = "ATOMIC_VEC2U_MIN_MAX"
-targets = "SPIRV | HLSL | WGSL"
+targets = "SPIRV | METAL | HLSL | WGSL"
+
+[msl]
+fake_missing_bindings = true
+lang_version = [2, 4]
+spirv_cross_compatibility = false
+zero_initialize_workgroup_memory = true
 
 [hlsl]
 shader_model = "V6_6"
