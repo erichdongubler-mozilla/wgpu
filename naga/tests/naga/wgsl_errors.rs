@@ -5976,3 +5976,143 @@ fn ray_query_let() {
         "Ray query with initialize",
     );
 }
+
+#[test]
+fn invalid_atomic_vec2u_min_max() {
+    // Missing capability or enable directive
+    check_extension_validation! {
+        Capabilities::ATOMIC_VEC2U_MIN_MAX,
+        r#"
+            @group(0) @binding(0)
+            var<storage, read_write> a: atomic<vec2<u32>>;
+
+            @compute @workgroup_size(1)
+            fn cs_main() {
+                atomicStoreMax(&a, vec2<u32>(1u, 0u));
+            }
+        "#,
+        r###"error: the `atomic_vec2u_min_max` enable extension is not enabled
+  ┌─ wgsl:3:48
+  │
+3 │             var<storage, read_write> a: atomic<vec2<u32>>;
+  │                                                ^^^^^^^^^ the `atomic_vec2u_min_max` "Enable Extension" is needed for this functionality, but it is not currently enabled.
+  │
+  = note: You can enable this extension by adding `enable atomic_vec2u_min_max;` at the top of the shader, before any other items.
+
+"###,
+        Err(naga::valid::ValidationError::Type {
+            source: naga::valid::TypeError::MissingCapability(Capabilities::ATOMIC_VEC2U_MIN_MAX),
+            ..
+        })
+    }
+
+    // Only `vec2<u32>` may be made atomic.
+    check(
+        r#"
+            enable atomic_vec2u_min_max;
+            @group(0) @binding(0)
+            var<storage, read_write> a: atomic<vec3<u32>>;
+        "#,
+        r###"error: unknown scalar type: `vec3<u32>`
+  ┌─ wgsl:4:48
+  │
+4 │             var<storage, read_write> a: atomic<vec3<u32>>;
+  │                                                ^^^^^^^^^ unknown scalar type
+  │
+  = note: Valid scalar types are f32, f64, i32, u32, bool
+
+"###,
+    );
+
+    // The ordinary atomic built-ins don't apply to atomic vectors.
+    check(
+        r#"
+            enable atomic_vec2u_min_max;
+            @group(0) @binding(0)
+            var<storage, read_write> a: atomic<vec2<u32>>;
+
+            @compute @workgroup_size(1)
+            fn cs_main() {
+                atomicMax(&a, vec2<u32>(1u, 0u));
+            }
+        "#,
+        r###"error: `atomic<vec2<u32>>` supports only `atomicStoreMin` and `atomicStoreMax`
+  ┌─ wgsl:8:27
+  │
+8 │                 atomicMax(&a, vec2<u32>(1u, 0u));
+  │                           ^^ atomic pointer is invalid
+
+"###,
+    );
+
+    // `atomicStoreMax` only applies to atomic vectors.
+    check(
+        r#"
+            enable atomic_vec2u_min_max;
+            @group(0) @binding(0)
+            var<storage, read_write> a: atomic<u32>;
+
+            @compute @workgroup_size(1)
+            fn cs_main() {
+                atomicStoreMax(&a, vec2<u32>(1u, 0u));
+            }
+        "#,
+        r###"error: `atomicStoreMin` and `atomicStoreMax` require a pointer to an `atomic<vec2<u32>>`
+  ┌─ wgsl:8:32
+  │
+8 │                 atomicStoreMax(&a, vec2<u32>(1u, 0u));
+  │                                ^^ atomic pointer is invalid
+
+"###,
+    );
+
+    // Atomic vectors cannot be read without going through a built-in.
+    check(
+        r#"
+            enable atomic_vec2u_min_max;
+            @group(0) @binding(0)
+            var<storage, read_write> a: atomic<vec2<u32>>;
+
+            @compute @workgroup_size(1)
+            fn cs_main() {
+                let v = a;
+            }
+        "#,
+        r###"error: direct access to atomic variable is not allowed
+  ┌─ wgsl:8:25
+  │
+8 │                 let v = a;
+  │                         ^ atomic variables cannot be accessed directly; use atomic built-in functions
+
+"###,
+    );
+
+    // A variable whose store type is or contains `atomic<vec2<u32>>` must be in
+    // the `storage` address space, even if it is never used.
+    check_validation! {
+        r#"
+            enable atomic_vec2u_min_max;
+            var<workgroup> a: atomic<vec2<u32>>;
+
+            @compute @workgroup_size(1)
+            fn cs_main() {
+            }
+        "#,
+        r#"
+            enable atomic_vec2u_min_max;
+            struct Nested { a: array<atomic<vec2<u32>>, 2> }
+            var<workgroup> a: Nested;
+
+            @compute @workgroup_size(1)
+            fn cs_main() {
+            }
+        "#:
+        Err(naga::valid::ValidationError::GlobalVariable {
+            source: naga::valid::GlobalVariableError::InvalidUsage(
+                naga::ir::AddressSpace::WorkGroup
+            ),
+            ..
+        }),
+        Capabilities::ATOMIC_VEC2U_MIN_MAX
+    }
+}
