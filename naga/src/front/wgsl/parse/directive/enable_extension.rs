@@ -148,6 +148,7 @@ impl EnableExtension {
     const BINDING_ARRAY: &'static str = "wgpu_binding_array";
     const INT16: &'static str = "wgpu_int16";
     const DEBUG_PRINTF: &'static str = "wgpu_debug_printf";
+    const ATOMIC_VEC2U_MIN_MAX: &'static str = "atomic_vec2u_min_max";
 
     /// Convert from a sentinel word in WGSL into its associated [`EnableExtension`], if possible.
     pub(crate) fn from_ident(word: &str, span: Span) -> Result<'_, Self> {
@@ -175,6 +176,9 @@ impl EnableExtension {
             Self::BINDING_ARRAY => Self::Implemented(ImplementedEnableExtension::WgpuBindingArray),
             Self::INT16 => Self::Implemented(ImplementedEnableExtension::WgpuInt16),
             Self::DEBUG_PRINTF => Self::Implemented(ImplementedEnableExtension::WgpuDebugPrintf),
+            Self::ATOMIC_VEC2U_MIN_MAX => {
+                Self::Unimplemented(UnimplementedEnableExtension::AtomicVec2UMinMax)
+            }
             _ => return Err(Box::new(Error::UnknownEnableExtension(span, word))),
         })
     }
@@ -202,6 +206,7 @@ impl EnableExtension {
             },
             Self::Unimplemented(kind) => match kind {
                 UnimplementedEnableExtension::Subgroups => Self::SUBGROUPS,
+                UnimplementedEnableExtension::AtomicVec2UMinMax => Self::ATOMIC_VEC2U_MIN_MAX,
             },
         }
     }
@@ -330,12 +335,20 @@ pub enum UnimplementedEnableExtension {
     ///
     /// [`enable subgroups;`]: https://www.w3.org/TR/WGSL/#extension-subgroups
     Subgroups,
+    /// Enables the `atomic<vec2<u32>>` type and the `atomicStoreMin` and
+    /// `atomicStoreMax` built-ins.
+    ///
+    /// In the WGSL standard, this corresponds to [`enable atomic_vec2u_min_max;`].
+    ///
+    /// [`enable atomic_vec2u_min_max;`]: https://www.w3.org/TR/WGSL/#extension-atomic_vec2u_min_max
+    AtomicVec2UMinMax,
 }
 
 impl UnimplementedEnableExtension {
     pub(crate) const fn tracking_issue_num(self) -> u16 {
         match self {
             Self::Subgroups => 5555,
+            Self::AtomicVec2UMinMax => 10435,
         }
     }
 }
