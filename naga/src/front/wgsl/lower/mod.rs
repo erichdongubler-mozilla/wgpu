@@ -2886,10 +2886,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
 
                         ir::TypeInner::Array { base, size, stride }
                     }
-                    conv::TypeGenerator::Atomic => {
-                        let (scalar, _) = tl.scalar_ty(self, ctx)?;
-                        ir::TypeInner::Atomic(scalar)
-                    }
+                    conv::TypeGenerator::Atomic => tl.atomic_ty(self, ctx)?,
                     conv::TypeGenerator::Pointer => {
                         let mut space = tl.address_space(ctx)?;
                         let base = tl.ty(self, ctx)?;
@@ -3332,6 +3329,15 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                     rctx.emitter.start(&rctx.function.expressions);
                     rctx.block
                         .push(ir::Statement::Store { pointer, value }, function_span);
+                    return Ok(None);
+                }
+                "atomicStoreMin" | "atomicStoreMax" => {
+                    let fun = if function_name == "atomicStoreMin" {
+                        ir::AtomicFunction::Min
+                    } else {
+                        ir::AtomicFunction::Max
+                    };
+                    self.atomic_vector_helper(function_span, fun, arguments, ctx)?;
                     return Ok(None);
                 }
                 "atomicCompareExchangeWeak" => {
@@ -4441,6 +4447,26 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 Err(Box::new(Error::InvalidAtomicPointer(span)))
             }
         }
+    }
+
+    /// Lower a call to `atomicStoreMin` or `atomicStoreMax`.
+    ///
+    /// These take a pointer to an [`AtomicVector`], not an [`Atomic`], and
+    /// produce no result.
+    ///
+    /// [`AtomicVector`]: ir::TypeInner::AtomicVector
+    /// [`Atomic`]: ir::TypeInner::Atomic
+    fn atomic_vector_helper(
+        &mut self,
+        span: Span,
+        _fun: ir::AtomicFunction,
+        _args: &[Handle<ast::Expression<'source>>],
+        _ctx: &mut ExpressionContext<'source, '_, '_>,
+    ) -> Result<'source, ()> {
+        Err(Box::new(Error::EnableExtensionNotYetImplemented {
+            kind: crate::front::wgsl::UnimplementedEnableExtension::AtomicVec2UMinMax,
+            span,
+        }))
     }
 
     fn atomic_helper(
