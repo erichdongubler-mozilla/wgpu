@@ -93,6 +93,34 @@ impl<'iter, 'source> TemplateListIter<'iter, 'source> {
         }
     }
 
+    /// Lower the next template list element as the value type of an `atomic<T>`.
+    ///
+    /// `atomic` normally takes a scalar, but the `atomic_vec2u_min_max`
+    /// enable-extension also accepts `vec2<u32>`, as a surrogate for a 64-bit
+    /// unsigned integer.
+    pub fn atomic_ty(
+        &mut self,
+        lowerer: &mut Lowerer<'source, '_>,
+        ctx: &mut ExpressionContext<'source, '_, '_>,
+    ) -> Result<'source, ir::TypeInner> {
+        let expr = self.expect_next("`T`, a scalar type")?;
+        let ty = lowerer.type_expression(expr, ctx)?;
+        let span = ctx.ast_expressions.get_span(expr);
+        match ctx.module.types[ty].inner {
+            ir::TypeInner::Scalar(scalar) => Ok(ir::TypeInner::Atomic(scalar)),
+            ir::TypeInner::Vector {
+                size: ir::VectorSize::Bi,
+                scalar: ir::Scalar::U32,
+            } => {
+                return Err(Box::new(Error::EnableExtensionNotYetImplemented {
+                    kind: crate::front::wgsl::UnimplementedEnableExtension::AtomicVec2UMinMax,
+                    span,
+                }));
+            }
+            _ => Err(Box::new(Error::UnknownScalarType(span))),
+        }
+    }
+
     pub fn maybe_array_size(
         &mut self,
         lowerer: &mut Lowerer<'source, '_>,
