@@ -841,6 +841,10 @@ const FEATURES_MAPPING: [(wgt::Features, webgpu_sys::GpuFeatureName); 16] = [
         wgt::Features::CLIP_DISTANCES,
         webgpu_sys::GpuFeatureName::ClipDistances,
     ),
+    (
+        wgt::Features::ATOMIC_VEC2U_MIN_MAX,
+        webgpu_sys::GpuFeatureName::AtomicVec2uMinMax,
+    ),
 ];
 
 fn map_wgt_features(supported_features: webgpu_sys::GpuSupportedFeatures) -> wgt::Features {
