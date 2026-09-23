@@ -1520,13 +1520,13 @@ impl<'a> Error<'a> {
                 ).into()],
             },
             Error::EnableExtensionNotEnabled { kind, span } => ParseError {
-                message: format!("the `{}` enable extension is not enabled", kind.to_ident()).into(),
+                message:  format!("`{}` enable-extension is not enabled", kind.to_ident()).into(),
                 labels: vec![(
                     *span,
                     format!(
                         concat!(
-                            "the `{}` \"Enable Extension\" is needed for this functionality, ",
-                            "but it is not currently enabled."
+                            "the `{}` enable-extension is needed for this functionality, ",
+                            "but it is not currently enabled"
                         ),
                         kind.to_ident()
                     )
@@ -1535,7 +1535,7 @@ impl<'a> Error<'a> {
                 notes: if let EnableExtension::Unimplemented(kind) = kind {
                     vec![format!(
                         concat!(
-                            "This \"Enable Extension\" is not yet implemented. ",
+                            "This enable-extension is not yet implemented. ",
                             "Let Naga maintainers know that you ran into this at ",
                             "<https://github.com/gfx-rs/wgpu/issues/{}>, ",
                             "so they can prioritize it!"
