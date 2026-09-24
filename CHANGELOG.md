@@ -280,6 +280,7 @@ By @sagudev in [#10307](https://github.com/gfx-rs/wgpu/pull/10307).
 - Don't use timeline semaphores on VeriSilicon's proprietary driver, as on NXP's i.MX 8 SoCs, which crashes in `vkQueueSubmit` with them. wgpu falls back to binary fences there. By @tronical in [#10535](https://github.com/gfx-rs/wgpu/pull/10535).
 - Recover from `VK_ERROR_FRAGMENTED_POOL` and `VK_ERROR_OUT_OF_POOL_MEMORY` when allocating descriptor sets by resetting or retiring the offending pool and retrying on the next available (or a freshly created) pool instead of panicking. By @beicause in [#10264](https://github.com/gfx-rs/wgpu/pull/10264).
 - Enable the `depthBiasClamp` device feature when it is supported. Pipelines with a non-zero `DepthBiasState::clamp` previously failed Vulkan validation. By @VoxelBoy in [#10566](https://github.com/gfx-rs/wgpu/pull/10566).
+- Work around a use-after-free crash in Imagination (PowerVR) drivers: when `vkAllocateDescriptorSets` fails with host or device OOM, the descriptor pool is left holding a dangling pointer that a later `vkDestroyDescriptorPool` dereferences. Such a pool is now leaked rather than destroyed, and the device is lost so that at most one pool leaks. By @ErichDonGubler in [#99999](https://github.com/gfx-rs/wgpu/pull/99999).
 
 #### Metal
 
