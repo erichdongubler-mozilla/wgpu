@@ -3,7 +3,7 @@ use core::iter;
 
 use spirv::{Op, Word, MAGIC_NUMBER};
 
-use super::{Instruction, LogicalLayout, PhysicalLayout};
+use super::{Error, Instruction, InstructionSink, LogicalLayout, PhysicalLayout};
 
 #[cfg(test)]
 use alloc::format;
@@ -51,19 +51,58 @@ impl super::reclaimable::Reclaimable for PhysicalLayout {
     }
 }
 
+impl super::reclaimable::Reclaimable for InstructionSink {
+    fn reclaim(self) -> Self {
+        Self {
+            words: self.words.reclaim(),
+            overflowed: None,
+        }
+    }
+}
+
 impl LogicalLayout {
-    pub(super) fn in_words(&self, sink: &mut impl Extend<Word>) {
-        sink.extend(self.capabilities.iter().cloned());
-        sink.extend(self.extensions.iter().cloned());
-        sink.extend(self.ext_inst_imports.iter().cloned());
-        sink.extend(self.memory_model.iter().cloned());
-        sink.extend(self.entry_points.iter().cloned());
-        sink.extend(self.execution_modes.iter().cloned());
-        sink.extend(self.debugs.iter().cloned());
-        sink.extend(self.annotations.iter().cloned());
-        sink.extend(self.declarations.iter().cloned());
-        sink.extend(self.function_declarations.iter().cloned());
-        sink.extend(self.function_definitions.iter().cloned());
+    /// The layout's sections, in the order SPIR-V requires them.
+    const fn sections(&self) -> [&InstructionSink; 11] {
+        let &Self {
+            ref capabilities,
+            ref extensions,
+            ref ext_inst_imports,
+            ref memory_model,
+            ref entry_points,
+            ref execution_modes,
+            ref debugs,
+            ref annotations,
+            ref declarations,
+            ref function_declarations,
+            ref function_definitions,
+        } = self;
+        [
+            capabilities,
+            extensions,
+            ext_inst_imports,
+            memory_model,
+            entry_points,
+            execution_modes,
+            debugs,
+            annotations,
+            declarations,
+            function_declarations,
+            function_definitions,
+        ]
+    }
+
+    pub(super) fn in_words(&self, sink: &mut impl Extend<Word>) -> Result<(), Error> {
+        // Check every section before emitting anything: a buffer that dropped an
+        // oversized instruction must never reach the sink.
+        for section in self.sections() {
+            if let Some((op, word_count)) = section.overflowed {
+                return Err(Error::InstructionTooLong { op, word_count });
+            }
+        }
+        for section in self.sections() {
+            sink.extend(section.words.iter().cloned());
+        }
+        Ok(())
     }
 }
 
@@ -119,11 +158,16 @@ impl Instruction {
         }
     }
 
-    pub(super) fn to_words(&self, sink: &mut impl Extend<Word>) {
-        sink.extend(Some((self.wc << 16) | self.op as u32));
-        sink.extend(self.type_id);
-        sink.extend(self.result_id);
-        sink.extend(self.operands.iter().cloned());
+    pub(super) fn to_words(&self, sink: &mut InstructionSink) {
+        let Ok(wc) = u16::try_from(self.wc) else {
+            sink.note_overflow(self.op, self.wc);
+            return;
+        };
+        sink.words
+            .extend(Some((u32::from(wc) << 16) | self.op as u32));
+        sink.words.extend(self.type_id);
+        sink.words.extend(self.result_id);
+        sink.words.extend(self.operands.iter().cloned());
     }
 }
 
@@ -214,7 +258,7 @@ fn test_logical_layout_in_words() {
     instructions[9].to_words(&mut layout.function_declarations);
     instructions[10].to_words(&mut layout.function_definitions);
 
-    layout.in_words(&mut output);
+    layout.in_words(&mut output).unwrap();
 
     let mut index: usize = 0;
     for instruction in instructions {
@@ -222,4 +266,44 @@ fn test_logical_layout_in_words() {
         instruction.validate(&output[index..index + wc]);
         index += wc;
     }
+}
+
+#[cfg(test)]
+fn entry_point_of_word_count(word_count: usize) -> (Result<(), Error>, Vec<Word>) {
+    let mut instruction = Instruction::new(Op::EntryPoint);
+    // `Instruction::new` already accounts for the opcode/word-count word.
+    instruction.add_operands(vec![1; word_count - 1]);
+
+    let mut layout = LogicalLayout::default();
+    instruction.to_words(&mut layout.entry_points);
+
+    let mut output = vec![];
+    let result = layout.in_words(&mut output);
+    (result, output)
+}
+
+/// The longest instruction SPIR-V's 16-bit word-count field can describe.
+#[test]
+fn test_longest_encodable_instruction() {
+    let (result, output) = entry_point_of_word_count(u16::MAX as usize);
+
+    result.unwrap();
+    assert_eq!(output.len(), u16::MAX as usize);
+    assert_eq!(output[0] >> 16, u16::MAX as Word);
+}
+
+/// A word count that doesn't fit the 16-bit field must be reported, not
+/// truncated into a header that lies about the instruction's length.
+#[test]
+fn test_instruction_word_count_overflow() {
+    let (result, output) = entry_point_of_word_count(u16::MAX as usize + 1);
+
+    assert!(matches!(
+        result,
+        Err(Error::InstructionTooLong {
+            op: Op::EntryPoint,
+            word_count: 0x1_0000,
+        })
+    ));
+    assert!(output.is_empty());
 }
