@@ -3,6 +3,8 @@ use arrayvec::ArrayVec;
 use ash::vk;
 use hashbrown::{HashMap, HashSet};
 
+mod poisonable;
+
 const POOL_MIN_SETS: u32 = 64;
 const POOL_MAX_SETS: u32 = 512;
 
@@ -53,26 +55,30 @@ struct BucketKey {
 }
 
 struct Pool {
-    raw: vk::DescriptorPool,
-    capacity: u32,
-    available: u32,
-    /// Set when [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`] applies and this pool has
-    /// hit an out-of-memory failure in `vkAllocateDescriptorSets`. Such a pool must never be
+    /// Poisoned when [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`] applies and this pool
+    /// has hit an out-of-memory failure in `vkAllocateDescriptorSets`. Such a pool must never be
     /// allocated from or destroyed again, so it is leaked.
     ///
     /// [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`]:
     ///     super::Workarounds::LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM
-    poisoned: bool,
+    raw: Poisonable<vk::DescriptorPool>,
+    capacity: u32,
+    available: u32,
 }
 
 impl Pool {
     pub(in crate::vulkan) fn is_unavailable(&self) -> bool {
-        self.available == 0 || self.poisoned
+        self.available == 0 || self.raw.is_poisoned()
+    }
+
+    pub(in crate::vulkan) fn poison(&mut self) {
+        self.raw = self.raw.poison()
     }
 
     unsafe fn destroy(self, device: &ash::Device) {
-        if !self.poisoned {
-            unsafe { device.destroy_descriptor_pool(self.raw, None) };
+        match self.raw {
+            Poisonable::Ready(raw) => unsafe { device.destroy_descriptor_pool(raw, None) },
+            Poisonable::Poisoned(_raw) => {}
         }
     }
 }
@@ -211,7 +217,7 @@ impl DescriptorAllocator {
         };
 
         let vk_info = vk::DescriptorSetAllocateInfo::default()
-            .descriptor_pool(pool.raw)
+            .descriptor_pool(pool.raw.ready())
             .set_layouts(core::slice::from_ref(&layout.raw));
 
         let raw = match unsafe { device.allocate_descriptor_sets(&vk_info) } {
@@ -237,7 +243,7 @@ impl DescriptorAllocator {
             {
                 // This pool can never be destroyed again, so lose the device to guarantee it is
                 // the only one we leak.
-                pool.poisoned = true;
+                pool.poison();
                 Err(crate::DeviceError::Lost)
             }
             Err(err) => Err(super::map_host_device_oom_err(err)),
@@ -261,8 +267,9 @@ impl DescriptorAllocator {
         let bucket = self.buckets.get_mut(&set.bucket_key).unwrap();
         let pool = bucket.pools.get_mut(set.pool_index).unwrap();
 
-        let result =
-            unsafe { device.free_descriptor_sets(pool.raw, core::slice::from_ref(&set.raw())) };
+        let result = unsafe {
+            device.free_descriptor_sets(pool.raw.ready(), core::slice::from_ref(&set.raw()))
+        };
         if let Err(err) = result {
             // vkFreeDescriptorSets is documented to return:
             // - VK_ERROR_UNKNOWN
@@ -374,12 +381,12 @@ fn create_descriptor_pool(
         .pool_sizes(&pool_sizes);
 
     let raw = unsafe { device.create_descriptor_pool(&vk_info, None) }
+        .map(Poisonable::Ready)
         .map_err(super::map_host_device_oom_and_fragmentation_err)?;
 
     Ok(Pool {
         raw,
         capacity,
         available: capacity,
-        poisoned: false,
     })
 }
