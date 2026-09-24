@@ -77,6 +77,29 @@ enum PoolState {
     ///
     /// [`Ready`]: PoolState::Ready
     FragmentedUntilReset,
+
+    /// `vkAllocateDescriptorSets` reported host or device out-of-memory while
+    /// [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`] was enabled, so the driver has left
+    /// the pool holding a pointer it has already freed.
+    ///
+    /// Nothing may be passed to the driver for this pool again -- not an allocation, not a free,
+    /// not a reset, and not a destroy -- so the pool and any sets still live in it are leaked.
+    /// Losing the device is what bounds that leak to a single pool.
+    ///
+    /// [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`]:
+    ///     super::Workarounds::LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM
+    LeakedAfterAllocOom,
+}
+
+/// Whether a `vkAllocateDescriptorSets` failure with `err` means the driver has corrupted the
+/// pool it was allocating from.
+///
+/// See [`PoolState::LeakedAfterAllocOom`].
+fn alloc_err_corrupts_pool(workarounds: super::Workarounds, err: vk::Result) -> bool {
+    matches!(
+        err,
+        vk::Result::ERROR_OUT_OF_HOST_MEMORY | vk::Result::ERROR_OUT_OF_DEVICE_MEMORY
+    ) && workarounds.contains(super::Workarounds::LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM)
 }
 
 struct Pool {
@@ -105,12 +128,12 @@ impl Pool {
 
     /// This pool's handle, or `None` if the driver must never see it again.
     ///
-    /// Every Vulkan entry point that takes this pool goes through here, so that a state in which
-    /// the handle is unusable only has to be honored in one place rather than at each call site.
-    /// No current state withholds the handle.
+    /// Every Vulkan entry point that takes this pool goes through here, so that a
+    /// [`PoolState::LeakedAfterAllocOom`] pool cannot reach the driver by any route.
     fn raw_for_driver(&self) -> Option<vk::DescriptorPool> {
         match self.state {
             PoolState::Ready | PoolState::FragmentedUntilReset => Some(self.raw),
+            PoolState::LeakedAfterAllocOom => None,
         }
     }
 
@@ -121,7 +144,7 @@ impl Pool {
     fn available_contribution(&self) -> u32 {
         match self.state {
             PoolState::Ready => self.available,
-            PoolState::FragmentedUntilReset => 0,
+            PoolState::FragmentedUntilReset | PoolState::LeakedAfterAllocOom => 0,
         }
     }
 
@@ -135,6 +158,19 @@ impl Pool {
             self.capacity,
         );
         self.state = PoolState::FragmentedUntilReset;
+    }
+
+    /// Retire this pool because the driver has left it holding a pointer it already freed.
+    ///
+    /// See [`PoolState::LeakedAfterAllocOom`].
+    fn mark_leaked_after_alloc_oom(&mut self) {
+        assert!(matches!(self.state, PoolState::Ready));
+        log::error!(
+            "Leaking descriptor pool ({}/{} sets free) that the driver has corrupted",
+            self.available,
+            self.capacity,
+        );
+        self.state = PoolState::LeakedAfterAllocOom;
     }
 
     /// Try to reset this pool. If resetting the pool succeeded, transition to [`PoolState::Ready`]
@@ -225,6 +261,7 @@ pub struct DescriptorAllocator {
     buckets: HashMap<BucketKey, Bucket>,
     max_update_after_bind_descriptors_in_all_pools: u32,
     update_after_bind_descriptors_in_all_pools: u32,
+    workarounds: super::Workarounds,
 }
 
 impl super::BindGroupLayout {
@@ -239,11 +276,15 @@ impl super::BindGroupLayout {
 }
 
 impl DescriptorAllocator {
-    pub fn new(max_update_after_bind_descriptors_in_all_pools: u32) -> Self {
+    pub fn new(
+        max_update_after_bind_descriptors_in_all_pools: u32,
+        workarounds: super::Workarounds,
+    ) -> Self {
         DescriptorAllocator {
             buckets: HashMap::default(),
             max_update_after_bind_descriptors_in_all_pools,
             update_after_bind_descriptors_in_all_pools: 0,
+            workarounds,
         }
     }
 
@@ -372,12 +413,20 @@ impl DescriptorAllocator {
                                 vk::Result::ERROR_FRAGMENTED_POOL
                                 | vk::Result::ERROR_OUT_OF_POOL_MEMORY,
                             ) => {}
+                            Err(err) if alloc_err_corrupts_pool(self.workarounds, err) => {
+                                bucket.pools[index].mark_leaked_after_alloc_oom();
+                                return Err(crate::DeviceError::Lost);
+                            }
                             Err(err) => return Err(super::map_host_device_oom_err(err)),
                         }
                     }
 
                     bucket.pools[index].mark_fragmented();
                     candidate = bucket.pools.iter().position(Pool::is_allocatable);
+                }
+                Err(err) if alloc_err_corrupts_pool(self.workarounds, err) => {
+                    bucket.pools[index].mark_leaked_after_alloc_oom();
+                    return Err(crate::DeviceError::Lost);
                 }
                 Err(err) => return Err(super::map_host_device_oom_err(err)),
             }
