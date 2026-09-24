@@ -58,6 +58,12 @@ struct Pool {
     available: u32,
 }
 
+impl Pool {
+    unsafe fn destroy(self, device: &ash::Device) {
+        unsafe { device.destroy_descriptor_pool(self.raw, None) };
+    }
+}
+
 /// Keeps track of all pools created with this bucket's [`BucketKey`].
 #[derive(Default)]
 struct Bucket {
@@ -146,7 +152,7 @@ impl DescriptorAllocator {
                     pool.available, pool.capacity,
                     "pool is not empty, at least one DescriptorSet has not been freed"
                 );
-                unsafe { device.destroy_descriptor_pool(pool.raw, None) };
+                unsafe { pool.destroy(device) };
             }
         }
     }
@@ -256,8 +262,8 @@ impl DescriptorAllocator {
             && bucket.available_sets - pool.capacity > pool.capacity / 4
         {
             let pool = bucket.pools.pop().unwrap();
-            unsafe { device.destroy_descriptor_pool(pool.raw, None) };
             bucket.available_sets -= pool.capacity;
+            unsafe { pool.destroy(device) };
         }
     }
 }
