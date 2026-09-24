@@ -9,9 +9,9 @@ use super::{
     helpers::{contains_builtin, global_needs_wrapper, map_storage_class},
     Block, BlockContext, CachedConstant, CachedExpressions, CooperativeType, DebugInfo,
     EntryPointContext, Error, Function, FunctionArgument, GlobalVariable, IdGenerator, Instruction,
-    LocalImageType, LocalType, LocalVariable, LogicalLayout, LookupFunctionType, LookupType,
-    NumericType, Options, PhysicalLayout, PipelineOptions, ResultMember, Writer, WriterFlags,
-    BITS_PER_BYTE,
+    InstructionSink, LocalImageType, LocalType, LocalVariable, LogicalLayout, LookupFunctionType,
+    LookupType, NumericType, Options, PhysicalLayout, PipelineOptions, ResultMember, Writer,
+    WriterFlags, BITS_PER_BYTE,
 };
 use crate::{
     arena::{Handle, HandleVec, UniqueArena},
@@ -33,7 +33,7 @@ pub struct FunctionInterface<'a> {
 }
 
 impl Function {
-    pub(super) fn to_words(&self, sink: &mut impl Extend<Word>) {
+    pub(super) fn to_words(&self, sink: &mut InstructionSink) {
         self.signature.as_ref().unwrap().to_words(sink);
         for argument in self.parameters.iter() {
             argument.instruction.to_words(sink);
@@ -3971,8 +3971,7 @@ impl Writer {
         self.write_physical_layout();
 
         self.physical_layout.in_words(words);
-        self.logical_layout.in_words(words);
-        Ok(())
+        self.logical_layout.in_words(words)
     }
 
     /// Return the set of capabilities the last module written used.

@@ -134,19 +134,45 @@ struct PhysicalLayout {
     instruction_schema: Word,
 }
 
+/// A buffer of serialized [`Instruction`]s.
+///
+/// SPIR-V encodes an instruction's length in the upper sixteen bits of its
+/// first word, so an instruction can be at most [`u16::MAX`] words long.
+/// [`Instruction::to_words`] cannot report an oversized instruction to its
+/// caller without making all eighty-odd call sites fallible, so it records the
+/// offender here instead, and [`LogicalLayout::in_words`] turns it into an
+/// [`Error::InstructionTooLong`] before any of these buffers is emitted.
+#[derive(Default)]
+struct InstructionSink {
+    words: Vec<Word>,
+
+    /// The opcode and word count of the first instruction too long to encode,
+    /// if any.
+    ///
+    /// Its words are omitted from `words`, so this buffer must never be
+    /// emitted while this is `Some`.
+    overflowed: Option<(spirv::Op, u32)>,
+}
+
+impl InstructionSink {
+    fn note_overflow(&mut self, op: spirv::Op, word_count: u32) {
+        self.overflowed.get_or_insert((op, word_count));
+    }
+}
+
 #[derive(Default)]
 struct LogicalLayout {
-    capabilities: Vec<Word>,
-    extensions: Vec<Word>,
-    ext_inst_imports: Vec<Word>,
-    memory_model: Vec<Word>,
-    entry_points: Vec<Word>,
-    execution_modes: Vec<Word>,
-    debugs: Vec<Word>,
-    annotations: Vec<Word>,
-    declarations: Vec<Word>,
-    function_declarations: Vec<Word>,
-    function_definitions: Vec<Word>,
+    capabilities: InstructionSink,
+    extensions: InstructionSink,
+    ext_inst_imports: InstructionSink,
+    memory_model: InstructionSink,
+    entry_points: InstructionSink,
+    execution_modes: InstructionSink,
+    debugs: InstructionSink,
+    annotations: InstructionSink,
+    declarations: InstructionSink,
+    function_declarations: InstructionSink,
+    function_definitions: InstructionSink,
 }
 
 #[derive(Clone)]
@@ -180,6 +206,12 @@ pub enum Error {
     SpirvVersionTooLow(u8, u8),
     #[error("mapping of {0:?} is missing")]
     MissingBinding(crate::ResourceBinding),
+    #[error(
+        "an {op:?} instruction is {word_count} words long, \
+         but SPIR-V instructions are limited to {} words",
+        u16::MAX
+    )]
+    InstructionTooLong { op: spirv::Op, word_count: u32 },
 }
 
 #[derive(Default)]
