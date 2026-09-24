@@ -63,6 +63,18 @@ struct Pool {
 }
 
 impl Pool {
+    /// How many of this pool's free sets count towards [`Bucket::available_sets`].
+    ///
+    /// A pool that cannot serve allocations contributes nothing, however many of its sets are
+    /// free.
+    fn available_contribution(&self) -> u32 {
+        if self.fragmented {
+            0
+        } else {
+            self.available
+        }
+    }
+
     /// Whether [`DescriptorAllocator::alloc`] may take a set from this pool.
     fn is_allocatable(&self) -> bool {
         !self.fragmented && self.available != 0
@@ -117,7 +129,6 @@ struct Bucket {
     /// If the set becomes empty, the bucket is destroyed.
     layouts: HashSet<vk::DescriptorSetLayout>,
     pools: Vec<Pool>,
-    available_sets: u32,
     allocated_sets: u32,
 }
 
@@ -130,9 +141,16 @@ impl Bucket {
     ) -> Result<(usize, &mut Pool), crate::DeviceError> {
         let index = self.pools.len();
         let pool = create_descriptor_pool(device, key, capacity_hint)?;
-        self.available_sets += pool.capacity;
         self.pools.push(pool);
         Ok((index, self.pools.last_mut().unwrap()))
+    }
+
+    /// How many sets [`DescriptorAllocator::alloc`] could serve without creating a new pool.
+    ///
+    /// Derived rather than cached, so that it cannot drift from the state of the pools it
+    /// summarizes.
+    fn available_sets(&self) -> u32 {
+        self.pools.iter().map(Pool::available_contribution).sum()
     }
 }
 
@@ -263,7 +281,6 @@ impl DescriptorAllocator {
                         // A fresh pool failing to allocate even a single set leaves
                         // no pool left to fall back to, so drop it and give up.
                         let pool = bucket.pools.pop().unwrap();
-                        bucket.available_sets -= pool.capacity;
                         unsafe { pool.destroy(device) };
                         log::error!(
                             "descriptor set allocation from a fresh pool failed unexpectedly"
@@ -287,9 +304,7 @@ impl DescriptorAllocator {
                         }
                     }
 
-                    let available = bucket.pools[index].available;
                     bucket.pools[index].mark_fragmented();
-                    bucket.available_sets -= available;
                     candidate = bucket.pools.iter().position(Pool::is_allocatable);
                 }
                 Err(err) => return Err(super::map_host_device_oom_err(err)),
@@ -298,7 +313,6 @@ impl DescriptorAllocator {
 
         let pool = &mut bucket.pools[pool_index];
         pool.available -= 1;
-        bucket.available_sets -= 1;
         bucket.allocated_sets += 1;
         if update_after_bind {
             self.update_after_bind_descriptors_in_all_pools += total_descriptors;
@@ -329,16 +343,12 @@ impl DescriptorAllocator {
 
         pool.available += 1;
 
-        if !pool.fragmented {
-            bucket.available_sets += 1;
-        } else if pool.is_empty() {
+        if pool.fragmented && pool.is_empty() {
             // A fragmented pool's free sets are unusable until it is reset, so
             // they do not count towards `available_sets`.
             // On Mali, freeing sets does not make such a pool usable again;
             // resetting it is what does, and that is only safe once no sets are live.
-            if unsafe { pool.try_reset(device) } {
-                bucket.available_sets += pool.capacity;
-            }
+            unsafe { pool.try_reset(device) };
         }
         bucket.allocated_sets -= 1;
         if set.bucket_key.update_after_bind {
@@ -351,13 +361,9 @@ impl DescriptorAllocator {
         // in other pools.
         // Note that this logic will never destroy the last pool.
         let last = bucket.pools.last().unwrap();
-        let last_capacity = last.capacity;
-        // Only a non-fragmented pool contributes its capacity to
-        // `available_sets`.
-        let last_contribution = if last.fragmented { 0 } else { last_capacity };
-        if last.is_empty() && bucket.available_sets - last_contribution > last_capacity / 4 {
+        let available_in_other_pools = bucket.available_sets() - last.available_contribution();
+        if last.is_empty() && available_in_other_pools > last.capacity / 4 {
             let pool = bucket.pools.pop().unwrap();
-            bucket.available_sets -= last_contribution;
             unsafe { pool.destroy(device) };
         }
     }
