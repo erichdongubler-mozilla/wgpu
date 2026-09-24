@@ -59,6 +59,10 @@ struct Pool {
 }
 
 impl Pool {
+    pub(in crate::vulkan) fn is_unavailable(&self) -> bool {
+        self.available == 0
+    }
+
     unsafe fn destroy(self, device: &ash::Device) {
         unsafe { device.destroy_descriptor_pool(self.raw, None) };
     }
@@ -183,7 +187,7 @@ impl DescriptorAllocator {
             .pools
             .iter_mut()
             .enumerate()
-            .find(|(_, pool)| pool.available != 0);
+            .find(|(_, pool)| !pool.is_unavailable());
 
         let (pool_index, pool) = if let Some(pool) = pool {
             pool
