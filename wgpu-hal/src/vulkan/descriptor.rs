@@ -62,6 +62,12 @@ struct Pool {
     fragmented: bool,
 }
 
+impl Pool {
+    unsafe fn destroy(self, device: &ash::Device) {
+        unsafe { device.destroy_descriptor_pool(self.raw, None) };
+    }
+}
+
 /// Keeps track of all pools created with this bucket's [`BucketKey`].
 #[derive(Default)]
 struct Bucket {
@@ -150,7 +156,7 @@ impl DescriptorAllocator {
                     pool.available, pool.capacity,
                     "pool is not empty, at least one DescriptorSet has not been freed"
                 );
-                unsafe { device.destroy_descriptor_pool(pool.raw, None) };
+                unsafe { pool.destroy(device) };
             }
         }
     }
@@ -219,7 +225,7 @@ impl DescriptorAllocator {
                         // no pool left to fall back to, so drop it and give up.
                         let pool = bucket.pools.pop().unwrap();
                         bucket.available_sets -= pool.capacity;
-                        unsafe { device.destroy_descriptor_pool(pool.raw, None) };
+                        unsafe { pool.destroy(device) };
                         log::error!(
                             "descriptor set allocation from a fresh pool failed unexpectedly"
                         );
@@ -334,8 +340,8 @@ impl DescriptorAllocator {
             && bucket.available_sets - last_contribution > last_capacity / 4
         {
             let pool = bucket.pools.pop().unwrap();
-            unsafe { device.destroy_descriptor_pool(pool.raw, None) };
             bucket.available_sets -= last_contribution;
+            unsafe { pool.destroy(device) };
         }
     }
 }
