@@ -56,15 +56,24 @@ struct Pool {
     raw: vk::DescriptorPool,
     capacity: u32,
     available: u32,
+    /// Set when [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`] applies and this pool has
+    /// hit an out-of-memory failure in `vkAllocateDescriptorSets`. Such a pool must never be
+    /// allocated from or destroyed again, so it is leaked.
+    ///
+    /// [`LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM`]:
+    ///     super::Workarounds::LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM
+    poisoned: bool,
 }
 
 impl Pool {
     pub(in crate::vulkan) fn is_unavailable(&self) -> bool {
-        self.available == 0
+        self.available == 0 || self.poisoned
     }
 
     unsafe fn destroy(self, device: &ash::Device) {
-        unsafe { device.destroy_descriptor_pool(self.raw, None) };
+        if !self.poisoned {
+            unsafe { device.destroy_descriptor_pool(self.raw, None) };
+        }
     }
 }
 
@@ -98,6 +107,7 @@ pub struct DescriptorAllocator {
     buckets: HashMap<BucketKey, Bucket>,
     max_update_after_bind_descriptors_in_all_pools: u32,
     update_after_bind_descriptors_in_all_pools: u32,
+    workarounds: super::Workarounds,
 }
 
 impl super::BindGroupLayout {
@@ -112,11 +122,15 @@ impl super::BindGroupLayout {
 }
 
 impl DescriptorAllocator {
-    pub fn new(max_update_after_bind_descriptors_in_all_pools: u32) -> Self {
+    pub fn new(
+        max_update_after_bind_descriptors_in_all_pools: u32,
+        workarounds: super::Workarounds,
+    ) -> Self {
         DescriptorAllocator {
             buckets: HashMap::default(),
             max_update_after_bind_descriptors_in_all_pools,
             update_after_bind_descriptors_in_all_pools: 0,
+            workarounds,
         }
     }
 
@@ -216,6 +230,16 @@ impl DescriptorAllocator {
             //
             // from https://docs.vulkan.org/refpages/latest/refpages/source/VkDescriptorPoolCreateInfo.html#_description
             Err(vk::Result::ERROR_FRAGMENTED_POOL) => unreachable!(),
+            Err(vk::Result::ERROR_OUT_OF_HOST_MEMORY | vk::Result::ERROR_OUT_OF_DEVICE_MEMORY)
+                if self.workarounds.contains(
+                    super::Workarounds::LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM,
+                ) =>
+            {
+                // This pool can never be destroyed again, so lose the device to guarantee it is
+                // the only one we leak.
+                pool.poisoned = true;
+                Err(crate::DeviceError::Lost)
+            }
             Err(err) => Err(super::map_host_device_oom_err(err)),
         }?;
 
@@ -356,5 +380,6 @@ fn create_descriptor_pool(
         raw,
         capacity,
         available: capacity,
+        poisoned: false,
     })
 }

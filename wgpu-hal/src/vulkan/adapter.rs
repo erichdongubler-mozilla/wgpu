@@ -2385,6 +2385,10 @@ impl super::Instance {
                 super::Workarounds::FORCE_FILL_BUFFER_WITH_SIZE_GREATER_4096_ALIGNED_OFFSET_16,
                 phd_capabilities.properties.vendor_id == db::nvidia::VENDOR,
             );
+            workarounds.set(
+                super::Workarounds::LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM,
+                phd_capabilities.properties.vendor_id == db::imgtec::VENDOR,
+            );
         };
 
         if let Some(driver) = phd_capabilities.driver {
@@ -3077,6 +3081,7 @@ impl super::Adapter {
             } else {
                 0
             },
+            self.workarounds,
         );
 
         let device = super::Device {

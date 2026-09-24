@@ -555,6 +555,17 @@ bitflags::bitflags!(
         /// As such, we need to make sure all calls to vkCmdFillBuffer are aligned to 16 bytes
         /// if they cover a range of 4096 bytes or more.
         const FORCE_FILL_BUFFER_WITH_SIZE_GREATER_4096_ALIGNED_OFFSET_16 = 0x4;
+        /// On Imagination (PowerVR) drivers, a `vkAllocateDescriptorSets` call that fails with
+        /// host or device OOM leaves a dangling pointer in the pool. Without interference, the
+        /// chunk allocation path publishes the chunk before allocating it, and does not unpublish
+        /// it on failure. A later `vkDestroyDescriptorPool` would then dereference freed memory.
+        ///
+        /// Leak such pools instead of destroying them, and report [`crate::DeviceError::Lost`]
+        /// rather than [`crate::DeviceError::OutOfMemory`], so that at most one pool is leaked
+        /// per device no matter how the caller chooses to treat an out-of-memory condition.
+        ///
+        /// See also <https://dawn-review.googlesource.com/c/dawn/+/334695>.
+        const LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM = 0x8;
     }
 );
 
