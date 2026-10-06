@@ -2035,34 +2035,39 @@ fn assert_spv_instruction_lengths_consistent(words: &[u32]) {
     );
 }
 
-/// NOTE: `OpEntryPoint` spends three words on its header, execution model, and function id. The
-/// nul-terminated name must fit in what remains.
-const LONGEST_SPV_ENTRY_POINT_NAME_LEN: usize = (u16::MAX as usize - 3) * 4 - 1;
+/// An entry-point name too long for `OpEntryPoint` must be reported as a
+/// backend error, not silently truncated into a malformed instruction header.
+#[test]
+fn spv_entry_point_name_too_long() {
+    // `OpEntryPoint` spends three words on its header, execution model, and
+    // function id. The nul-terminated name must fit in what remains.
+    const MAX_NAME_BYTES: usize = (u16::MAX as usize - 3) * 4 - 1;
 
-fn write_spv_with_entry_point_name_len(name_len: usize) -> Vec<u32> {
-    let name = "e".repeat(name_len);
-    let source = format!("@compute @workgroup_size(1) fn {name}() {{}}");
+    let write = |name_len: usize| {
+        let name = "e".repeat(name_len);
+        let source = format!("@compute @workgroup_size(1) fn {name}() {{}}");
 
-    let module = naga::front::wgsl::parse_str(&source).unwrap();
-    let info = naga::valid::Validator::new(Default::default(), Default::default())
-        .validate(&module)
-        .unwrap();
+        let module = naga::front::wgsl::parse_str(&source).unwrap();
+        let info = naga::valid::Validator::new(Default::default(), Default::default())
+            .validate(&module)
+            .unwrap();
 
-    naga::back::spv::write_vec(&module, &info, &Default::default(), None).unwrap()
-}
+        naga::back::spv::write_vec(&module, &info, &Default::default(), None)
+    };
 
 /// Ensure we behave when entry-point name is at its limit.
-#[test]
-fn spv_longest_entry_point_name() {
-    let words = write_spv_with_entry_point_name_len(LONGEST_SPV_ENTRY_POINT_NAME_LEN);
+    let words = write(MAX_NAME_BYTES).expect("the longest encodable name should succeed");
     assert_spv_instruction_lengths_consistent(&words);
-}
 
-/// Ensure we panic when an entry-point name is too long for `OpEntryPoint`.
-#[test]
-#[should_panic(
-    expected = "EntryPoint instruction is 65536 words long, but SPIR-V instructions are limited to 65535 words"
-)]
-fn spv_entry_point_name_too_long() {
-    write_spv_with_entry_point_name_len(LONGEST_SPV_ENTRY_POINT_NAME_LEN + 1);
+    let result = write(MAX_NAME_BYTES + 1);
+    assert!(
+        matches!(
+            result,
+            Err(naga::back::spv::Error::InstructionTooLong {
+                op: spirv::Op::EntryPoint,
+                word_count: 0x1_0000,
+            })
+        ),
+        "expected an overflow error, got {result:?}"
+    );
 }

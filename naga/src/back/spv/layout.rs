@@ -3,7 +3,7 @@ use core::iter;
 
 use spirv::{Op, Word, MAGIC_NUMBER};
 
-use super::{Instruction, LogicalLayout, PhysicalLayout};
+use super::{Error, Instruction, LogicalLayout, PhysicalLayout};
 
 #[cfg(test)]
 use alloc::format;
@@ -136,6 +136,7 @@ impl Instruction {
         sink.extend(self.type_id);
         sink.extend(self.result_id);
         sink.extend(self.operands.iter().cloned());
+        Ok(())
     }
 }
 
@@ -214,17 +215,25 @@ fn test_logical_layout_in_words() {
         instructions.push(dummy_instruction);
     }
 
-    instructions[0].to_words(&mut layout.capabilities);
-    instructions[1].to_words(&mut layout.extensions);
-    instructions[2].to_words(&mut layout.ext_inst_imports);
-    instructions[3].to_words(&mut layout.memory_model);
-    instructions[4].to_words(&mut layout.entry_points);
-    instructions[5].to_words(&mut layout.execution_modes);
-    instructions[6].to_words(&mut layout.debugs);
-    instructions[7].to_words(&mut layout.annotations);
-    instructions[8].to_words(&mut layout.declarations);
-    instructions[9].to_words(&mut layout.function_declarations);
-    instructions[10].to_words(&mut layout.function_definitions);
+    instructions[0].to_words(&mut layout.capabilities).unwrap();
+    instructions[1].to_words(&mut layout.extensions).unwrap();
+    instructions[2]
+        .to_words(&mut layout.ext_inst_imports)
+        .unwrap();
+    instructions[3].to_words(&mut layout.memory_model).unwrap();
+    instructions[4].to_words(&mut layout.entry_points).unwrap();
+    instructions[5]
+        .to_words(&mut layout.execution_modes)
+        .unwrap();
+    instructions[6].to_words(&mut layout.debugs).unwrap();
+    instructions[7].to_words(&mut layout.annotations).unwrap();
+    instructions[8].to_words(&mut layout.declarations).unwrap();
+    instructions[9]
+        .to_words(&mut layout.function_declarations)
+        .unwrap();
+    instructions[10]
+        .to_words(&mut layout.function_definitions)
+        .unwrap();
 
     layout.in_words(&mut output);
 
@@ -237,30 +246,38 @@ fn test_logical_layout_in_words() {
 }
 
 #[cfg(test)]
-fn entry_point_of_word_count(word_count: usize) -> Vec<Word> {
+fn entry_point_of_word_count(word_count: usize) -> (Result<(), Error>, Vec<Word>) {
     let mut instruction = Instruction::new(Op::EntryPoint);
     // `Instruction::new` already accounts for the opcode/word-count word.
     instruction.add_operands(vec![1; word_count - 1]);
 
     let mut output = vec![];
-    instruction.to_words(&mut output);
-    output
+    let result = instruction.to_words(&mut output);
+    (result, output)
 }
 
-/// Ensure we allow `u16::MAX` words in an instruction.
+/// The longest instruction SPIR-V's 16-bit word-count field can describe.
 #[test]
 fn test_longest_encodable_instruction() {
-    let output = entry_point_of_word_count(u16::MAX as usize);
+    let (result, output) = entry_point_of_word_count(u16::MAX as usize);
 
+    result.unwrap();
     assert_eq!(output.len(), u16::MAX as usize);
     assert_eq!(output[0] >> 16, u16::MAX as Word);
 }
 
-/// Ensure we panic when we have more than `u16::MAX` words in an instruction.
+/// A word count that doesn't fit the 16-bit field must be reported, not
+/// truncated into a header that lies about the instruction's length.
 #[test]
-#[should_panic(
-    expected = "EntryPoint instruction is 65536 words long, but SPIR-V instructions are limited to 65535 words"
-)]
 fn test_instruction_word_count_overflow() {
-    entry_point_of_word_count(u16::MAX as usize + 1);
+    let (result, output) = entry_point_of_word_count(u16::MAX as usize + 1);
+
+    assert!(matches!(
+        result,
+        Err(Error::InstructionTooLong {
+            op: Op::EntryPoint,
+            word_count: 0x1_0000,
+        })
+    ));
+    assert!(output.is_empty());
 }
