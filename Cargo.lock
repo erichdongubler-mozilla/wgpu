@@ -814,7 +814,7 @@ dependencies = [
  "tempfile",
  "termcolor",
  "tokio",
- "wgpu-hal",
+ "wgpu-core",
 ]
 
 [[package]]
