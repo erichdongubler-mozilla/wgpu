@@ -84,7 +84,6 @@ webgpu:shader,validation,expression,call,builtin,faceForward:values:* // 78%, ab
 webgpu:shader,validation,expression,call,builtin,fma:* // 85%, const eval issues
 webgpu:shader,validation,expression,call,builtin,frexp:* // 39%, const/override eval not supported
 webgpu:shader,validation,expression,call,builtin,insertBits:count_offset:* // 67%, `offset` + `count` out of range is not a pipeline creation error when they are override expressions
-webgpu:shader,validation,expression,call,builtin,inverseSqrt:* // 61%, const eval overflow for abstract/f16
 webgpu:shader,validation,expression,call,builtin,ldexp:* // 43%, const eval not implemented
 webgpu:shader,validation,expression,call,builtin,mix:* // 66%, const eval issues
 webgpu:shader,validation,expression,call,builtin,modf:* // 52%, const eval not fully implemented

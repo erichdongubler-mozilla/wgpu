@@ -1468,8 +1468,10 @@ impl super::Validator {
 
 pub const fn check_literal_value(literal: crate::Literal) -> Result<(), LiteralError> {
     let is_nan = match literal {
+        crate::Literal::AbstractFloat(v) => v.is_nan(),
         crate::Literal::F64(v) => v.is_nan(),
         crate::Literal::F32(v) => v.is_nan(),
+        crate::Literal::F16(v) => v.is_nan(),
         _ => false,
     };
     if is_nan {
@@ -1477,8 +1479,10 @@ pub const fn check_literal_value(literal: crate::Literal) -> Result<(), LiteralE
     }
 
     let is_infinite = match literal {
+        crate::Literal::AbstractFloat(v) => v.is_infinite(),
         crate::Literal::F64(v) => v.is_infinite(),
         crate::Literal::F32(v) => v.is_infinite(),
+        crate::Literal::F16(v) => v.is_infinite(),
         _ => false,
     };
     if is_infinite {
@@ -1584,4 +1588,48 @@ fn f64_const_literals() {
         super::Capabilities::default() | super::Capabilities::FLOAT64,
     );
     assert!(result.is_ok());
+}
+
+/// Non-finite literals are forbidden at every supported float width.
+#[test]
+fn non_finite_literals() {
+    use crate::Literal;
+    use half::f16;
+
+    let caps = super::Capabilities::default()
+        | super::Capabilities::FLOAT64
+        | super::Capabilities::SHADER_FLOAT16;
+
+    let nans = [
+        Literal::F64(f64::NAN),
+        Literal::F32(f32::NAN),
+        Literal::F16(f16::NAN),
+    ];
+    let infinities = [
+        Literal::F64(f64::INFINITY),
+        Literal::F64(f64::NEG_INFINITY),
+        Literal::F32(f32::INFINITY),
+        Literal::F32(f32::NEG_INFINITY),
+        Literal::F16(f16::INFINITY),
+        Literal::F16(f16::NEG_INFINITY),
+    ];
+
+    for (literal, expected) in nans
+        .into_iter()
+        .map(|l| (l, LiteralError::NaN))
+        .chain(infinities.into_iter().map(|l| (l, LiteralError::Infinity)))
+    {
+        let result = validate_with_const_expression(crate::Expression::Literal(literal), caps);
+        let error = result.unwrap_err().into_inner();
+        assert!(
+            matches!(
+                error,
+                crate::valid::ValidationError::ConstExpression {
+                    source: ConstExpressionError::Literal(ref actual),
+                    ..
+                } if *actual == expected
+            ),
+            "expected {expected:?} for {literal:?}, got {error:?}"
+        );
+    }
 }
