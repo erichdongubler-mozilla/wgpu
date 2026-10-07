@@ -4603,21 +4603,29 @@ fn const_eval_geometry() {
     );
 }
 
-/// A dot product that overflows will cause a shader creation error.
-/// No resulting to infinity.
+/// Overflow while const-evaluating a built-in, in an intermediate value or in
+/// the result, is a shader-creation error rather than an infinity that reaches
+/// a backend.
 #[test]
 fn const_eval_geometry_overflow() {
+    for expr in [
+        "faceForward(vec2(1.0f, 0.0f), vec2(3.4e38f, 0.0f), vec2(3.4e38f, 0.0f))",
+        "reflect(vec2(1.0f, 0.0f), vec2(3.4e38f, 0.0f))",
+        "refract(vec2(1.0f, 0.0f), vec2(3.4e38f, 0.0f), 1.0f)",
+    ] {
+        check_error_matches(&format!("const x = {expr};"), "operation overflowed");
+    }
+
+    // FIXME(#7405): these are valid WGSL. An `AbstractFloat` dot product is
+    // computed at `f64` width and does not overflow here, but naga has no
+    // `vecN<AbstractFloat>` overload for these built-ins, so it concretizes to
+    // `f32` and rejects them.
     for expr in [
         "faceForward(vec2(1.0, 0.0), vec2(3.4e38, 0.0), vec2(3.4e38, 0.0))",
         "reflect(vec2(1.0, 0.0), vec2(3.4e38, 0.0))",
         "refract(vec2(1.0, 0.0), vec2(3.4e38, 0.0), 1.0)",
     ] {
-        let input = format!("const x = {expr};");
-        let result = naga::front::wgsl::parse_str(&input);
-        assert!(
-            result.is_err(),
-            "expected `{expr}` to overflow, got {result:#?}"
-        );
+        check_error_matches(&format!("const x = {expr};"), "operation overflowed");
     }
 }
 
