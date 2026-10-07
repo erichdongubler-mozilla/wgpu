@@ -4618,6 +4618,10 @@ fn const_eval_geometry_overflow() {
         "distance(vec2(3.4e38f, 0f), vec2(-3.4e38f, 0f))",
         "length(vec2(3.4e38f, 3.4e38f))",
         "fma(3.4e38f, 3.4e38f, 0f)",
+        "cross(vec3(3.4e38f, 0f, 0f), vec3(0f, 3.4e38f, 0f))",
+        // `cross` subtracts two products, so overflowing both of them yields a
+        // NaN rather than an infinity.
+        "cross(vec3(3.4e38f, 3.4e38f, 3.4e38f), vec3(3.4e38f, 3.4e38f, 3.4e38f))",
     ] {
         check_error_matches(&format!("const x = {expr};"), "operation overflowed");
     }
@@ -4639,6 +4643,8 @@ fn const_eval_geometry_overflow() {
         "distance(vec2(65504h, 0h), vec2(-65504h, 0h))",
         "length(vec2(65504h, 65504h))",
         "fma(300h, 300h, 0h)",
+        "cross(vec3(300h, 0h, 0h), vec3(0h, 300h, 0h))",
+        "cross(vec3(300h, 300h, 300h), vec3(300h, 300h, 300h))",
     ] {
         let input = format!("enable f16;\nconst x = {expr};");
         let result = naga::front::wgsl::parse_str(&input);
@@ -4653,6 +4659,7 @@ fn const_eval_geometry_overflow() {
         "distance(3h, 7h) == 4h",
         "distance(vec2(3h, 4h), vec2(0h, 0h)) == 5h",
         "fma(2h, 3h, 1h) == 7h",
+        "all(cross(vec3(1h, 0h, 0h), vec3(0h, 1h, 0h)) == vec3(0h, 0h, 1h))",
     ] {
         let input = format!("enable f16;\nconst_assert {expr};");
         let result = naga::front::wgsl::parse_str(&input);

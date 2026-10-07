@@ -427,6 +427,7 @@ webgpu:shader,validation,expression,call,builtin,cosh:*
 webgpu:shader,validation,expression,call,builtin,countLeadingZeros:*
 webgpu:shader,validation,expression,call,builtin,countOneBits:*
 webgpu:shader,validation,expression,call,builtin,countTrailingZeros:*
+webgpu:shader,validation,expression,call,builtin,cross:*
 webgpu:shader,validation,expression,call,builtin,degrees:*
 webgpu:shader,validation,expression,call,builtin,derivatives:*
 webgpu:shader,validation,expression,call,builtin,distance:values:stage="constant";type="f32"

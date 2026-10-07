@@ -74,7 +74,6 @@ webgpu:shader,validation,expression,binary,short_circuiting_and_or:* // 92%, htt
 webgpu:shader,validation,expression,call,builtin,atomics:* // 86%, atomics in vertex shaders, invalid address spaces/access modes
 webgpu:shader,validation,expression,call,builtin,bitcast:* // 57%, bitcast const-eval unimplemented; size validation missing; f16 vector validation incorrect
 webgpu:shader,validation,expression,call,builtin,clamp:* // 71%, clamp low<=high constraint not checked for const/override parameters
-webgpu:shader,validation,expression,call,builtin,cross:* // 86%, abstract int/float overflow issues in const eval
 webgpu:shader,validation,expression,call,builtin,determinant:* // 71%, abstract int/float const eval issues
 webgpu:shader,validation,expression,call,builtin,distance:* // 87%, abstract-float operands are concretized to f32 rather than kept abstract, https://github.com/gfx-rs/wgpu/issues/7405
 webgpu:shader,validation,expression,call,builtin,dot4I8Packed:* // 91%, missing const eval (#4507)
