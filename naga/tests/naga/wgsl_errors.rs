@@ -4400,15 +4400,19 @@ fn too_many_arguments_2() {
   │                    ^^^^^^^^              ^^ argument #2 has type `i32`
   │
   = note: `distance` accepts the following types for argument #2:
+  = note: allowed type: {AbstractFloat}
   = note: allowed type: f32
   = note: allowed type: f16
   = note: allowed type: f64
+  = note: allowed type: vec2<{AbstractFloat}>
   = note: allowed type: vec2<f32>
   = note: allowed type: vec2<f16>
   = note: allowed type: vec2<f64>
+  = note: allowed type: vec3<{AbstractFloat}>
   = note: allowed type: vec3<f32>
   = note: allowed type: vec3<f16>
   = note: allowed type: vec3<f64>
+  = note: allowed type: vec4<{AbstractFloat}>
   = note: allowed type: vec4<f32>
   = note: allowed type: vec4<f16>
   = note: allowed type: vec4<f64>
@@ -4684,16 +4688,26 @@ fn const_eval_geometry_overflow() {
         check_error_matches(&format!("const x = {expr};"), "operation overflowed");
     }
 
-    // FIXME(#7405): these are valid WGSL. An `AbstractFloat` dot product is
-    // computed at `f64` width and does not overflow here, but naga has no
-    // `vecN<AbstractFloat>` overload for these built-ins, so it concretizes to
-    // `f32` and rejects them.
+    // `AbstractFloat` is evaluated at `f64` width, so overflowing it takes
+    // operands near `f64::MAX`.
+    for expr in [
+        "faceForward(vec2(1.0, 0.0), vec2(1.7976931348623157e308, 0.0), vec2(1.7976931348623157e308, 0.0))",
+        "reflect(vec2(1.0, 0.0), vec2(1.7976931348623157e308, 0.0))",
+        "refract(vec2(1.0, 0.0), vec2(1.7976931348623157e308, 0.0), 1.0)",
+        "distance(vec2(1.7976931348623157e308, 0.0), vec2(-1.7976931348623157e308, 0.0))",
+    ] {
+        check_error_matches(&format!("const x = {expr};"), "operation overflowed");
+    }
+
+    // The same operands that overflow at `f32` width are fine as
+    // `AbstractFloat`, and must not be rejected.
     for expr in [
         "faceForward(vec2(1.0, 0.0), vec2(3.4e38, 0.0), vec2(3.4e38, 0.0))",
         "reflect(vec2(1.0, 0.0), vec2(3.4e38, 0.0))",
         "refract(vec2(1.0, 0.0), vec2(3.4e38, 0.0), 1.0)",
+        "distance(vec2(3.4e38, 0.0), vec2(-3.4e38, 0.0))",
     ] {
-        check_error_matches(&format!("const x = {expr};"), "operation overflowed");
+        check_success(&format!("const x = {expr};"));
     }
 
     for expr in [

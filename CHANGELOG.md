@@ -241,6 +241,7 @@ By @sagudev in [#10307](https://github.com/gfx-rs/wgpu/pull/10307).
   - `fma()`
   - `distance()`
   - `cross()`
+- Implement the `vecN<AbstractFloat>` overloads of `distance()`, `faceForward()`, `reflect()`, and `refract()`, so abstract arguments are evaluated at `f64` width instead of being concretized to `f32` first. Expressions whose intermediates fit in an `AbstractFloat` but not an `f32`, such as `faceForward(vec2(1.0, 0.0), vec2(3.4e38, 0.0), vec2(3.4e38, 0.0))`, are no longer rejected. By @ErichDonGubler in [#?????](https://github.com/gfx-rs/wgpu/pull/?????).
 
 #### Validation
 
