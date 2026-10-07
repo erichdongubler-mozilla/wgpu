@@ -1,6 +1,5 @@
-use wgpu::Backends;
 use wgpu_test::{
-    apply, fail, gpu_test, FailureCase, GpuTestConfiguration, GpuTestInitializer, TestParameters,
+    apply, fail, gpu_test, valid, GpuTestConfiguration, GpuTestInitializer, TestParameters,
 };
 
 pub fn all_tests(vec: &mut Vec<GpuTestInitializer>) {
@@ -10,7 +9,8 @@ pub fn all_tests(vec: &mut Vec<GpuTestInitializer>) {
         RENDER_PIPELINE_DEFAULT_LAYOUT_BAD_MODULE,
         RENDER_PIPELINE_DEFAULT_LAYOUT_BAD_BGL_INDEX,
         NO_TARGETLESS_RENDER,
-        COMPUTE_PIPELINE_SPV_ENTRY_POINT_NAME_TOO_LONG,
+        SHADER_MODULE_LONGEST_ENTRY_POINT_NAME,
+        SHADER_MODULE_ENTRY_POINT_NAME_TOO_LONG,
     ]);
 }
 
@@ -231,32 +231,24 @@ static NO_TARGETLESS_RENDER: GpuTestConfiguration = GpuTestConfiguration::new()
         )
     });
 
-/// An entry-point name too long for SPIR-V's `OpEntryPoint` must fail pipeline
-/// creation with an internal error, not reach the driver as a malformed module.
+fn entry_point_name_shader_desc(name: &str) -> wgpu::ShaderModuleDescriptor<'static> {
+    wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: wgpu::ShaderSource::Wgsl(
+            format!("@compute @workgroup_size(1) fn {name}() {{}}").into(),
+        ),
+    }
+}
+
 #[apply(gpu_test!)]
-static COMPUTE_PIPELINE_SPV_ENTRY_POINT_NAME_TOO_LONG: GpuTestConfiguration =
-    GpuTestConfiguration::new()
-        .parameters(
-            TestParameters::default()
-                .test_features_limits()
-                // Only the Vulkan backend generates SPIR-V.
-                .skip(FailureCase::backend(Backends::all() - Backends::VULKAN)),
-        )
-        .run_async(|ctx| async move {
-            // `OpEntryPoint` spends three words on its header, execution model, and
-            // function id, so a nul-terminated name of this length makes the
-            // instruction one word longer than SPIR-V can encode.
-            let name = "a".repeat((usize::from(u16::MAX) - 3) * 4);
+static SHADER_MODULE_LONGEST_ENTRY_POINT_NAME: GpuTestConfiguration = GpuTestConfiguration::new()
+    .parameters(TestParameters::default().test_features_limits())
+    .run_sync(|ctx| {
+        let name = "a".repeat(256);
+        valid(&ctx.device, || {
             let module = ctx
                 .device
-                .create_shader_module(wgpu::ShaderModuleDescriptor {
-                    label: None,
-                    source: wgpu::ShaderSource::Wgsl(
-                        format!("@compute @workgroup_size(1) fn {name}() {{}}").into(),
-                    ),
-                });
-
-            let scope = ctx.device.push_error_scope(wgpu::ErrorFilter::Internal);
+                .create_shader_module(entry_point_name_shader_desc(&name));
             let _ = ctx
                 .device
                 .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
@@ -267,14 +259,20 @@ static COMPUTE_PIPELINE_SPV_ENTRY_POINT_NAME_TOO_LONG: GpuTestConfiguration =
                     compilation_options: Default::default(),
                     cache: None,
                 });
-            let error = scope
-                .pop()
-                .await
-                .expect("expected an internal error from pipeline creation");
-
-            let message = error.to_string();
-            assert!(
-                message.contains("SPIR-V instructions are limited to 65535 words"),
-                "unexpected error: {message}"
-            );
         });
+    });
+
+#[apply(gpu_test!)]
+static SHADER_MODULE_ENTRY_POINT_NAME_TOO_LONG: GpuTestConfiguration = GpuTestConfiguration::new()
+    .parameters(TestParameters::default().enable_noop())
+    .run_sync(|ctx| {
+        let name = "a".repeat(257);
+        fail(
+            &ctx.device,
+            || {
+                ctx.device
+                    .create_shader_module(entry_point_name_shader_desc(&name))
+            },
+            Some("Shader entry point name is 257 bytes long, but the maximum is 256 bytes"),
+        );
+    });

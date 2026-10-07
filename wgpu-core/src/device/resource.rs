@@ -2658,6 +2658,12 @@ impl Device {
                 _ => continue,
             };
         }
+        for entry_point in module.entry_points.iter() {
+            let len = entry_point.name.len();
+            if len > pipeline::MAX_ENTRY_POINT_NAME_LENGTH {
+                return Err(pipeline::CreateShaderModuleError::EntryPointNameTooLong { len });
+            }
+        }
 
         profiling::scope!("naga::validate");
         let debug_source =

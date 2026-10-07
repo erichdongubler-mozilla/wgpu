@@ -195,6 +195,12 @@ fn finalize_passthrough_entry_point_name(
     }
 }
 
+/// The maximum length of a shader entry-point name, in bytes.
+///
+/// The Vulkan validation layers reject longer names, and drivers and shader
+/// compilers are not known to be robust against them.
+pub const MAX_ENTRY_POINT_NAME_LENGTH: usize = 256;
+
 //Note: `Clone` would require `WithSpan: Clone`.
 #[derive(Clone, Debug, Error)]
 #[non_exhaustive]
@@ -244,6 +250,11 @@ pub enum CreateShaderModuleError {
         "Generic passthrough shaders which use GLSL or DXIL must contain exactly one entry point."
     )]
     IncorrectPassthroughEntryPointCount,
+
+    #[error(
+        "Shader entry point name is {len} bytes long, but the maximum is {MAX_ENTRY_POINT_NAME_LENGTH} bytes"
+    )]
+    EntryPointNameTooLong { len: usize },
 }
 
 impl WebGpuError for CreateShaderModuleError {
@@ -257,6 +268,7 @@ impl WebGpuError for CreateShaderModuleError {
             Self::Validation(..)
             | Self::InvalidGroupIndex { .. }
             | Self::IncorrectPassthroughEntryPointCount
+            | Self::EntryPointNameTooLong { .. }
             | Self::NotCompiledForBackend => ErrorType::Validation,
             #[cfg(feature = "wgsl")]
             Self::Parsing(..) => ErrorType::Validation,
