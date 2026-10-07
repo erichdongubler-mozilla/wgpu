@@ -445,6 +445,7 @@ webgpu:shader,validation,expression,call,builtin,fract:*
 webgpu:shader,validation,expression,call,builtin,insertBits:must_use:*
 webgpu:shader,validation,expression,call,builtin,insertBits:typed_arguments:*
 webgpu:shader,validation,expression,call,builtin,insertBits:values:*
+webgpu:shader,validation,expression,call,builtin,inverseSqrt:*
 webgpu:shader,validation,expression,call,builtin,length:*
 webgpu:shader,validation,expression,call,builtin,log:*
 webgpu:shader,validation,expression,call,builtin,log2:*
