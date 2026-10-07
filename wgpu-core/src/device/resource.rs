@@ -5965,4 +5965,6 @@ crate::impl_storage_item!(Device);
 fn report_shader_translation_error(stage: wgt::ShaderStages, message: &str) {
     log::error!("Shader translation error for stage {stage:?}: {message}");
     log::error!("Please report it to https://github.com/gfx-rs/wgpu");
+    #[cfg(feature = "internal_error_panic")]
+    panic!("Shader translation error for stage {stage:?}: {error}");
 }
