@@ -81,7 +81,6 @@ webgpu:shader,validation,expression,call,builtin,dot4I8Packed:* // 91%, missing 
 webgpu:shader,validation,expression,call,builtin,dot4U8Packed:* // 91%, missing const eval (#4507)
 webgpu:shader,validation,expression,call,builtin,extractBits:count_offset:* // 67%, `offset` + `count` out of range is not a pipeline creation error when they are override expressions
 webgpu:shader,validation,expression,call,builtin,faceForward:values:* // 78%, abstract-float operands are concretized to f32 rather than kept abstract, https://github.com/gfx-rs/wgpu/issues/7405
-webgpu:shader,validation,expression,call,builtin,fma:* // 85%, const eval issues
 webgpu:shader,validation,expression,call,builtin,frexp:* // 39%, const/override eval not supported
 webgpu:shader,validation,expression,call,builtin,insertBits:count_offset:* // 67%, `offset` + `count` out of range is not a pipeline creation error when they are override expressions
 webgpu:shader,validation,expression,call,builtin,inverseSqrt:* // 61%, const eval overflow for abstract/f16

@@ -4612,6 +4612,7 @@ fn const_eval_geometry_overflow() {
         "faceForward(vec2(1.0f, 0.0f), vec2(3.4e38f, 0.0f), vec2(3.4e38f, 0.0f))",
         "reflect(vec2(1.0f, 0.0f), vec2(3.4e38f, 0.0f))",
         "refract(vec2(1.0f, 0.0f), vec2(3.4e38f, 0.0f), 1.0f)",
+        "fma(3.4e38f, 3.4e38f, 0f)",
     ] {
         check_error_matches(&format!("const x = {expr};"), "operation overflowed");
     }
@@ -4626,6 +4627,22 @@ fn const_eval_geometry_overflow() {
         "refract(vec2(1.0, 0.0), vec2(3.4e38, 0.0), 1.0)",
     ] {
         check_error_matches(&format!("const x = {expr};"), "operation overflowed");
+    }
+
+    for expr in ["fma(300h, 300h, 0h)"] {
+        let input = format!("enable f16;\nconst x = {expr};");
+        let result = naga::front::wgsl::parse_str(&input);
+        assert!(
+            result.is_err(),
+            "expected `{expr}` to overflow, got {result:#?}"
+        );
+    }
+
+    // Values that do fit in the result type must still evaluate.
+    for expr in ["fma(2h, 3h, 1h) == 7h"] {
+        let input = format!("enable f16;\nconst_assert {expr};");
+        let result = naga::front::wgsl::parse_str(&input);
+        assert!(result.is_ok(), "expected `{expr}` to hold, got {result:#?}");
     }
 }
 

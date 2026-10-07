@@ -441,6 +441,7 @@ webgpu:shader,validation,expression,call,builtin,faceForward:must_use:*
 webgpu:shader,validation,expression,call,builtin,firstLeadingBit:*
 webgpu:shader,validation,expression,call,builtin,firstTrailingBit:*
 webgpu:shader,validation,expression,call,builtin,floor:*
+webgpu:shader,validation,expression,call,builtin,fma:*
 webgpu:shader,validation,expression,call,builtin,fract:*
 webgpu:shader,validation,expression,call,builtin,insertBits:must_use:*
 webgpu:shader,validation,expression,call,builtin,insertBits:typed_arguments:*
