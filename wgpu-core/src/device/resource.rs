@@ -4479,12 +4479,7 @@ impl Device {
             .create_compute_pipeline_or_error_inner(desc.clone())
             .unwrap_or_else(|err| {
                 if let pipeline::CreateComputePipelineError::Internal(ref error) = err {
-                    log::error!(
-                        "Shader translation error for stage {:?}: {}",
-                        wgt::ShaderStages::COMPUTE,
-                        error
-                    );
-                    log::error!("Please report it to https://github.com/gfx-rs/wgpu");
+                    report_shader_translation_error(wgt::ShaderStages::COMPUTE, error);
                 }
                 self.handle_error(
                     err,
@@ -4691,8 +4686,7 @@ impl Device {
             .create_render_pipeline_or_error_inner(desc.clone())
             .unwrap_or_else(|err| {
                 if let pipeline::CreateRenderPipelineError::Internal { stage, ref error } = err {
-                    log::error!("Shader translation error for stage {stage:?}: {error}");
-                    log::error!("Please report it to https://github.com/gfx-rs/wgpu");
+                    report_shader_translation_error(stage, error);
                 }
                 self.handle_error(err, desc.label.as_deref(), "Device::create_render_pipeline");
                 pipeline::RenderPipeline::invalid(self.clone(), desc.label.to_string())
@@ -5964,3 +5958,8 @@ impl Device {
 crate::impl_resource_type!(Device);
 crate::impl_labeled!(Device);
 crate::impl_storage_item!(Device);
+
+fn report_shader_translation_error(stage: wgt::ShaderStages, error: &str) {
+    log::error!("Shader translation error for stage {stage:?}: {error}");
+    log::error!("Please report it to https://github.com/gfx-rs/wgpu");
+}
