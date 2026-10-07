@@ -240,6 +240,7 @@ By @sagudev in [#10307](https://github.com/gfx-rs/wgpu/pull/10307).
 - Report a shader-creation error when const-evaluating these built-ins overflows the result type, instead of silently producing an infinity or NaN that backends emit as invalid source (such as `infh` or `NaNh` in HLSL). By @ErichDonGubler in [#10541](https://github.com/gfx-rs/wgpu/pull/10541):
   - `fma()`
   - `distance()`
+  - `cross()`
 
 #### Validation
 
