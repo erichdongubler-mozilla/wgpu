@@ -62,6 +62,11 @@ resource_log_info = []
 ## to the validation carried out at public APIs in all builds.
 strict_asserts = ["wgpu-types/strict_asserts"]
 
+## Panic on internal errors, which always indicate a bug in `wgpu`, rather than
+## reporting them. Used by the CTS runner, where a test that expects an error
+## cannot otherwise tell a correct rejection apart from such a bug.
+internal_error_panic = ["wgpu-hal/internal_error_panic"]
+
 #! ### Debugging
 # --------------------------------------------------------------------
 
