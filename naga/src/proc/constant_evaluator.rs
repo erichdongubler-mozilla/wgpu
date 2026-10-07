@@ -1772,7 +1772,14 @@ impl<'a> ConstantEvaluator<'a> {
                     self,
                     span,
                     [arg, arg1.unwrap(), arg2.unwrap()],
-                    |e1, e2, e3| { Ok([e1.mul_add(e2, e3)]) }
+                    |e1, e2, e3| {
+                        let result = e1.mul_add(e2, e3);
+                        if result.is_finite() {
+                            Ok([result])
+                        } else {
+                            Err(ConstantEvaluatorError::Overflow("fma".into()))
+                        }
+                    }
                 )
             }
             crate::MathFunction::Step => {

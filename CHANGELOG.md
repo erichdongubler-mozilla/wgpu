@@ -237,6 +237,8 @@ By @sagudev in [#10307](https://github.com/gfx-rs/wgpu/pull/10307).
 - Reject WGSL loads of structs and arrays that contain atomics, which previously caused a panic in the HLSL backend. By @drakeo338 in [#10458](https://github.com/gfx-rs/wgpu/issues/10458).
 - Panic when a SPIR-V's instruction's word count is greater than `u16::MAX`, instead of emitting a malformed instruction. By @ErichDonGubler in [#10537](https://github.com/gfx-rs/wgpu/pull/10537).
 - Accept a `ViewIndex` input declared as a signed integer in the SPIR-V frontend, as glslang and Slang emit it, by reading it as a `u32`. By @VoxelBoy in [#10568](https://github.com/gfx-rs/wgpu/pull/10568).
+- Report a shader-creation error when const-evaluating these built-ins overflows the result type, instead of silently producing an infinity or NaN that backends emit as invalid source (such as `infh` or `NaNh` in HLSL). By @ErichDonGubler in [#10541](https://github.com/gfx-rs/wgpu/pull/10541):
+  - `fma()`
 
 #### Validation
 
