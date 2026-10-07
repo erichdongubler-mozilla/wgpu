@@ -241,6 +241,7 @@ By @sagudev in [#10307](https://github.com/gfx-rs/wgpu/pull/10307).
   - `fma()`
   - `distance()`
   - `cross()`
+- Reject non-finite `f16` and abstract-float literals during constant evaluation. Infinities and NaNs were only checked at `f32` and `f64` width, so an `f16` one could reach a backend and be emitted as invalid source, and an abstract one could make a shader that the WGSL specification requires be rejected compile successfully. By @ErichDonGubler in [#?????](https://github.com/gfx-rs/wgpu/pull/?????).
 
 #### Validation
 
