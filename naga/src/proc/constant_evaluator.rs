@@ -2163,7 +2163,7 @@ impl<'a> ConstantEvaluator<'a> {
                 let p = cross_product(
                     [a0 as f64, a1 as f64, a2 as f64],
                     [b0 as f64, b1 as f64, b2 as f64],
-                );
+                )?;
                 [
                     Li::AbstractFloat(p[0]),
                     Li::AbstractFloat(p[1]),
@@ -2174,7 +2174,7 @@ impl<'a> ConstantEvaluator<'a> {
                 [Li::AbstractFloat(a0), Li::AbstractFloat(a1), Li::AbstractFloat(a2)],
                 [Li::AbstractFloat(b0), Li::AbstractFloat(b1), Li::AbstractFloat(b2)],
             ) => {
-                let p = cross_product([a0, a1, a2], [b0, b1, b2]);
+                let p = cross_product([a0, a1, a2], [b0, b1, b2])?;
                 [
                     Li::AbstractFloat(p[0]),
                     Li::AbstractFloat(p[1]),
@@ -2182,15 +2182,15 @@ impl<'a> ConstantEvaluator<'a> {
                 ]
             }
             ([Li::F16(a0), Li::F16(a1), Li::F16(a2)], [Li::F16(b0), Li::F16(b1), Li::F16(b2)]) => {
-                let p = cross_product([a0, a1, a2], [b0, b1, b2]);
+                let p = cross_product([a0, a1, a2], [b0, b1, b2])?;
                 [Li::F16(p[0]), Li::F16(p[1]), Li::F16(p[2])]
             }
             ([Li::F32(a0), Li::F32(a1), Li::F32(a2)], [Li::F32(b0), Li::F32(b1), Li::F32(b2)]) => {
-                let p = cross_product([a0, a1, a2], [b0, b1, b2]);
+                let p = cross_product([a0, a1, a2], [b0, b1, b2])?;
                 [Li::F32(p[0]), Li::F32(p[1]), Li::F32(p[2])]
             }
             ([Li::F64(a0), Li::F64(a1), Li::F64(a2)], [Li::F64(b0), Li::F64(b1), Li::F64(b2)]) => {
-                let p = cross_product([a0, a1, a2], [b0, b1, b2]);
+                let p = cross_product([a0, a1, a2], [b0, b1, b2])?;
                 [Li::F64(p[0]), Li::F64(p[1]), Li::F64(p[2])]
             }
             _ => return Err(ConstantEvaluatorError::InvalidMathArg),
@@ -4478,17 +4478,21 @@ impl TryFromAbstract<i64> for f16 {
     }
 }
 
-fn cross_product<T>(a: [T; 3], b: [T; 3]) -> [T; 3]
+/// The cross product of `a` and `b`, whose components must all be finite.
+fn cross_product<T>(a: [T; 3], b: [T; 3]) -> Result<[T; 3], ConstantEvaluatorError>
 where
-    T: Copy,
-    T: core::ops::Mul<T, Output = T>,
-    T: core::ops::Sub<T, Output = T>,
+    T: num_traits::Float,
 {
-    [
+    let p = [
         a[1] * b[2] - a[2] * b[1],
         a[2] * b[0] - a[0] * b[2],
         a[0] * b[1] - a[1] * b[0],
-    ]
+    ];
+    if p.iter().all(|c| c.is_finite()) {
+        Ok(p)
+    } else {
+        Err(ConstantEvaluatorError::Overflow("cross".into()))
+    }
 }
 
 #[cfg(test)]
