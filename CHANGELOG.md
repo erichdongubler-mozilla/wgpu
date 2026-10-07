@@ -211,6 +211,7 @@ By @sagudev in [#10109](https://github.com/gfx-rs/wgpu/pull/10109).
 - Implement constant evaluation of the `extractBits`, `insertBits`, `faceForward`, `reflect`, and `refract` built-in functions. Evaluates expression at compile time to report issues early like `offset` and `count` selecting bits beyond the width of the data. By @MinerSheep in [#10258](https://github.com/gfx-rs/wgpu/pull/10258).
 - Report a shader-creation error when const-evaluating these built-ins overflows the result type, instead of silently producing an infinity or NaN that backends emit as invalid source (such as `infh` or `NaNh` in HLSL). By @ErichDonGubler in [#10541](https://github.com/gfx-rs/wgpu/pull/10541):
   - `fma()`
+  - `distance()`
 
 #### Validation
 

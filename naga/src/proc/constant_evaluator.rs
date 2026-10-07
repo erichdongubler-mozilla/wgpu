@@ -1960,12 +1960,13 @@ impl<'a> ConstantEvaluator<'a> {
                     return Err(ConstantEvaluatorError::InvalidMathArg);
                 }
 
-                fn float_distance<F>(a: &[F], b: &[F]) -> F
+                /// The distance between `a` and `b`, which must be finite.
+                fn float_distance<F>(a: &[F], b: &[F]) -> Result<F, ConstantEvaluatorError>
                 where
                     F: core::ops::Mul<F>,
                     F: num_traits::Float + iter::Sum + core::ops::Sub,
                 {
-                    if a.len() == 1 {
+                    let result = if a.len() == 1 {
                         // Avoids possible overflow in squaring
                         (a[0] - b[0]).abs()
                     } else {
@@ -1975,10 +1976,15 @@ impl<'a> ConstantEvaluator<'a> {
                             .map(|ei| ei * ei)
                             .sum::<F>()
                             .sqrt()
+                    };
+                    if result.is_finite() {
+                        Ok(result)
+                    } else {
+                        Err(ConstantEvaluatorError::Overflow("distance".into()))
                     }
                 }
                 let result = match_literal_vector!(match (e1, e2) => Literal {
-                    Float => |e1, e2| { float_distance(e1, e2) },
+                    Float => |e1, e2| { float_distance(e1, e2)? },
                 })?;
                 self.register_evaluated_expr(Expression::Literal(result), span)
             }
