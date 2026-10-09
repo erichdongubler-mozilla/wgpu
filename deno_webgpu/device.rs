@@ -9,6 +9,7 @@ use deno_core::cppgc::{make_cppgc_object, SameObject};
 use deno_core::op2;
 use deno_core::v8;
 use deno_core::webidl::WebIdlInterfaceConverter;
+use deno_core::ExternalOpsTracker;
 use deno_core::GarbageCollected;
 use deno_error::JsErrorBox;
 use wgpu_core::binding_model::BindingResource;
@@ -56,6 +57,7 @@ pub struct GPUDevice {
 
   pub error_handler: super::error::ErrorHandler,
   pub lost_promise: v8::Global<v8::Promise>,
+  pub external_ops_tracker: ExternalOpsTracker,
 
   // Weak reference to the JS object so we can attach a finalizer.
   pub(crate) weak: std::sync::OnceLock<v8::Weak<v8::Object>>,
@@ -148,6 +150,18 @@ impl GPUDevice {
   #[undefined]
   fn destroy(&self) {
     self.wgpu_device.destroy();
+
+    // wgpu-core fires the device-lost callback from `maintain`, and nothing
+    // else polls after `destroy`, so `lost` would never resolve. Poll from a
+    // task, holding an external op ref so the event loop stays alive until it
+    // finishes.
+    let tracker = self.external_ops_tracker.clone();
+    let device = self.wgpu_device.clone();
+    tracker.ref_op();
+    deno_core::unsync::spawn(async move {
+      let _ = device.poll(wgpu_types::PollType::wait_indefinitely());
+      tracker.unref_op();
+    });
   }
 
   #[reentrant]

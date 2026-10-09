@@ -11,7 +11,6 @@ use deno_core::op2;
 use deno_core::v8;
 use deno_core::GarbageCollected;
 use deno_core::JsRuntime;
-use deno_core::OpState;
 use deno_core::V8CrossThreadTaskSpawner;
 use deno_core::WebIDL;
 use wgpu_types::DeviceLostReason;
@@ -122,7 +121,6 @@ impl GPUAdapter {
   #[global]
   fn request_device(
     &self,
-    state: &mut OpState,
     scope: &mut v8::HandleScope,
     #[webidl] descriptor: GPUDeviceDescriptor,
   ) -> Result<v8::Global<v8::Value>, CreateDeviceError> {
@@ -190,11 +188,15 @@ impl GPUAdapter {
 
     let lost_resolver = v8::PromiseResolver::new(scope).unwrap();
     let lost_promise = lost_resolver.get_promise(scope);
-    let cross_thread_spawner =
-      state.borrow::<V8CrossThreadTaskSpawner>().clone();
-    state
-      .borrow_mut::<LostPromiseResolverHM>()
-      .insert(wgpu_device_id, v8::Global::new(scope, lost_resolver));
+    let lost_resolver = v8::Global::new(scope, lost_resolver);
+    let cross_thread_spawner = {
+      let op_state = JsRuntime::op_state_from(&*scope);
+      let mut op_state = op_state.borrow_mut();
+      op_state
+        .borrow_mut::<LostPromiseResolverHM>()
+        .insert(wgpu_device_id, lost_resolver);
+      op_state.borrow::<V8CrossThreadTaskSpawner>().clone()
+    };
     let wake = Arc::new(Mutex::new(move |reason: DeviceLostReason| {
       cross_thread_spawner.spawn(move |scope| {
         let lost_resolver = JsRuntime::op_state_from(scope)
@@ -229,6 +231,10 @@ impl GPUAdapter {
     );
     let queue_obj = v8::Global::new(scope, queue_obj);
 
+    let external_ops_tracker = JsRuntime::op_state_from(&*scope)
+      .borrow()
+      .external_ops_tracker
+      .clone();
     let device = GPUDevice {
       wgpu_device: wgpu_device.clone(),
       queue_obj,
@@ -236,18 +242,26 @@ impl GPUAdapter {
       error_handler,
       wgpu_adapter: self.wgpu_adapter.clone(),
       lost_promise: v8::Global::new(scope, lost_promise),
+      external_ops_tracker,
       limits: SameObject::new(),
       features: SameObject::new(),
       weak: std::sync::OnceLock::new(),
     };
     let device = deno_core::cppgc::make_cppgc_object(scope, device);
     let weak_device = v8::Weak::new(scope, device);
-    let event_target_setup = state.borrow::<crate::EventTargetSetup>();
-    let webidl_brand = v8::Local::new(scope, event_target_setup.brand.clone());
+    let (brand, set_event_target_data) = {
+      let op_state = JsRuntime::op_state_from(&*scope);
+      let op_state = op_state.borrow();
+      let event_target_setup = op_state.borrow::<crate::EventTargetSetup>();
+      (
+        event_target_setup.brand.clone(),
+        event_target_setup.set_event_target_data.clone(),
+      )
+    };
+    let webidl_brand = v8::Local::new(scope, brand);
     device.set(scope, webidl_brand, webidl_brand);
     let set_event_target_data =
-      v8::Local::new(scope, event_target_setup.set_event_target_data.clone())
-        .cast::<v8::Function>();
+      v8::Local::new(scope, set_event_target_data).cast::<v8::Function>();
     let null = v8::null(scope);
     set_event_target_data.call(scope, null.into(), &[device.into()]);
 
@@ -276,11 +290,14 @@ impl GPUAdapter {
       deno_core::cppgc::try_unwrap_cppgc_object::<GPUDevice>(scope, device)
         .unwrap();
 
-    let cross_thread_spawner =
-      state.borrow::<V8CrossThreadTaskSpawner>().clone();
-    state
-      .borrow_mut::<WeakDeviceHM>()
-      .insert(wgpu_device_id, weak_device);
+    let cross_thread_spawner = {
+      let op_state = JsRuntime::op_state_from(&*scope);
+      let mut op_state = op_state.borrow_mut();
+      op_state
+        .borrow_mut::<WeakDeviceHM>()
+        .insert(wgpu_device_id, weak_device);
+      op_state.borrow::<V8CrossThreadTaskSpawner>().clone()
+    };
     let wake = Arc::new(Mutex::new(move |error: wgpu_types::error::Error| {
       cross_thread_spawner.spawn(move |scope| {
         let state = JsRuntime::op_state_from(&*scope);

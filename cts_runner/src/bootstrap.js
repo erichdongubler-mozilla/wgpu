@@ -251,10 +251,14 @@ webgpu.GPUAdapter.prototype.requestDevice = function (desc) {
 
   return requestDevice.call(this, desc).then((device) => {
     device.onuncapturederror = (event) => {
-      core.print(
-        "cts_runner caught WebGPU error: " + event.error.message + "\n",
-        true,
-      );
+      // An error class with no `core.registerErrorBuilder` entry arrives here
+      // as `undefined`, which would turn this report into a `TypeError`.
+      const { error } = event;
+      const description =
+        error === undefined
+          ? "<error class not registered with deno_core>"
+          : (error.message ?? `${error.constructor.name} without a message`);
+      core.print("cts_runner caught WebGPU error: " + description + "\n", true);
     };
     return device;
   });
@@ -299,21 +303,33 @@ core.registerErrorBuilder(
 core.registerErrorBuilder(
   "DOMExceptionAbortError",
   function DOMExceptionAbortError(msg) {
-    return new domException.DOMException(msg, "AbortError");
+    return new DOMException(msg, "AbortError");
   },
 );
 core.registerErrorBuilder(
   "DOMExceptionInvalidCharacterError",
   function DOMExceptionInvalidCharacterError(msg) {
-    return new domException.DOMException(msg, "InvalidCharacterError");
+    return new DOMException(msg, "InvalidCharacterError");
   },
 );
 core.registerErrorBuilder(
   "DOMExceptionDataError",
   function DOMExceptionDataError(msg) {
-    return new domException.DOMException(msg, "DataError");
+    return new DOMException(msg, "DataError");
   },
 );
+core.registerErrorBuilder(
+  "DOMExceptionInvalidStateError",
+  function DOMExceptionInvalidStateError(msg) {
+    return new DOMException(msg, "InvalidStateError");
+  },
+);
+// `GPUError::Lost`'s class. wgpu-core is expected to swallow device-lost
+// errors before they reach here, but an unregistered class silently becomes
+// `undefined` rather than an error, so register it to keep it diagnosable.
+core.registerErrorBuilder("UNREACHABLE", function UNREACHABLE(msg) {
+  return new Error(`device lost reported as a GPUError: ${msg}`);
+});
 
 let hasBootstrapped = false;
 
