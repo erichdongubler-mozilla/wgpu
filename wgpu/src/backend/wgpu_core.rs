@@ -1744,7 +1744,7 @@ impl dispatch::QueueInterface for CoreQueue {
 
         drop(temp_command_buffers);
 
-        index
+        index.unwrap_or_else(|index| index)
     }
 
     fn get_timestamp_period(&self) -> f32 {
