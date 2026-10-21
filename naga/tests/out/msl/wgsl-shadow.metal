@@ -45,7 +45,7 @@ float fetch_shadow(
     metal::float2 flip_correction = metal::float2(0.5, -0.5);
     float proj_correction = 1.0 / homogeneous_coords.w;
     metal::float2 light_local = ((homogeneous_coords.xy * flip_correction) * proj_correction) + metal::float2(0.5, 0.5);
-    float _e24 = t_shadow.sample_compare(sampler_shadow, light_local, static_cast<int>(light_id), homogeneous_coords.z * proj_correction);
+    float _e24 = t_shadow.sample_compare(sampler_shadow, light_local, metal::min(uint(metal::max(static_cast<int>(light_id), 0)), t_shadow.get_array_size() - 1), homogeneous_coords.z * proj_correction);
     return _e24;
 }
 

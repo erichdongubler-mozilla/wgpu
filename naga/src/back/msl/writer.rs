@@ -1313,6 +1313,41 @@ impl<W: Write> Writer<W> {
         Ok(())
     }
 
+    /// Emit the array index for a texture sampling operation, clamped to
+    /// `[0, get_array_size() - 1]` as the WGSL sampling built-ins require.
+    ///
+    /// The clamp has to happen before the index reaches Metal's `uint` array
+    /// slot: converting a negative `i32` first would wrap it to a huge value
+    /// and select the last layer rather than the first.
+    fn put_image_sample_array_index(
+        &mut self,
+        image: Handle<crate::Expression>,
+        index: Handle<crate::Expression>,
+        context: &ExpressionContext,
+    ) -> BackendResult {
+        let is_signed = match *context.resolve_type(index) {
+            crate::TypeInner::Scalar(scalar) => scalar.kind == crate::ScalarKind::Sint,
+            ref other => {
+                return Err(Error::GenericValidation(format!(
+                    "Invalid type for image array index: {other:?}"
+                )))
+            }
+        };
+
+        write!(self.out, "{NAMESPACE}::min(")?;
+        if is_signed {
+            write!(self.out, "uint({NAMESPACE}::max(")?;
+            self.put_expression(index, context, true)?;
+            write!(self.out, ", 0))")?;
+        } else {
+            self.put_expression(index, context, true)?;
+        }
+        write!(self.out, ", ")?;
+        self.put_expression(image, context, false)?;
+        write!(self.out, ".get_array_size() - 1)")?;
+        Ok(())
+    }
+
     fn put_image_sample_level(
         &mut self,
         image: Handle<crate::Expression>,
@@ -2301,7 +2336,7 @@ impl<W: Write> Writer<W> {
                 self.put_expression(coordinate, context, true)?;
                 if let Some(expr) = array_index {
                     write!(self.out, ", ")?;
-                    self.put_expression(expr, context, true)?;
+                    self.put_image_sample_array_index(image, expr, context)?;
                 }
                 if let Some(dref) = depth_ref {
                     write!(self.out, ", ")?;
