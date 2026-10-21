@@ -139,6 +139,15 @@ fn texture_sample() -> @location(0) vec4<f32> {
     a += textureSampleLevel(image_2d_array, sampler_reg, tc, 0, level);
     a += textureSampleLevel(image_2d_array, sampler_reg, tc, 0, level, offset);
     a += textureSampleBias(image_2d_array, sampler_reg, tc, 0, 2.0, offset);
+    // Array indices that are not a literal zero: backends must clamp these to
+    // the valid layer range, and a dynamic index cannot be folded away.
+    let layer = i32(textureNumLayers(image_2d_array)) - 1;
+    a += textureSample(image_2d_array, sampler_reg, tc, layer);
+    a += textureSample(image_2d_array, sampler_reg, tc, u32(layer));
+    a += textureSample(image_2d_array, sampler_reg, tc, 1);
+    a += textureSample(image_2d_array, sampler_reg, tc, 1u);
+    a += textureSample(image_2d_array, sampler_reg, tc, -1);
+    a += textureSampleGrad(image_cube_array, sampler_reg, tc3, layer, tc3, tc3);
     a += textureSampleGrad(image_cube, sampler_reg, tc3, tc3, tc3);
     a += textureSample(image_cube_array, sampler_reg, tc3, 0u);
     a += textureSampleLevel(image_cube_array, sampler_reg, tc3, 0u, level);
