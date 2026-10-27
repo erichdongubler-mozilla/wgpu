@@ -63,6 +63,11 @@ struct Pool {
 }
 
 impl Pool {
+    /// Whether this pool has no live sets, and so may be reset.
+    fn is_empty(&self) -> bool {
+        self.available == self.capacity
+    }
+
     unsafe fn destroy(self, device: &ash::Device) {
         unsafe { device.destroy_descriptor_pool(self.raw, None) };
     }
@@ -237,7 +242,7 @@ impl DescriptorAllocator {
                     // implicitly frees all of the pool's sets, so only reset a
                     // pool that has no live sets.
                     let pool = &bucket.pools[index];
-                    if pool.available == pool.capacity {
+                    if pool.is_empty() {
                         let reset_result = unsafe {
                             device.reset_descriptor_pool(
                                 pool.raw,
@@ -307,7 +312,7 @@ impl DescriptorAllocator {
 
         if !pool.fragmented {
             bucket.available_sets += 1;
-        } else if pool.available == pool.capacity {
+        } else if pool.is_empty() {
             // A fragmented pool's free sets are unusable until it is reset, so
             // they do not count towards `available_sets`.
             // On Mali, freeing sets does not make such a pool usable again;
@@ -331,14 +336,11 @@ impl DescriptorAllocator {
         // in other pools.
         // Note that this logic will never destroy the last pool.
         let last = bucket.pools.last().unwrap();
-        let last_available = last.available;
         let last_capacity = last.capacity;
         // Only a non-fragmented pool contributes its capacity to
         // `available_sets`.
         let last_contribution = if last.fragmented { 0 } else { last_capacity };
-        if last_available == last_capacity
-            && bucket.available_sets - last_contribution > last_capacity / 4
-        {
+        if last.is_empty() && bucket.available_sets - last_contribution > last_capacity / 4 {
             let pool = bucket.pools.pop().unwrap();
             bucket.available_sets -= last_contribution;
             unsafe { pool.destroy(device) };
