@@ -52,32 +52,29 @@ struct BucketKey {
     update_after_bind: bool,
 }
 
+/// Whether a [`Pool`] can serve allocations, and why not when it cannot.
+#[derive(Clone, Copy, Debug)]
+enum PoolState {
+    /// The pool can serve allocations.
+    Ready,
+
+    /// Set when the driver refused to allocate from this pool despite it
+    /// having free capacity, making `alloc` skip it until the pool is empty
+    /// again and can be reset.
+    Fragmented,
+}
+
 struct Pool {
     raw: vk::DescriptorPool,
     capacity: u32,
     available: u32,
-    /// Set when the driver refused to allocate from this pool despite it
-    /// having free capacity, making `alloc` skip it until the pool is empty
-    /// again and can be reset.
-    fragmented: bool,
+    state: PoolState,
 }
 
 impl Pool {
-    /// How many of this pool's free sets count towards [`Bucket::available_sets`].
-    ///
-    /// A pool that cannot serve allocations contributes nothing, however many of its sets are
-    /// free.
-    fn available_contribution(&self) -> u32 {
-        if self.fragmented {
-            0
-        } else {
-            self.available
-        }
-    }
-
     /// Whether [`DescriptorAllocator::alloc`] may take a set from this pool.
     fn is_allocatable(&self) -> bool {
-        !self.fragmented && self.available != 0
+        matches!(self.state, PoolState::Ready) && self.available != 0
     }
 
     /// Whether this pool has no live sets, and so may be reset.
@@ -85,20 +82,37 @@ impl Pool {
         self.available == self.capacity
     }
 
+    /// Whether this pool has been retired from allocation but could be returned to service by
+    /// [`Pool::try_reset`].
+    fn needs_reset(&self) -> bool {
+        matches!(self.state, PoolState::Fragmented)
+    }
+
+    /// How many of this pool's free sets count towards [`Bucket::available_sets`].
+    ///
+    /// A pool that cannot serve allocations contributes nothing, however many of its sets are
+    /// free.
+    fn available_contribution(&self) -> u32 {
+        match self.state {
+            PoolState::Ready => self.available,
+            PoolState::Fragmented => 0,
+        }
+    }
+
     /// Retire this pool because the driver reported a fragmentation failure that the Vulkan
     /// specification says cannot happen for these pools.
     fn mark_fragmented(&mut self) {
-        assert!(!self.fragmented);
+        assert!(matches!(self.state, PoolState::Ready));
         log::debug!(
             "Retiring fragmented descriptor pool ({}/{} sets free), retrying on another pool",
             self.available,
             self.capacity,
         );
-        self.fragmented = true;
+        self.state = PoolState::Fragmented;
     }
 
-    /// Try to reset this pool. If resetting the pool succeeded, return the pool to service and
-    /// return `true`. Otherwise, return `false`.
+    /// Try to reset this pool. If resetting the pool succeeded, transition to [`PoolState::Ready`]
+    /// and return `true`. Otherwise, return `false`.
     ///
     /// Resetting implicitly frees every set allocated from the pool, so this must be empty.
     ///
@@ -113,7 +127,7 @@ impl Pool {
         if reset.is_err() {
             return false;
         }
-        self.fragmented = false;
+        self.state = PoolState::Ready;
         true
     }
 
@@ -343,11 +357,7 @@ impl DescriptorAllocator {
 
         pool.available += 1;
 
-        if pool.fragmented && pool.is_empty() {
-            // A fragmented pool's free sets are unusable until it is reset, so
-            // they do not count towards `available_sets`.
-            // On Mali, freeing sets does not make such a pool usable again;
-            // resetting it is what does, and that is only safe once no sets are live.
+        if pool.needs_reset() && pool.is_empty() {
             unsafe { pool.try_reset(device) };
         }
         bucket.allocated_sets -= 1;
@@ -362,7 +372,7 @@ impl DescriptorAllocator {
         // Note that this logic will never destroy the last pool.
         let last = bucket.pools.last().unwrap();
         let available_in_other_pools = bucket.available_sets() - last.available_contribution();
-        if last.is_empty() && available_in_other_pools > last.capacity / 4 {
+        if last.available == last.capacity && available_in_other_pools > last.capacity / 4 {
             let pool = bucket.pools.pop().unwrap();
             unsafe { pool.destroy(device) };
         }
@@ -453,6 +463,6 @@ fn create_descriptor_pool(
         raw,
         capacity,
         available: capacity,
-        fragmented: false,
+        state: PoolState::Ready,
     })
 }
