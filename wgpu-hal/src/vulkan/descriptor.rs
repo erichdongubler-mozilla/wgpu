@@ -63,6 +63,11 @@ struct Pool {
 }
 
 impl Pool {
+    /// Whether [`DescriptorAllocator::alloc`] may take a set from this pool.
+    fn is_allocatable(&self) -> bool {
+        !self.fragmented && self.available != 0
+    }
+
     /// Whether this pool has no live sets, and so may be reset.
     fn is_empty(&self) -> bool {
         self.available == self.capacity
@@ -189,10 +194,7 @@ impl DescriptorAllocator {
         // Prefer smaller/older/fuller pools for new allocations to prevent
         // fragmentation and possibly fragmentation of hardware resources
         // (VK_ERROR_FRAGMENTATION)
-        let mut candidate = bucket
-            .pools
-            .iter()
-            .position(|pool| !pool.fragmented && pool.available != 0);
+        let mut candidate = bucket.pools.iter().position(Pool::is_allocatable);
 
         let (raw, pool_index) = loop {
             let index = match candidate {
@@ -268,10 +270,7 @@ impl DescriptorAllocator {
                     log::debug!(
                         "Retiring fragmented descriptor pool ({available}/{capacity} sets free), retrying on another pool"
                     );
-                    candidate = bucket
-                        .pools
-                        .iter()
-                        .position(|pool| !pool.fragmented && pool.available != 0);
+                    candidate = bucket.pools.iter().position(Pool::is_allocatable);
                 }
                 Err(err) => return Err(super::map_host_device_oom_err(err)),
             }
