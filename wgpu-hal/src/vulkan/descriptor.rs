@@ -139,7 +139,10 @@ impl Pool {
         let reset = unsafe {
             device.reset_descriptor_pool(self.raw, vk::DescriptorPoolResetFlags::empty())
         };
-        if reset.is_err() {
+        if let Err(err) = reset {
+            log::error!(
+                "`vkResetDescriptorPool` failed unexpectedly, leaving the pool retired: {err}"
+            );
             return false;
         }
         self.state = PoolState::Ready;
