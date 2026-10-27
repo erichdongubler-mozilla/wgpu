@@ -149,6 +149,21 @@ impl Pool {
         true
     }
 
+    /// Free `set` back to this pool.
+    unsafe fn free_set(&mut self, device: &ash::Device, set: vk::DescriptorSet) {
+        let result = unsafe { device.free_descriptor_sets(self.raw, core::slice::from_ref(&set)) };
+        if let Err(err) = result {
+            // vkFreeDescriptorSets is documented to return:
+            // - VK_ERROR_UNKNOWN
+            // - VK_ERROR_VALIDATION_FAILED (we shouldn't encounter this one)
+            // wgpu-hal doesn't currently report errors in destroy functions.
+            // Panic here for now. It might be ok to ignore the error but the
+            // proper solution would probably be to lose the device.
+            panic!("vkFreeDescriptorSets error: {err}, please report this error");
+        }
+        self.available += 1;
+    }
+
     unsafe fn destroy(self, device: &ash::Device) {
         unsafe { device.destroy_descriptor_pool(self.raw, None) };
     }
@@ -361,19 +376,7 @@ impl DescriptorAllocator {
         let bucket = self.buckets.get_mut(&set.bucket_key).unwrap();
         let pool = bucket.pools.get_mut(set.pool_index).unwrap();
 
-        let result =
-            unsafe { device.free_descriptor_sets(pool.raw, core::slice::from_ref(&set.raw())) };
-        if let Err(err) = result {
-            // vkFreeDescriptorSets is documented to return:
-            // - VK_ERROR_UNKNOWN
-            // - VK_ERROR_VALIDATION_FAILED (we shouldn't encounter this one)
-            // wgpu-hal doesn't currently report errors in destroy functions.
-            // Panic here for now. It might be ok to ignore the error but the
-            // proper solution would probably be to lose the device.
-            panic!("vkFreeDescriptorSets error: {err}, please report this error");
-        }
-
-        pool.available += 1;
+        unsafe { pool.free_set(device, set.raw()) };
 
         if pool.needs_reset() && pool.is_empty() {
             unsafe { pool.try_reset(device) };
