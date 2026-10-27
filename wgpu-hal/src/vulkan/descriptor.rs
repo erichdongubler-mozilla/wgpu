@@ -73,6 +73,26 @@ impl Pool {
         self.available == self.capacity
     }
 
+    /// Try to reset this pool. If resetting the pool succeeded, return the pool to service and
+    /// return `true`. Otherwise, return `false`.
+    ///
+    /// Resetting implicitly frees every set allocated from the pool, so this must be empty.
+    ///
+    /// # Panics
+    ///
+    /// Panics if [`Pool::is_empty`] is `false`.
+    unsafe fn try_reset(&mut self, device: &ash::Device) -> bool {
+        assert!(self.is_empty());
+        let reset = unsafe {
+            device.reset_descriptor_pool(self.raw, vk::DescriptorPoolResetFlags::empty())
+        };
+        if reset.is_err() {
+            return false;
+        }
+        self.fragmented = false;
+        true
+    }
+
     unsafe fn destroy(self, device: &ash::Device) {
         unsafe { device.destroy_descriptor_pool(self.raw, None) };
     }
@@ -243,23 +263,15 @@ impl DescriptorAllocator {
                     // fragmentation cannot cause an allocation failure, but it
                     // implicitly frees all of the pool's sets, so only reset a
                     // pool that has no live sets.
-                    let pool = &bucket.pools[index];
-                    if pool.is_empty() {
-                        let reset_result = unsafe {
-                            device.reset_descriptor_pool(
-                                pool.raw,
-                                vk::DescriptorPoolResetFlags::empty(),
-                            )
-                        };
-                        if reset_result.is_ok() {
-                            match unsafe { device.allocate_descriptor_sets(&vk_info) } {
-                                Ok(sets) => break (sets[0], index),
-                                Err(
-                                    vk::Result::ERROR_FRAGMENTED_POOL
-                                    | vk::Result::ERROR_OUT_OF_POOL_MEMORY,
-                                ) => {}
-                                Err(err) => return Err(super::map_host_device_oom_err(err)),
-                            }
+                    let pool = &mut bucket.pools[index];
+                    if pool.is_empty() && unsafe { pool.try_reset(device) } {
+                        match unsafe { device.allocate_descriptor_sets(&vk_info) } {
+                            Ok(sets) => break (sets[0], index),
+                            Err(
+                                vk::Result::ERROR_FRAGMENTED_POOL
+                                | vk::Result::ERROR_OUT_OF_POOL_MEMORY,
+                            ) => {}
+                            Err(err) => return Err(super::map_host_device_oom_err(err)),
                         }
                     }
 
@@ -316,11 +328,7 @@ impl DescriptorAllocator {
             // they do not count towards `available_sets`.
             // On Mali, freeing sets does not make such a pool usable again;
             // resetting it is what does, and that is only safe once no sets are live.
-            let reset_result = unsafe {
-                device.reset_descriptor_pool(pool.raw, vk::DescriptorPoolResetFlags::empty())
-            };
-            if reset_result.is_ok() {
-                pool.fragmented = false;
+            if unsafe { pool.try_reset(device) } {
                 bucket.available_sets += pool.capacity;
             }
         }
