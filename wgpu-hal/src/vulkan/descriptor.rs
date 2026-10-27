@@ -73,6 +73,18 @@ impl Pool {
         self.available == self.capacity
     }
 
+    /// Retire this pool because the driver reported a fragmentation failure that the Vulkan
+    /// specification says cannot happen for these pools.
+    fn mark_fragmented(&mut self) {
+        assert!(!self.fragmented);
+        log::debug!(
+            "Retiring fragmented descriptor pool ({}/{} sets free), retrying on another pool",
+            self.available,
+            self.capacity,
+        );
+        self.fragmented = true;
+    }
+
     /// Try to reset this pool. If resetting the pool succeeded, return the pool to service and
     /// return `true`. Otherwise, return `false`.
     ///
@@ -276,12 +288,8 @@ impl DescriptorAllocator {
                     }
 
                     let available = bucket.pools[index].available;
-                    let capacity = bucket.pools[index].capacity;
-                    bucket.pools[index].fragmented = true;
+                    bucket.pools[index].mark_fragmented();
                     bucket.available_sets -= available;
-                    log::debug!(
-                        "Retiring fragmented descriptor pool ({available}/{capacity} sets free), retrying on another pool"
-                    );
                     candidate = bucket.pools.iter().position(Pool::is_allocatable);
                 }
                 Err(err) => return Err(super::map_host_device_oom_err(err)),
