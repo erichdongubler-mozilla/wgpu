@@ -53,15 +53,30 @@ struct BucketKey {
 }
 
 /// Whether a [`Pool`] can serve allocations, and why not when it cannot.
+///
+/// Every state other than [`Ready`] exists for a driver that does not behave the way the Vulkan
+/// specification requires. They are named for the workarounds that motivate them rather than for
+/// some general notion of an unusable pool, because what the allocator may still do with the pool
+/// differs between them.
+///
+/// [`Ready`]: PoolState::Ready
 #[derive(Clone, Copy, Debug)]
 enum PoolState {
     /// The pool can serve allocations.
     Ready,
 
-    /// Set when the driver refused to allocate from this pool despite it
-    /// having free capacity, making `alloc` skip it until the pool is empty
-    /// again and can be reset.
-    Fragmented,
+    /// `vkAllocateDescriptorSets` failed with `VK_ERROR_FRAGMENTED_POOL` or
+    /// `VK_ERROR_OUT_OF_POOL_MEMORY` even though every set allocated from this pool requests the
+    /// same descriptor counts, which the specification says must not fail that way. Seen on Mali,
+    /// where freeing sets does not make the pool usable again but resetting it does.
+    ///
+    /// [`DescriptorAllocator::free`] returns the pool to [`Ready`] once it has no live sets,
+    /// which is the only point at which resetting it is safe.
+    ///
+    /// See <https://github.com/gfx-rs/wgpu/pull/10264>.
+    ///
+    /// [`Ready`]: PoolState::Ready
+    FragmentedUntilReset,
 }
 
 struct Pool {
@@ -85,7 +100,7 @@ impl Pool {
     /// Whether this pool has been retired from allocation but could be returned to service by
     /// [`Pool::try_reset`].
     fn needs_reset(&self) -> bool {
-        matches!(self.state, PoolState::Fragmented)
+        matches!(self.state, PoolState::FragmentedUntilReset)
     }
 
     /// How many of this pool's free sets count towards [`Bucket::available_sets`].
@@ -95,7 +110,7 @@ impl Pool {
     fn available_contribution(&self) -> u32 {
         match self.state {
             PoolState::Ready => self.available,
-            PoolState::Fragmented => 0,
+            PoolState::FragmentedUntilReset => 0,
         }
     }
 
@@ -108,7 +123,7 @@ impl Pool {
             self.available,
             self.capacity,
         );
-        self.state = PoolState::Fragmented;
+        self.state = PoolState::FragmentedUntilReset;
     }
 
     /// Try to reset this pool. If resetting the pool succeeded, transition to [`PoolState::Ready`]
