@@ -533,10 +533,10 @@ bitflags::bitflags!(
     #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
     pub struct Workarounds: u32 {
         /// Only generate SPIR-V for one entry point at a time.
-        const SEPARATE_ENTRY_POINTS = 0x1;
+        const SEPARATE_ENTRY_POINTS = 1 << 0;
         /// Qualcomm OOMs when there are zero color attachments but a non-null pointer
         /// to a subpass resolve attachment array. This nulls out that pointer in that case.
-        const EMPTY_RESOLVE_ATTACHMENT_LISTS = 0x2;
+        const EMPTY_RESOLVE_ATTACHMENT_LISTS = 1 << 1;
         /// If the following code returns false, then nvidia will end up filling the wrong range.
         ///
         /// ```skip
@@ -558,7 +558,7 @@ bitflags::bitflags!(
         ///
         /// As such, we need to make sure all calls to vkCmdFillBuffer are aligned to 16 bytes
         /// if they cover a range of 4096 bytes or more.
-        const FORCE_FILL_BUFFER_WITH_SIZE_GREATER_4096_ALIGNED_OFFSET_16 = 0x4;
+        const FORCE_FILL_BUFFER_WITH_SIZE_GREATER_4096_ALIGNED_OFFSET_16 = 1 << 2;
         /// On Imagination (PowerVR) drivers, a `vkAllocateDescriptorSets` call that fails with
         /// host or device OOM leaves a dangling pointer in the pool. Without interference, the
         /// chunk allocation path publishes the chunk before allocating it, and does not unpublish
@@ -569,7 +569,7 @@ bitflags::bitflags!(
         /// per device no matter how the caller chooses to treat an out-of-memory condition.
         ///
         /// See also <https://dawn-review.googlesource.com/c/dawn/+/334695>.
-        const LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM = 0x8;
+        const LEAK_AND_LOSE_DEVICE_ON_DESCRIPTOR_POOL_ALLOC_OOM = 1 << 3;
     }
 );
 
