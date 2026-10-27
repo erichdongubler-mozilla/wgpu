@@ -103,6 +103,17 @@ impl Pool {
         matches!(self.state, PoolState::FragmentedUntilReset)
     }
 
+    /// This pool's handle, or `None` if the driver must never see it again.
+    ///
+    /// Every Vulkan entry point that takes this pool goes through here, so that a state in which
+    /// the handle is unusable only has to be honored in one place rather than at each call site.
+    /// No current state withholds the handle.
+    fn raw_for_driver(&self) -> Option<vk::DescriptorPool> {
+        match self.state {
+            PoolState::Ready | PoolState::FragmentedUntilReset => Some(self.raw),
+        }
+    }
+
     /// How many of this pool's free sets count towards [`Bucket::available_sets`].
     ///
     /// A pool that cannot serve allocations contributes nothing, however many of its sets are
@@ -131,14 +142,19 @@ impl Pool {
     ///
     /// Resetting implicitly frees every set allocated from the pool, so this must be empty.
     ///
+    /// A pool the driver must not see again can never become ready, so this reports `false` for
+    /// one without calling into the driver.
+    ///
     /// # Panics
     ///
     /// Panics if [`Pool::is_empty`] is `false`.
     unsafe fn try_reset(&mut self, device: &ash::Device) -> bool {
         assert!(self.is_empty());
-        let reset = unsafe {
-            device.reset_descriptor_pool(self.raw, vk::DescriptorPoolResetFlags::empty())
+        let Some(raw) = self.raw_for_driver() else {
+            return false;
         };
+        let reset =
+            unsafe { device.reset_descriptor_pool(raw, vk::DescriptorPoolResetFlags::empty()) };
         if let Err(err) = reset {
             log::error!(
                 "`vkResetDescriptorPool` failed unexpectedly, leaving the pool retired: {err}"
@@ -151,21 +167,25 @@ impl Pool {
 
     /// Free `set` back to this pool.
     unsafe fn free_set(&mut self, device: &ash::Device, set: vk::DescriptorSet) {
-        let result = unsafe { device.free_descriptor_sets(self.raw, core::slice::from_ref(&set)) };
-        if let Err(err) = result {
-            // vkFreeDescriptorSets is documented to return:
-            // - VK_ERROR_UNKNOWN
-            // - VK_ERROR_VALIDATION_FAILED (we shouldn't encounter this one)
-            // wgpu-hal doesn't currently report errors in destroy functions.
-            // Panic here for now. It might be ok to ignore the error but the
-            // proper solution would probably be to lose the device.
-            panic!("vkFreeDescriptorSets error: {err}, please report this error");
+        if let Some(raw) = self.raw_for_driver() {
+            let result = unsafe { device.free_descriptor_sets(raw, core::slice::from_ref(&set)) };
+            if let Err(err) = result {
+                // vkFreeDescriptorSets is documented to return:
+                // - VK_ERROR_UNKNOWN
+                // - VK_ERROR_VALIDATION_FAILED (we shouldn't encounter this one)
+                // wgpu-hal doesn't currently report errors in destroy functions.
+                // Panic here for now. It might be ok to ignore the error but the
+                // proper solution would probably be to lose the device.
+                panic!("vkFreeDescriptorSets error: {err}, please report this error");
+            }
         }
         self.available += 1;
     }
 
     unsafe fn destroy(self, device: &ash::Device) {
-        unsafe { device.destroy_descriptor_pool(self.raw, None) };
+        if let Some(raw) = self.raw_for_driver() {
+            unsafe { device.destroy_descriptor_pool(raw, None) };
+        }
     }
 }
 
@@ -300,8 +320,13 @@ impl DescriptorAllocator {
             };
             let created_pool = candidate.is_none();
 
+            let Some(raw_pool) = bucket.pools[index].raw_for_driver() else {
+                // `candidate` only ever names an allocatable pool, and a pool this function just
+                // created is always `Ready`.
+                unreachable!("tried to allocate from a descriptor pool the driver cannot be given");
+            };
             let vk_info = vk::DescriptorSetAllocateInfo::default()
-                .descriptor_pool(bucket.pools[index].raw)
+                .descriptor_pool(raw_pool)
                 .set_layouts(core::slice::from_ref(&layout.raw));
 
             // From https://docs.vulkan.org/refpages/latest/refpages/source/VkDescriptorPoolCreateInfo.html#_description
