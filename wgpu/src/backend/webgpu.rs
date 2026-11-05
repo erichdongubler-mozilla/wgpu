@@ -1749,6 +1749,7 @@ impl dispatch::InstanceInterface for ContextWebGpu {
                     "immediate_address_space" => {
                         Some(crate::WgslLanguageFeatures::ImmediateAddressSpace)
                     }
+                    "atomic_vec2u_min_max" => Some(crate::WgslLanguageFeatures::AtomicVec2UMinMax),
                     _ => None,
                 })
                 .for_each(|wlf| {

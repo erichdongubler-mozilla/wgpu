@@ -21,6 +21,8 @@ bitflags::bitflags! {
         const PointerCompositeAccess = 1 << 3;
         /// <https://www.w3.org/TR/WGSL/#language_extension-immediate_address_space>
         const ImmediateAddressSpace = 1 << 4;
+        /// <https://gpuweb.github.io/gpuweb/wgsl/#language_extension-atomic_vec2u_min_max>
+        const AtomicVec2UMinMax = 1 << 5;
     }
 }
 
