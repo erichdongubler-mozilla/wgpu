@@ -1408,6 +1408,35 @@ impl<W: Write> Writer<W> {
             }
         };
 
+        // A literal index needs less than the full clamp. Anything at or below
+        // zero clamps to layer zero, and `get_array_size()` is at least one, so
+        // `min` can only pick zero as well. A positive literal still needs the
+        // `min`, since the layer count isn't known until run time, but never
+        // needs the `max`.
+        let literal = match context.function.expressions[index] {
+            crate::Expression::Literal(crate::Literal::I32(value)) => Some(i64::from(value)),
+            crate::Expression::Literal(crate::Literal::U32(value)) => Some(i64::from(value)),
+            _ => None,
+        };
+        match literal {
+            Some(value) if value <= 0 => return Ok(write!(self.out, "0u")?),
+            Some(_) => {
+                write!(self.out, "{NAMESPACE}::min(")?;
+                if is_signed {
+                    write!(self.out, "uint(")?;
+                }
+                self.put_expression(index, context, true)?;
+                if is_signed {
+                    write!(self.out, ")")?;
+                }
+                write!(self.out, ", ")?;
+                self.put_expression(image, context, false)?;
+                write!(self.out, ".get_array_size() - 1)")?;
+                return Ok(());
+            }
+            None => {}
+        }
+
         write!(self.out, "{NAMESPACE}::min(")?;
         if is_signed {
             write!(self.out, "uint({NAMESPACE}::max(")?;
