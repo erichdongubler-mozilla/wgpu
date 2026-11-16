@@ -26,6 +26,12 @@ struct Input2_ {
 
 groupshared uint output[1];
 
+struct VertexInput_vertex {
+    uint color_1 : LOC10;
+    uint instance_index_1 : SV_InstanceID;
+    uint vertex_index_1 : SV_VertexID;
+};
+
 struct VertexOutput_vertex {
     float _varying : LOC1;
     precise float4 position : SV_Position;
@@ -39,6 +45,19 @@ struct FragmentInput_fragment {
     uint sample_mask_1 : SV_Coverage;
 };
 
+struct ComputeInput_compute {
+    uint3 global_id_1 : SV_DispatchThreadID;
+    uint3 local_id_1 : SV_GroupThreadID;
+    uint local_index_1 : SV_GroupIndex;
+    uint3 wg_id_1 : SV_GroupID;
+    uint3 num_wgs_1 : SV_GroupID;
+};
+
+struct VertexInput_vertex_two_structs {
+    uint index_2 : SV_InstanceID;
+    uint index_1 : SV_VertexID;
+};
+
 VertexOutput ConstructVertexOutput(float4 arg0, float arg1) {
     VertexOutput ret = (VertexOutput)0;
     ret.position = arg0;
@@ -46,9 +65,12 @@ VertexOutput ConstructVertexOutput(float4 arg0, float arg1) {
     return ret;
 }
 
-VertexOutput_vertex vertex(uint vertex_index : SV_VertexID, uint instance_index : SV_InstanceID, uint color : LOC10)
+VertexOutput_vertex vertex(VertexInput_vertex vertexinput_vertex)
 {
-    uint tmp = (((_NagaConstants.first_vertex + vertex_index) + (_NagaConstants.first_instance + instance_index)) + color);
+    uint vertex_index = (_NagaConstants.first_vertex + vertexinput_vertex.vertex_index_1);
+    uint instance_index = (_NagaConstants.first_instance + vertexinput_vertex.instance_index_1);
+    uint color = vertexinput_vertex.color_1;
+    uint tmp = ((vertex_index + instance_index) + color);
     const VertexOutput vertexoutput = ConstructVertexOutput((1.0).xxxx, float(tmp));
     const VertexOutput_vertex vertexoutput_1 = { vertexoutput._varying, vertexoutput.position };
     return vertexoutput_1;
@@ -69,28 +91,35 @@ FragmentOutput fragment(FragmentInput_fragment fragmentinput_fragment)
     uint sample_index = fragmentinput_fragment.sample_index_1;
     uint sample_mask = fragmentinput_fragment.sample_mask_1;
     uint mask = (sample_mask & (1u << sample_index));
-    float color_1 = (front_facing ? 1.0 : 0.0);
-    const FragmentOutput fragmentoutput = ConstructFragmentOutput(in_._varying, mask, color_1);
+    float color_2 = (front_facing ? 1.0 : 0.0);
+    const FragmentOutput fragmentoutput = ConstructFragmentOutput(in_._varying, mask, color_2);
     return fragmentoutput;
 }
 
 [numthreads(1, 1, 1)]
-void compute(uint3 global_id : SV_DispatchThreadID, uint3 local_id : SV_GroupThreadID, uint local_index : SV_GroupIndex, uint3 wg_id : SV_GroupID, uint3 num_wgs : SV_GroupID)
+void compute(ComputeInput_compute computeinput_compute, uint local_invocation_index : SV_GroupIndex)
 {
     [loop]
-    for (uint zero_flat_index = local_index; zero_flat_index < 1u; zero_flat_index += 1u) {
+    for (uint zero_flat_index = local_invocation_index; zero_flat_index < 1u; zero_flat_index += 1u) {
         uint zero_index = zero_flat_index;
         output[zero_index] = (uint)0;
     }
     GroupMemoryBarrierWithGroupSync();
-    output[0] = ((((global_id.x + local_id.x) + local_index) + wg_id.x) + uint3(_NagaConstants.first_vertex, _NagaConstants.first_instance, _NagaConstants.other).x);
+    uint3 global_id = computeinput_compute.global_id_1;
+    uint3 local_id = computeinput_compute.local_id_1;
+    uint local_index = computeinput_compute.local_index_1;
+    uint3 wg_id = computeinput_compute.wg_id_1;
+    uint3 num_wgs = uint3(_NagaConstants.first_vertex, _NagaConstants.first_instance, _NagaConstants.other);
+    output[0] = ((((global_id.x + local_id.x) + local_index) + wg_id.x) + num_wgs.x);
     return;
 }
 
-precise float4 vertex_two_structs(Input1_ in1_, Input2_ in2_) : SV_Position
+precise float4 vertex_two_structs(VertexInput_vertex_two_structs vertexinput_vertex_two_structs) : SV_Position
 {
+    Input1_ in1_ = { (_NagaConstants.first_vertex + vertexinput_vertex_two_structs.index_1) };
+    Input2_ in2_ = { (_NagaConstants.first_instance + vertexinput_vertex_two_structs.index_2) };
     uint index = 2u;
 
     uint _e8 = index;
-    return float4(float((_NagaConstants.first_vertex + in1_.index)), float((_NagaConstants.first_instance + in2_.index)), float(_e8), 0.0);
+    return float4(float(in1_.index), float(in2_.index), float(_e8), 0.0);
 }

@@ -1,0 +1,28 @@
+(
+    vertex:[
+        (
+            entry_point:"vs_helper",
+            target_profile:"vs_5_1",
+        ),
+        (
+            entry_point:"vs_let",
+            target_profile:"vs_5_1",
+        ),
+    ],
+    fragment:[
+    ],
+    compute:[
+        (
+            entry_point:"cs",
+            target_profile:"cs_5_1",
+        ),
+        (
+            entry_point:"cs_struct",
+            target_profile:"cs_5_1",
+        ),
+    ],
+    task:[
+    ],
+    mesh:[
+    ],
+)

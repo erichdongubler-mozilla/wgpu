@@ -1,0 +1,6 @@
+capabilities = "MESH_SHADER"
+targets = "HLSL"
+
+[hlsl]
+shader_model = "V6_5"
+special_constants_binding = { register = 0, space = 1 }

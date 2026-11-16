@@ -253,6 +253,7 @@ By @alextechcc in [#8014](https://github.com/gfx-rs/wgpu/pull/8014).
 - Added `naga::valid::Capabilities::LINEAR_INTERPOLATION`, which is now required in order to use `@interpolate(linear)`. By @emilk in [#9972](https://github.com/gfx-rs/wgpu/pull/9972).
 - The GLSL backend's `MissingFeatures` error now names the GLSL version that lacks the features, e.g. `GLSL 300 es doesn't support the required feature(s): NOPERSPECTIVE_QUALIFIER`. By @emilk in [#9972](https://github.com/gfx-rs/wgpu/pull/9972).
 - Bit reinterpretation is now represented in the Naga IR by the new `naga::ir::Expression::Bitcast`, which names its result type. `naga::ir::Expression::As` now only converts, and its `kind` and `convert` fields are replaced by `target: Scalar`. By @DouglasDwyer in [#10613](https://github.com/gfx-rs/wgpu/pull/10613).
+- Removed `naga::back::FunctionCtx::is_fixed_function_input`, which is no longer used by any backend. By @ErichDonGubler in [#4564](https://github.com/gfx-rs/wgpu/issues/4564).
 
 #### Hal
 
@@ -331,6 +332,7 @@ By @alextechcc in [#8014](https://github.com/gfx-rs/wgpu/pull/8014).
 
 - Fix `Module::doc_comments`'s `struct_members` keys being off by the number of undocumented members preceding a documented one, so doc comments on struct members were attached to the wrong member. By @atirna in [#10249](https://github.com/gfx-rs/wgpu/issues/10249).
 - Replace embedded NUL characters with `?` when writing debug strings to SPIR-V. By @andyleiserson in [#9904](https://github.com/gfx-rs/wgpu/pull/9904).
+- Fix HLSL output for `@builtin(vertex_index)` and `@builtin(instance_index)` missing the draw's first vertex/instance (or adding it twice) when read through a helper function or a `let`. `@builtin(num_workgroups)` had a similar issue. By @ErichDonGubler in [#4564](https://github.com/gfx-rs/wgpu/issues/4564).
 - Fix invalid HLSL generated for `textureSampleLevel` with non-2D textures. By @mvanhorn in [#9717](https://github.com/gfx-rs/wgpu/issues/9717).
 - Reject return types on compute shader entrypoints. By @ErichDonGubler in [#10026](https://github.com/gfx-rs/wgpu/pull/10026).
 - Reject `@location(…)`s in compute shaders. By @ErichDonGubler in [#10026](https://github.com/gfx-rs/wgpu/pull/10026).

@@ -128,6 +128,18 @@ pub(super) struct NestedEntryPointArgs {
     pub local_invocation_index: String,
 }
 
+/// Built-ins that are emulated or offset using the special constants buffer.
+const fn is_special_constant_builtin_binding(binding: &Option<crate::Binding>) -> bool {
+    matches!(
+        *binding,
+        Some(crate::Binding::BuiltIn(
+            crate::BuiltIn::VertexIndex
+                | crate::BuiltIn::InstanceIndex
+                | crate::BuiltIn::NumWorkGroups
+        ))
+    )
+}
+
 const fn is_subgroup_builtin_binding(binding: &Option<crate::Binding>) -> bool {
     let &Some(crate::Binding::BuiltIn(builtin)) = binding else {
         return false;
@@ -943,9 +955,20 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
     ) -> Result<EntryPointInterface, Error> {
         let func = &ep.function;
         let stage = ep.stage;
+        let uses_special_constants = self.options.special_constants_binding.is_some()
+            && func
+                .arguments
+                .iter()
+                .any(|arg| match module.types[arg.ty].inner {
+                    TypeInner::Struct { ref members, .. } => members
+                        .iter()
+                        .any(|member| is_special_constant_builtin_binding(&member.binding)),
+                    _ => is_special_constant_builtin_binding(&arg.binding),
+                });
         Ok(EntryPointInterface {
             input: if !func.arguments.is_empty()
                 && (stage == ShaderStage::Fragment
+                    || uses_special_constants
                     || func
                         .arguments
                         .iter()
@@ -992,7 +1015,31 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
         ep_input: &EntryPointBinding,
         fake_member: &EpStructMember,
     ) -> BackendResult {
+        let special_constants = self.options.special_constants_binding.is_some();
         match fake_member.binding {
+            Some(crate::Binding::BuiltIn(crate::BuiltIn::VertexIndex)) if special_constants => {
+                write!(
+                    self.out,
+                    "({SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_VERTEX} + {}.{})",
+                    ep_input.arg_name, fake_member.name
+                )?;
+            }
+            Some(crate::Binding::BuiltIn(crate::BuiltIn::InstanceIndex)) if special_constants => {
+                write!(
+                    self.out,
+                    "({SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_INSTANCE} + {}.{})",
+                    ep_input.arg_name, fake_member.name
+                )?;
+            }
+            Some(crate::Binding::BuiltIn(crate::BuiltIn::NumWorkGroups)) if special_constants => {
+                // Note: despite their names (`FIRST_VERTEX` and `FIRST_INSTANCE`),
+                // in compute shaders the special constants contain the number
+                // of workgroups, which we are using here.
+                write!(
+                    self.out,
+                    "uint3({SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_VERTEX}, {SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_INSTANCE}, {SPECIAL_CBUF_VAR}.{SPECIAL_OTHER})",
+                )?;
+            }
             Some(crate::Binding::BuiltIn(crate::BuiltIn::SubgroupSize)) => {
                 write!(self.out, "WaveGetLaneCount()")?
             }
@@ -1108,6 +1155,11 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
             }
         }
         assert!(fake_iter.next().is_none());
+        // Nested entry points (task/mesh) still need the input struct for the outer wrapper.
+        self.entry_point_io
+            .get_mut(&(ep_index as usize))
+            .unwrap()
+            .input = Some(ep_input);
         Ok(())
     }
 
@@ -4037,36 +4089,8 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
     ) -> BackendResult {
         use crate::Expression;
 
-        // Handle the special semantics of vertex_index/instance_index
-        let ff_input = if self.options.special_constants_binding.is_some() {
-            func_ctx.is_fixed_function_input(expr, module)
-        } else {
-            None
-        };
-        let closing_bracket = match ff_input {
-            Some(crate::BuiltIn::VertexIndex) => {
-                write!(self.out, "({SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_VERTEX} + ")?;
-                ")"
-            }
-            Some(crate::BuiltIn::InstanceIndex) => {
-                write!(self.out, "({SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_INSTANCE} + ",)?;
-                ")"
-            }
-            Some(crate::BuiltIn::NumWorkGroups) => {
-                // Note: despite their names (`FIRST_VERTEX` and `FIRST_INSTANCE`),
-                // in compute shaders the special constants contain the number
-                // of workgroups, which we are using here.
-                write!(
-                    self.out,
-                    "uint3({SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_VERTEX}, {SPECIAL_CBUF_VAR}.{SPECIAL_FIRST_INSTANCE}, {SPECIAL_CBUF_VAR}.{SPECIAL_OTHER})",
-                )?;
-                return Ok(());
-            }
-            _ => "",
-        };
-
         if let Some(name) = self.named_expressions.get(&expr) {
-            write!(self.out, "{name}{closing_bracket}")?;
+            write!(self.out, "{name}")?;
             return Ok(());
         }
 
@@ -4966,9 +4990,6 @@ impl<'a, W: fmt::Write> super::Writer<'a, W> {
             | Expression::SubgroupOperationResult { .. } => {}
         }
 
-        if !closing_bracket.is_empty() {
-            write!(self.out, "{closing_bracket}")?;
-        }
         Ok(())
     }
 
