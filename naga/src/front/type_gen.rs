@@ -558,15 +558,12 @@ impl crate::Module {
                 let int_ty = self.types.insert(
                     crate::Type {
                         name: None,
-                        inner: crate::TypeInner::Scalar(crate::Scalar {
-                            kind: crate::ScalarKind::Sint,
-                            width: scalar.width,
-                        }),
+                        inner: crate::TypeInner::Scalar(crate::Scalar::I32),
                     },
                     Span::UNDEFINED,
                 );
 
-                let (fract_member_ty, exp_member_ty, second_offset) = if let Some(size) = size {
+                let (fract_member_ty, exp_member_ty) = if let Some(size) = size {
                     let vec_float_ty = self.types.insert(
                         crate::Type {
                             name: None,
@@ -579,18 +576,30 @@ impl crate::Module {
                             name: None,
                             inner: crate::TypeInner::Vector {
                                 size,
-                                scalar: crate::Scalar {
-                                    kind: crate::ScalarKind::Sint,
-                                    width: scalar.width,
-                                },
+                                scalar: crate::Scalar::I32,
                             },
                         },
                         Span::UNDEFINED,
                     );
-                    (vec_float_ty, vec_int_ty, size as u32 * scalar.width as u32)
+                    (vec_float_ty, vec_int_ty)
                 } else {
-                    (float_ty, int_ty, scalar.width as u32)
+                    (float_ty, int_ty)
                 };
+
+                // `exp` is always `i32`, so unlike `modf`'s result, the members can differ in
+                // size and alignment.
+                let (components, align_components) = match size {
+                    None => (1, 1),
+                    Some(crate::VectorSize::Bi) => (2, 2),
+                    Some(crate::VectorSize::Tri) => (3, 4),
+                    Some(crate::VectorSize::Quad) => (4, 4),
+                };
+                let fract_width = u32::from(scalar.width);
+                let exp_width = u32::from(crate::Scalar::I32.width);
+                let exp_align = align_components * exp_width;
+                let exp_offset = (components * fract_width).next_multiple_of(exp_align);
+                let span = (exp_offset + components * exp_width)
+                    .next_multiple_of(align_components * fract_width.max(exp_width));
 
                 crate::Type {
                     name: Some(name),
@@ -606,10 +615,10 @@ impl crate::Module {
                                 name: Some("exp".to_string()),
                                 ty: exp_member_ty,
                                 binding: None,
-                                offset: second_offset,
+                                offset: exp_offset,
                             },
                         ],
-                        span: second_offset * 2,
+                        span,
                     },
                 }
             }
